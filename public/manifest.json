@@ -1,0 +1,22 @@
+{
+  "name": "Zefyrio Aero Protocol",
+  "short_name": "Zefyrio",
+  "description": "Terminal de pronóstico aeroespacial de grado militar.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0d17",
+  "theme_color": "#0b0d17",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/window.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

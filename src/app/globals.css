@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════
+   ZEFYRIO — DESIGN SYSTEM v4.0 (Stitch-Validated)
+   Fonts: Space Grotesk (headings) | Inter (body) | Fira Code (data)
+   SKILL: ui-ux-pro-max | stitch-premium-ux-master
+   ═══════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Aviation Status Colors (invariant between modes) ── */
+  --color-radium-go:     #00ff66;   /* GO status */
+  --color-plasma-warn:   #ffb800;   /* CAUTION */
+  --color-crimson-nogo:  #ff0055;   /* NO-GO */
+
+  /* ── Dark Mode Palette (Synthetic Horizon) ── */
+  --color-dark-bg:       #0c0e18;   /* Obsidian base */
+  --color-dark-surface:  #11131d;   /* Surface */
+  --color-dark-card:     #1d1f2a;   /* Card base */
+  --color-dark-card-hi:  #282934;   /* Card elevated */
+  --color-dark-cyan:     #00f0ff;   /* Primary Electric Cyan */
+  --color-dark-text:     #e1e1f0;   /* On-surface */
+  --color-dark-muted:    #b9cacb;   /* On-surface-variant */
+  --color-dark-border:   rgba(255, 255, 255, 0.10);
+
+  /* ── Light Mode Palette (Precision Aviator) — WCAG AA corrected ── */
+  --color-light-bg:      #f0f2f5;   /* Near-white base */
+  --color-light-surface: #e8eaed;   /* Section layer (darker for card contrast) */
+  --color-light-card:    #ffffff;   /* Component layer */
+  --color-light-cyan:    #0271a0;   /* Command blue — 5.1:1 on white */
+  --color-light-text:    #0d1117;   /* Near-black — 17:1 contrast on white */
+  --color-light-muted:   #364049;   /* AAA gray — 7.2:1 on white */
+  --color-light-border:  #b8c1cc;   /* Visible separator */
+  --color-light-icon:    #1a2533;   /* Icon color — 14:1 on white */
+
+  /* ── Legacy aliases (backwards compat) ── */
+  --color-obsidian:      #0b0d17;
+  --color-aerospace:     #1e293b;
+  --color-cyber-cyan:    #00f0ff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THEME CSS CUSTOM PROPERTIES
+   Applied via [data-theme] on <html> element
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root, [data-theme="dark"] {
+  --z-bg:           var(--color-dark-bg);
+  --z-surface:      var(--color-dark-surface);
+  --z-card:         var(--color-dark-card);
+  --z-card-hi:      var(--color-dark-card-hi);
+  --z-cyan:         var(--color-dark-cyan);
+  --z-text:         var(--color-dark-text);
+  --z-muted:        var(--color-dark-muted);
+  --z-border:       var(--color-dark-border);
+  --z-glass-bg:     rgba(255, 255, 255, 0.04);
+  --z-glass-blur:   blur(20px);
+  --z-nav-bg:       rgba(13, 14, 24, 0.85);
+  --z-status-bg:    rgba(17, 19, 29, 0.95);
+  --z-shadow:       0 4px 32px rgba(0, 0, 0, 0.4);
+  --z-glow-cyan:    0 0 20px rgba(0, 240, 255, 0.25);
+  --z-glow-go:      0 0 12px rgba(0, 255, 102, 0.3);
+  --z-glow-warn:    0 0 12px rgba(255, 184, 0, 0.3);
+  --z-glow-nogo:    0 0 12px rgba(255, 0, 85, 0.3);
+}
+
+[data-theme="light"] {
+  --z-bg:           var(--color-light-bg);
+  --z-surface:      var(--color-light-surface);
+  --z-card:         var(--color-light-card);
+  --z-card-hi:      #f5f7fa;
+  --z-cyan:         var(--color-light-cyan);
+  --z-text:         var(--color-light-text);
+  --z-muted:        var(--color-light-muted);
+  --z-border:       var(--color-light-border);
+  --z-icon:         var(--color-light-icon);
+  --z-glass-bg:     rgba(255, 255, 255, 0.92);
+  --z-glass-blur:   blur(20px);
+  --z-nav-bg:       rgba(240, 242, 245, 0.95);
+  --z-status-bg:    rgba(255, 255, 255, 0.98);
+  --z-shadow:       0 2px 12px rgba(13, 17, 23, 0.12), 0 1px 3px rgba(13, 17, 23, 0.08);
+  --z-glow-cyan:    0 2px 12px rgba(2, 113, 160, 0.18);
+  --z-glow-go:      0 2px 8px rgba(5, 150, 105, 0.18);
+  --z-glow-warn:    0 2px 8px rgba(180, 83, 9, 0.18);
+  --z-glow-nogo:    0 2px 8px rgba(200, 30, 60, 0.18);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--z-bg);
+    color: var(--z-text);
+    font-family: var(--font-inter, system-ui, -apple-system, sans-serif);
+    overscroll-behavior-y: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Space Grotesk for headings (aviation data values) */
+  h1, h2, h3, .font-heading {
+    font-family: var(--font-space-grotesk, var(--font-geist-sans, sans-serif));
+    letter-spacing: -0.02em;
+  }
+
+  /* Monospace for real-time data values */
+  .font-data, code, .mono {
+    font-family: var(--font-fira-code, var(--font-geist-mono, monospace));
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   UTILITY CLASSES (THEME-AWARE)
+   ═══════════════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* ── Glass panels ── */
+  .glass-panel {
+    background: var(--z-glass-bg);
+    backdrop-filter: var(--z-glass-blur);
+    -webkit-backdrop-filter: var(--z-glass-blur);
+    border: 1px solid var(--z-border);
+    border-radius: 1.5rem;
+    box-shadow: var(--z-shadow);
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .glass-panel-active {
+    background: rgba(0, 240, 255, 0.08);
+    backdrop-filter: var(--z-glass-blur);
+    -webkit-backdrop-filter: var(--z-glass-blur);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 1.5rem;
+    box-shadow: var(--z-glow-cyan);
+  }
+
+  [data-theme="light"] .glass-panel-active {
+    background: rgba(8, 145, 178, 0.08);
+    border: 1px solid rgba(8, 145, 178, 0.3);
+    box-shadow: var(--z-glow-cyan);
+  }
+
+  /* ── Themed card ── */
+  .z-card {
+    background: var(--z-card);
+    border: 1px solid var(--z-border);
+    border-radius: 1.5rem;
+    box-shadow: var(--z-shadow);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* ── Themed text colors ── */
+  .z-text         { color: var(--z-text); }
+  .z-muted        { color: var(--z-muted); }
+  .z-cyan         { color: var(--z-cyan); }
+
+  /* ── Neon status glows ── */
+  .glow-go        { box-shadow: var(--z-glow-go); }
+  .glow-warn      { box-shadow: var(--z-glow-warn); }
+  .glow-nogo      { box-shadow: var(--z-glow-nogo); }
+  .glow-cyan      { box-shadow: var(--z-glow-cyan); }
+
+  /* ── CAUTION left-border card (light-mode style) ── */
+  .status-card-warn {
+    background: var(--z-card);
+    border-left: 4px solid var(--color-plasma-warn);
+    border-radius: 0.75rem 1.5rem 1.5rem 0.75rem;
+    box-shadow: var(--z-shadow);
+    padding: 1rem 1.25rem;
+  }
+
+  .status-card-go {
+    background: var(--z-card);
+    border-left: 4px solid var(--color-radium-go);
+    border-radius: 0.75rem 1.5rem 1.5rem 0.75rem;
+    box-shadow: var(--z-shadow);
+    padding: 1rem 1.25rem;
+  }
+
+  .status-card-nogo {
+    background: var(--z-card);
+    border-left: 4px solid var(--color-crimson-nogo);
+    border-radius: 0.75rem 1.5rem 1.5rem 0.75rem;
+    box-shadow: var(--z-shadow);
+    padding: 1rem 1.25rem;
+  }
+
+  /* ── Bottom nav ── */
+  .z-nav {
+    background: var(--z-nav-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--z-border);
+    box-shadow: var(--z-shadow);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* ── Transition helper for theme-aware elements ── */
+  .theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+}
