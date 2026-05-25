@@ -310,7 +310,7 @@ See the full plan in **[PLAN.md](./PLAN.md)**.
 
 **Pending — Phase 3+**
 - [ ] **GitHub auto-deploy** — repo moved to `Cesar-Matta/zefyrio-platform`; reconnect in Vercel → Settings → Git to enable auto-deploy on push
-- [ ] **Push notifications end-to-end (VAPID)** — UI + endpoint + DB ready; needs `npx web-push generate-vapid-keys` → add `NEXT_PUBLIC_VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` + `VAPID_SUBJECT` in Vercel env vars + cron evaluator
+- [x] **Push notifications end-to-end (VAPID)** — keys generated, Supabase persistence, cron evaluator `/api/cron/weather-alert` (runs daily via Vercel; for 15min interval use cron-job.org → `GET https://zefyrio.vercel.app/api/cron/weather-alert` with `Authorization: Bearer <CRON_SECRET>`). **Pending:** apply migration 0002 in Supabase Dashboard + add `SUPABASE_SERVICE_ROLE_KEY` to Vercel env vars.
 - [x] ESLint cleanup — 0 errors, 0 warnings
 - [ ] OpenAIP global airspace caching (Phase 5)
 - [ ] UI/UX Pro Max audit (Phase 6)
