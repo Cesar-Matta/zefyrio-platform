@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Activity, MapPin } from "lucide-react";
+import { Activity } from "lucide-react";
 import { DroneIcon } from "@/components/ui/AircraftIcons";
 import { useStore } from "@/store/useStore";
 import { fetchLiveTelemetry } from "@/lib/api/telemetry";
@@ -39,65 +39,56 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('telemetry');
-  const [gpsError, setGpsError] = useState('');
   const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
-  
-  const { activeProfile, telemetryData, setTelemetryData, isLoadingTelemetry, setLoadingTelemetry, setOfflineMode } = useStore();
+
+  const { activeProfile, telemetryData, setTelemetryData, setLoadingTelemetry, setOfflineMode } = useStore();
   const { isDark } = useTheme();
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Escaneo Asíncrono Local & Red
     const bootAvionics = async () => {
-      setLoadingTelemetry(true);
-      
+      // Mostrar la app inmediatamente con mock — GPS actualiza en background
+      const mock = getMockTelemetry('dron');
+      setTelemetryData(mock);
+      setLoadingTelemetry(false);
+
       const handleSuccess = async (lat: number, lon: number, acc: number) => {
-         try {
-             setCoords({ lat, lon });
-             const data = await fetchLiveTelemetry(activeProfile, lat, lon, acc);
-             if (data) setTelemetryData(data);
-             else throw new Error("API Fallbox");
-             setOfflineMode(false);
-             setGpsError(''); // Borrar error visual si lo hubo antes
-         } catch {
-             setOfflineMode(true);
-             setGpsError(t('meteo_no_response'));
-         }
-         setLoadingTelemetry(false);
+        try {
+          setCoords({ lat, lon });
+          setLoadingTelemetry(true);
+          const data = await fetchLiveTelemetry(activeProfile, lat, lon, acc);
+          if (data) setTelemetryData(data);
+          else throw new Error('no data');
+          setOfflineMode(false);
+        } catch {
+          setOfflineMode(true);
+        }
+        setLoadingTelemetry(false);
       };
 
-      const handleFallback = async (reason: string) => {
-         // Si el GPS falla (denied, timeout), intentar Triangular por IP
-         setGpsError(`${reason} - Triangulando por IP...`);
-         try {
-             const res = await fetch('https://ipapi.co/json/');
-             const ipData = await res.json() as { latitude?: number; longitude?: number };
-             if (ipData.latitude && ipData.longitude) {
-                 await handleSuccess(ipData.latitude, ipData.longitude, 5000); // 5km precision IP
-             } else {
-                 throw new Error("No se pudo triangular");
-             }
-         } catch {
-             // Último recurso: modo demo con datos mock
-             const mock = getMockTelemetry('dron');
-             setTelemetryData(mock);
-             setGpsError(t('gps_no_signal'));
-             setOfflineMode(true);
-             setLoadingTelemetry(false);
-         }
+      const handleFallback = async (_reason: string) => {
+        try {
+          const res = await fetch('https://ipapi.co/json/');
+          const ipData = await res.json() as { latitude?: number; longitude?: number };
+          if (ipData.latitude && ipData.longitude) {
+            await handleSuccess(ipData.latitude, ipData.longitude, 5000);
+          } else throw new Error('no ip');
+        } catch {
+          setOfflineMode(true);
+        }
       };
 
-      if ("geolocation" in navigator) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => handleSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
-            (error) => handleFallback(`GPS Denegado/Timeout (${error.message})`),
-            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-          );
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => handleSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+          (err) => handleFallback(`GPS error (${err.message})`),
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+        );
       } else {
         handleFallback(t('gps_no_support'));
       }
     };
-    
+
     bootAvionics();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -110,26 +101,15 @@ export default function Home() {
       const data = await fetchLiveTelemetry(activeProfile, lat, lon, 5000);
       if (data) setTelemetryData(data);
       setOfflineMode(false);
-      setGpsError('');
     } catch {
       setOfflineMode(true);
-      setGpsError(t('meteo_no_response'));
     }
     setLoadingTelemetry(false);
   };
 
   const profileLabel = t('profile_dron');
 
-  if (isLoadingTelemetry || !telemetryData) {
-    return (
-        <div className="min-h-screen flex flex-col gap-4 items-center justify-center font-mono text-xs uppercase animate-pulse theme-transition"
-          style={{ backgroundColor: 'var(--z-bg)', color: 'var(--z-cyan)' }}>
-            <MapPin className="w-8 h-8 opacity-50 mb-2 animate-bounce" />
-            <span style={{ color: 'var(--z-text)' }}><strong>{t('gps_linking')}</strong> {gpsError ? `${t('gps_failed')} ${gpsError}` : t('gps_searching')}</span>
-            {!gpsError && <span className="text-[10px] opacity-70">{t('gps_syncing')}</span>}
-        </div>
-    );
-  }
+  if (!telemetryData) return null;
 
   // Demo mode banner (shown when offline fallback triggered)
   const isDemo = !telemetryData.gps?.lat && !coords;
