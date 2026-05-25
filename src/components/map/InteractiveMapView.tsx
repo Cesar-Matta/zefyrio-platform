@@ -16,8 +16,8 @@ interface AirspaceProps {
 }
 
 interface AirspaceFeature {
-  type: string;
-  geometry: { type: string; coordinates: unknown };
+  type: 'Feature';
+  geometry: { type: string; coordinates: unknown[] };
   properties: {
     _id?: string;
     name?: string;
