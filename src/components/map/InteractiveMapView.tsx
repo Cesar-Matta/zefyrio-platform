@@ -15,6 +15,20 @@ interface AirspaceProps {
   activity?: number | string;
 }
 
+interface AirspaceFeature {
+  type: string;
+  geometry: { type: string; coordinates: unknown };
+  properties: {
+    _id?: string;
+    name?: string;
+    type?: number | string;
+    icaoClass?: number | string;
+    activity?: number | string;
+    upperLimit?: { value?: number; unit?: number };
+    lowerLimit?: { value?: number; unit?: number };
+  };
+}
+
 // ─── Icons & Components ──────────────────────────────────────────────────────
 
 const HUD_COLORS = {
@@ -119,7 +133,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   const [tafs, setTafs] = useState<Array<{ icaoId: string; rawTAF?: string }>>([]);
   const [notams, setNotams] = useState<Array<{ icaoId: string; id?: string; content?: string }>>([]);
   const [rainPath, setRainPath] = useState<string | null>(null);
-  const [airspaces, setAirspaces] = useState<any[]>([]);
+  const [airspaces, setAirspaces] = useState<AirspaceFeature[]>([]);
   
   const [mapState, setMapState] = useState({
     lat: initialLat, lon: initialLon, zoom: 9,
@@ -185,14 +199,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
       .catch(() => {});
   }, [mapState.bbox]);
 
-  const baseMapUrl = layers.satellite 
-    ? "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-    : isDark 
-      ? "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" // Kept for HUD vector contrast, or can be replaced with Google Maps vector:
-      // "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-      : "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
- 
-  // Let's explicitly set both dark/light vector and satellite to Google Maps
+  // Base map URLs
   const googleVectorUrl = "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
   const googleSatelliteUrl = "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}";
   const activeBaseUrl = layers.satellite ? googleSatelliteUrl : googleVectorUrl;

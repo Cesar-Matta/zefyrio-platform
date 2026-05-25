@@ -99,6 +99,7 @@ export default function Home() {
     };
     
     bootAvionics();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSyncLocation = async (lat: number, lon: number) => {

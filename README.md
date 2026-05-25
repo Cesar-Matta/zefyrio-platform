@@ -302,15 +302,20 @@ See the full plan in **[PLAN.md](./PLAN.md)**.
 - [x] Google Maps base layers (vector + satellite)
 - [x] Airspace GeoJSON rendering (14 layer types)
 
+**Done**
+- [x] Vercel deploy — live at **https://zefyrio.vercel.app** (Next 16.2.1, Turbopack, SSR)
+
 **In Progress**
 - [ ] 🔴 **GOES satellite imagery for Southern Hemisphere** — tiles from IEM `goes_east_fulldisk` only render for NH; investigating dual-section approach (HN + HS) or alternative tile sources (NASA GIBS, NOAA mapservices)
 
 **Pending — Phase 3+**
-- [ ] Push notifications end-to-end (VAPID) — UI + endpoint + DB ready; needs VAPID key generation + cron evaluator
+- [ ] **GitHub auto-deploy** — repo moved to `Cesar-Matta/zefyrio-platform`; reconnect in Vercel → Settings → Git to enable auto-deploy on push
+- [ ] **Push notifications end-to-end (VAPID)** — UI + endpoint + DB ready; needs `npx web-push generate-vapid-keys` → add `NEXT_PUBLIC_VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` + `VAPID_SUBJECT` in Vercel env vars + cron evaluator
+- [x] ESLint cleanup — 0 errors, 0 warnings
 - [ ] OpenAIP global airspace caching (Phase 5)
 - [ ] UI/UX Pro Max audit (Phase 6)
 - [ ] Test suite — Vitest + Playwright (Phase 7)
-- [ ] Vercel deploy + observability (Phase 8)
+- [ ] Vercel observability — Sentry or Vercel Analytics
 
 ---
 
@@ -320,9 +325,9 @@ See the full plan in **[PLAN.md](./PLAN.md)**.
 |---|---|
 | Build | ✅ passing (Next 16.2.1, Turbopack) |
 | Typecheck | ✅ 0 errors |
-| Lint | ⚠️ 54 errors / 17 warnings (mostly `no-explicit-any`) |
+| Lint | ✅ 0 errors, 0 warnings |
 | Tests | ⏳ not yet |
-| Deploy | ⏳ not yet |
+| Deploy | ✅ **https://zefyrio.vercel.app** |
 | GOES HN | ✅ working (IR + Visible) |
 | GOES HS | 🔴 not loading — under investigation |
 
