@@ -1,4 +1,5 @@
 import { PilotProfile, TelemetryData } from "@/store/useStore";
+import { fetchWithTimeout } from "./fetchWithTimeout";
 
 // Utils
 function degToCompass(num: number) {
@@ -22,13 +23,13 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
     // 1. Fetch Open-Meteo (SFC, Temp, Ráfagas, Lluvia, Vientos Altura)
     // Usamos hourly array para wind_speed a diferentes alturas: 10m(~sfc), 80m(~250ft), 120m(~400ft), 180m(~600ft)
     const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m&daily=sunrise,sunset&timezone=auto`;
-    const meteoReq = await fetch(meteoUrl);
+    const meteoReq = await fetchWithTimeout(meteoUrl, {}, 6000);
     const meteoData = await meteoReq.json();
 
-    // 2. Fetch NOAA Kp Index
+    // 2. Fetch NOAA Kp Index (US-only origin — can be slow from LATAM mobile)
     let kp = 1.0;
     try {
-        const noaaReq = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
+        const noaaReq = await fetchWithTimeout('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json', {}, 5000);
         const noaaData = await noaaReq.json();
         const latestKp = noaaData[noaaData.length - 1][1];
         if (latestKp) kp = parseFloat(latestKp);

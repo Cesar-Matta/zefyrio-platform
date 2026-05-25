@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from 'react';
 import { Cloud, Sun, CloudRain, CloudLightning, Wind, RefreshCw } from 'lucide-react';
+import { fetchWithTimeout } from '@/lib/api/fetchWithTimeout';
 
 interface DayForecast {
   date: string;
@@ -26,7 +27,7 @@ export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number
     setIsLoading(true);
     try {
       const timestamp = new Date().getTime(); // Cache busting
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&_t=${timestamp}`, { cache: 'no-store' });
+      const res = await fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&_t=${timestamp}`, { cache: 'no-store' }, 6000);
       const data = await res.json();
       
       if (data && data.daily) {

@@ -8,6 +8,7 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 import SmartAirportMarker from './SmartAirportMarker';
 import ForecastBar8Day from '../weather/ForecastBar8Day';
 import type { MetarData, AircraftPosition } from '@/lib/types/api';
+import { fetchWithTimeout } from '@/lib/api/fetchWithTimeout';
 
 interface AirspaceProps {
   type?: number | string;
@@ -141,7 +142,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   });
 
   useEffect(() => {
-    fetch('https://api.rainviewer.com/public/weather-maps.json')
+    fetchWithTimeout('https://api.rainviewer.com/public/weather-maps.json', {}, 5000)
       .then(res => res.json())
       .then(data => { 
         if (data.radar?.past?.length > 0) {

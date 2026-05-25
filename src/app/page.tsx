@@ -6,6 +6,7 @@ import { Activity } from "lucide-react";
 import { DroneIcon } from "@/components/ui/AircraftIcons";
 import { useStore } from "@/store/useStore";
 import { fetchLiveTelemetry } from "@/lib/api/telemetry";
+import { fetchWithTimeout } from "@/lib/api/fetchWithTimeout";
 import { getMockTelemetry } from "@/lib/api/weatherMock";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
@@ -61,31 +62,32 @@ export default function Home() {
         setLoadingTelemetry(false);
       };
 
-      // IP geolocation — múltiples servicios como cadena de fallback
+      // IP geolocation — prefer Vercel edge headers (zero-latency, no CORS,
+      // no rate limit, works everywhere). Fall back to a single CORS-friendly
+      // external service only if the edge headers are missing (local dev or
+      // non-Vercel runtime). Every fetch has a 5s timeout so the boot never
+      // hangs on a stalled upstream.
       const getLocationByIP = async (): Promise<{lat: number; lon: number} | null> => {
-        const services = [
-          async () => {
-            const r = await fetch('https://ipapi.co/json/');
-            const d = await r.json() as {latitude?: number; longitude?: number};
-            if (d.latitude && d.longitude) return { lat: d.latitude, lon: d.longitude };
-            throw new Error('no data');
-          },
-          async () => {
-            const r = await fetch('https://ip-api.com/json/');
-            const d = await r.json() as {lat?: number; lon?: number; status?: string};
-            if (d.status === 'success' && d.lat && d.lon) return { lat: d.lat, lon: d.lon };
-            throw new Error('no data');
-          },
-          async () => {
-            const r = await fetch('https://ipwho.is/');
-            const d = await r.json() as {latitude?: number; longitude?: number; success?: boolean};
-            if (d.success && d.latitude && d.longitude) return { lat: d.latitude, lon: d.longitude };
-            throw new Error('no data');
-          },
-        ];
-        for (const svc of services) {
-          try { return await svc(); } catch { continue; }
-        }
+        // 1) Vercel edge geo (preferred — always reachable, always fast)
+        try {
+          const r = await fetchWithTimeout('/api/geo', { cache: 'no-store' }, 3000);
+          if (r.ok) {
+            const d = await r.json() as {ok?: boolean; lat?: number; lon?: number};
+            if (d.ok && typeof d.lat === 'number' && typeof d.lon === 'number') {
+              return { lat: d.lat, lon: d.lon };
+            }
+          }
+        } catch { /* fall through to external fallback */ }
+
+        // 2) External fallback — ipwho.is has the most permissive CORS of the
+        // free-tier IP services and ships HTTPS without a paid plan. Wrapped
+        // in a 5s timeout so a stalled response never blocks boot.
+        try {
+          const r = await fetchWithTimeout('https://ipwho.is/', {}, 5000);
+          const d = await r.json() as {latitude?: number; longitude?: number; success?: boolean};
+          if (d.success && d.latitude && d.longitude) return { lat: d.latitude, lon: d.longitude };
+        } catch { /* fall through */ }
+
         return null;
       };
 
