@@ -1,23 +1,28 @@
 "use client";
-// SKILL: ui-ux-pro-max | stitch-premium-ux-master
 // BottomNav — Redesign Premium v4.0
+// i18n-ready — now includes LOG tab
 
-import { Activity, CloudLightning, Navigation } from "lucide-react";
+import { Activity, CloudLightning, Navigation, BookOpen, BarChart2, type LucideIcon } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useTranslation } from "@/lib/i18n/useTranslation";
+import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface BottomNavProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
-const TABS = [
-  { id: 'telemetry', Icon: Activity,       label: 'HUD',   accent: 'var(--z-cyan)' },
-  { id: 'weather',   Icon: CloudLightning, label: 'RADAR', accent: '#ffb800'        },
-  { id: 'map',       Icon: Navigation,     label: 'MAP',   accent: '#00ff66'        },
+const TABS: { id: string; Icon: LucideIcon; labelKey: TranslationKey; accent: string }[] = [
+  { id: 'telemetry',  Icon: Activity,       labelKey: 'nav_hud',       accent: 'var(--z-cyan)' },
+  { id: 'weather',    Icon: CloudLightning, labelKey: 'nav_radar',     accent: '#ffb800'        },
+  { id: 'forecast',   Icon: BarChart2,      labelKey: 'nav_forecast',  accent: '#f97316'        },
+  { id: 'map',        Icon: Navigation,     labelKey: 'nav_map',       accent: '#00ff66'        },
+  { id: 'log',        Icon: BookOpen,       labelKey: 'nav_log',       accent: '#a78bfa'        },
 ];
 
 export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
   const { isDark } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <nav className="absolute bottom-0 left-0 right-0 flex justify-center items-end pb-6 pt-16 z-20 pointer-events-none"
@@ -36,22 +41,22 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
           boxShadow: 'var(--z-shadow)',
         }}
       >
-        {TABS.map(({ id, Icon, label, accent }) => {
+        {TABS.map(({ id, Icon, labelKey, accent }) => {
           const isActive = activeTab === id;
           return (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              aria-label={label}
+              aria-label={t(labelKey)}
               className="relative flex flex-col items-center justify-center rounded-full cursor-pointer transition-all duration-200"
               style={{
-                width: '64px',
-                height: '52px',
+                width: '56px',
+                height: '48px',
                 background: isActive ? `${accent}18` : 'transparent',
               }}
             >
               <Icon
-                className="w-[22px] h-[22px] transition-all duration-200"
+                className="w-[20px] h-[20px] transition-all duration-200"
                 style={{
                   color: isActive ? accent : 'var(--z-muted)',
                   filter: isActive ? `drop-shadow(0 0 6px ${accent})` : 'none',
@@ -59,10 +64,10 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
                 }}
               />
               <span
-                className="text-[7px] font-bold uppercase tracking-widest mt-0.5 transition-all duration-200"
+                className="text-[6px] font-bold uppercase tracking-widest mt-0.5 transition-all duration-200"
                 style={{ color: isActive ? accent : 'var(--z-muted)', opacity: isActive ? 1 : 0.6 }}
               >
-                {label}
+                {t(labelKey)}
               </span>
               {isActive && (
                 <div

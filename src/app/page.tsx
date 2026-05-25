@@ -2,20 +2,30 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { PlaneTakeoff, RefreshCw, Activity, MapPin } from "lucide-react";
-import { useStore, PilotProfile } from "@/store/useStore";
+import { Activity, MapPin } from "lucide-react";
+import { DroneIcon } from "@/components/ui/AircraftIcons";
+import { useStore } from "@/store/useStore";
 import { fetchLiveTelemetry } from "@/lib/api/telemetry";
+import { getMockTelemetry } from "@/lib/api/weatherMock";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 // Atomic Components
 import CopilotStatus from "@/components/telemetry/CopilotStatus";
+import NoFlyZones from "@/components/telemetry/NoFlyZones";
 import NotamAlert from "@/components/telemetry/NotamAlert";
+import SigmetAlert from "@/components/telemetry/SigmetAlert";
 import VerticalWindProfile from "@/components/telemetry/VerticalWindProfile";
 import GpsSatelliteStatus from "@/components/telemetry/GpsSatelliteStatus";
 import WindCompass from "@/components/telemetry/WindCompass";
 import WeatherCards from "@/components/telemetry/WeatherCards";
 import FlightWindow from "@/components/telemetry/FlightWindow";
+import FlightLog from "@/components/telemetry/FlightLog";
+import FlightAnalytics from "@/components/telemetry/FlightAnalytics";
+import PushNotificationManager from "@/components/ui/PushNotificationManager";
 import BottomNav from "@/components/navigation/BottomNav";
 import MetarBoard from "@/components/weather/MetarBoard";
+import ForecastBar8Day from "@/components/weather/ForecastBar8Day";
+import ForecastCards from "@/components/weather/ForecastCards";
 
 // FIX: Leaflet SSR Error - Import Map component ONLY on client
 const InteractiveMapView = dynamic(() => import("@/components/map/InteractiveMapView"), { 
@@ -24,6 +34,7 @@ const InteractiveMapView = dynamic(() => import("@/components/map/InteractiveMap
 });
 
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { LocaleToggle } from "@/components/ui/LocaleToggle";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
 export default function Home() {
@@ -31,7 +42,9 @@ export default function Home() {
   const [gpsError, setGpsError] = useState('');
   const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
   
-  const { activeProfile, setProfile, telemetryData, setTelemetryData, isLoadingTelemetry, setLoadingTelemetry, setOfflineMode } = useStore();
+  const { activeProfile, telemetryData, setTelemetryData, isLoadingTelemetry, setLoadingTelemetry, setOfflineMode } = useStore();
+  const { isDark } = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Escaneo Asíncrono Local & Red
@@ -46,9 +59,9 @@ export default function Home() {
              else throw new Error("API Fallbox");
              setOfflineMode(false);
              setGpsError(''); // Borrar error visual si lo hubo antes
-         } catch(err) {
+         } catch {
              setOfflineMode(true);
-             setGpsError("Servidor Meteo No Responde");
+             setGpsError(t('meteo_no_response'));
          }
          setLoadingTelemetry(false);
       };
@@ -58,14 +71,17 @@ export default function Home() {
          setGpsError(`${reason} - Triangulando por IP...`);
          try {
              const res = await fetch('https://ipapi.co/json/');
-             const ipData = await res.json();
+             const ipData = await res.json() as { latitude?: number; longitude?: number };
              if (ipData.latitude && ipData.longitude) {
                  await handleSuccess(ipData.latitude, ipData.longitude, 5000); // 5km precision IP
              } else {
                  throw new Error("No se pudo triangular");
              }
-         } catch(err) {
-             setGpsError("Señal Pérdida. Sin Telemetría.");
+         } catch {
+             // Último recurso: modo demo con datos mock
+             const mock = getMockTelemetry('dron');
+             setTelemetryData(mock);
+             setGpsError(t('gps_no_signal'));
              setOfflineMode(true);
              setLoadingTelemetry(false);
          }
@@ -78,41 +94,44 @@ export default function Home() {
             { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
           );
       } else {
-        handleFallback("GPS No Soportado");
+        handleFallback(t('gps_no_support'));
       }
     };
     
     bootAvionics();
-  }, [activeProfile, setTelemetryData, setLoadingTelemetry, setOfflineMode]);
+  }, []);
 
-  const cycleProfile = () => {
-    const profiles: PilotProfile[] = ['dron', 'plane', 'helicopter', 'paraglider', 'parachute'];
-    const nextIdx = (profiles.indexOf(activeProfile) + 1) % profiles.length;
-    setProfile(profiles[nextIdx]);
-  };
-
-  const getProfileLabel = (p: PilotProfile) => {
-    switch(p) {
-      case 'dron': return 'UAV/Dron';
-      case 'plane': return 'Aviación General';
-      case 'helicopter': return 'Helicóptero';
-      case 'paraglider': return 'Vela Ligera';
-      case 'parachute': return 'Paracaidismo';
+  const handleSyncLocation = async (lat: number, lon: number) => {
+    setActiveTab('telemetry'); // Go back to HUD
+    setLoadingTelemetry(true);
+    try {
+      setCoords({ lat, lon });
+      const data = await fetchLiveTelemetry(activeProfile, lat, lon, 5000);
+      if (data) setTelemetryData(data);
+      setOfflineMode(false);
+      setGpsError('');
+    } catch {
+      setOfflineMode(true);
+      setGpsError(t('meteo_no_response'));
     }
+    setLoadingTelemetry(false);
   };
-  const profileLabel = getProfileLabel(activeProfile);
-  const { isDark } = useTheme();
+
+  const profileLabel = t('profile_dron');
 
   if (isLoadingTelemetry || !telemetryData) {
     return (
         <div className="min-h-screen flex flex-col gap-4 items-center justify-center font-mono text-xs uppercase animate-pulse theme-transition"
           style={{ backgroundColor: 'var(--z-bg)', color: 'var(--z-cyan)' }}>
             <MapPin className="w-8 h-8 opacity-50 mb-2 animate-bounce" />
-            <span style={{ color: 'var(--z-text)' }}><strong>ENLAZANDO GPS:</strong> {gpsError ? `FALLO GPS: ${gpsError}` : 'Buscando satélites limpios...'}</span>
-            {!gpsError && <span className="text-[10px] opacity-70">Sincronizando modelos Doppler (Open-Meteo)</span>}
+            <span style={{ color: 'var(--z-text)' }}><strong>{t('gps_linking')}</strong> {gpsError ? `${t('gps_failed')} ${gpsError}` : t('gps_searching')}</span>
+            {!gpsError && <span className="text-[10px] opacity-70">{t('gps_syncing')}</span>}
         </div>
     );
   }
+
+  // Demo mode banner (shown when offline fallback triggered)
+  const isDemo = !telemetryData.gps?.lat && !coords;
 
   const statusBg = telemetryData.status === 'GO' ? 'bg-radium-go' : 
                    telemetryData.status === 'CAUTION' ? 'bg-plasma-warn' : 
@@ -133,18 +152,32 @@ export default function Home() {
         
         <div className="w-full h-full overflow-y-auto px-5 pt-10 pb-36 scrollbar-hide flex flex-col gap-5 relative z-10 transition-all">
           
+          {/* Demo mode banner */}
+          {isDemo && (
+            <div className="rounded-xl px-3 py-2 mb-1 flex items-center gap-2 shrink-0"
+              style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.35)' }}>
+              <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#ffb800' }}>
+                ⚠️ Modo Demo — Sin señal GPS
+              </span>
+            </div>
+          )}
+
           {/* Main App Header */}
           <header className="flex justify-between items-center mb-1 shrink-0">
             <div>
               <h1 className="text-3xl font-black tracking-tighter font-heading" style={{ color: 'var(--z-text)', letterSpacing: '-0.03em' }}>ZEFYRIO</h1>
-              <div className="flex items-center gap-2 mt-1 cursor-pointer rounded-md px-1 -ml-1 py-0.5 transition hover:opacity-80" onClick={cycleProfile}>
-                 <PlaneTakeoff className="w-3 h-3" style={{ color: 'var(--z-cyan)' }} />
-                 <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--z-cyan)' }}>{profileLabel}</p>
-                 <RefreshCw className="w-3 h-3 opacity-40" style={{ color: 'var(--z-muted)' }} />
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-[var(--z-cyan)]/10 border-[var(--z-cyan)] shadow-[0_0_10px_var(--z-cyan)]">
+                  <DroneIcon className="w-3 h-3" style={{ color: 'var(--z-cyan)' }} />
+                  <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--z-cyan)' }}>
+                    Drone HUD
+                  </span>
+                </div>
               </div>
             </div>
             {/* Header Right: Theme Toggle + Status */}
             <div className="flex items-center gap-2">
+              <LocaleToggle size="sm" />
               <ThemeToggle size="sm" />
               <button className="w-10 h-10 rounded-full flex items-center justify-center transition backdrop-blur-md relative shrink-0 cursor-pointer"
                 style={{ backgroundColor: 'var(--z-glass-bg)', border: '1px solid var(--z-border)' }}>
@@ -164,8 +197,20 @@ export default function Home() {
                   profileLabel={profileLabel} 
                 />
                 
-                {/* FASET D: NOTAM ALERTS */}
+                {/* TFR / NO-FLY ZONES */}
+                <NoFlyZones 
+                  lat={telemetryData.gps?.lat || coords?.lat || 0} 
+                  lon={telemetryData.gps?.lon || coords?.lon || 0} 
+                />
+                
+                {/* NOTAM ALERTS */}
                 <NotamAlert 
+                  lat={telemetryData.gps?.lat || coords?.lat || 0} 
+                  lon={telemetryData.gps?.lon || coords?.lon || 0} 
+                />
+
+                {/* SIGMET / AIRMET ALERTS */}
+                <SigmetAlert 
                   lat={telemetryData.gps?.lat || coords?.lat || 0} 
                   lon={telemetryData.gps?.lon || coords?.lon || 0} 
                 />
@@ -184,8 +229,43 @@ export default function Home() {
           )}
 
           {/* WEATHER/METAR TAB */}
-          {activeTab === 'weather' && coords && (
-             <MetarBoard lat={coords.lat} lon={coords.lon} />
+          {activeTab === 'weather' && (telemetryData.gps || coords) && (
+             <MetarBoard 
+               lat={telemetryData.gps?.lat || coords?.lat || 0} 
+               lon={telemetryData.gps?.lon || coords?.lon || 0} 
+             />
+          )}
+ 
+          {/* FORECAST TAB */}
+          {activeTab === 'forecast' && (telemetryData.gps || coords) && (
+            <div className="flex-1 w-full flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-8 duration-500 pb-10">
+              {/* Section header */}
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-5 rounded-full" style={{ background: '#f97316' }} />
+                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--z-text)' }}>Pronósticos</h2>
+                <span className="text-[10px] font-mono" style={{ color: 'var(--z-muted)' }}>8 días</span>
+              </div>
+              {/* 8-day forecast — rendered inline, not over the map */}
+              <div
+                className="rounded-2xl border overflow-x-auto no-scrollbar p-4"
+                style={{ background: 'var(--z-card)', borderColor: 'var(--z-border)' }}
+              >
+                <ForecastBar8Day 
+                  lat={telemetryData.gps?.lat || coords?.lat || 0} 
+                  lon={telemetryData.gps?.lon || coords?.lon || 0} 
+                />
+              </div>
+              {/* Hourly drone outlook — wind, UV, humidity, visibility */}
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-1 h-5 rounded-full" style={{ background: '#00f0ff' }} />
+                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--z-text)' }}>Próximas 24h</h2>
+                <span className="text-[10px] font-mono" style={{ color: 'var(--z-muted)' }}>drone outlook</span>
+              </div>
+              <ForecastCards 
+                lat={telemetryData.gps?.lat || coords?.lat || 0} 
+                lon={telemetryData.gps?.lon || coords?.lon || 0} 
+              />
+            </div>
           )}
 
           {/* MAP TAB */}
@@ -194,7 +274,20 @@ export default function Home() {
               <InteractiveMapView 
                 initialLat={telemetryData.gps?.lat || coords?.lat || 0} 
                 initialLon={telemetryData.gps?.lon || coords?.lon || 0} 
+                onSyncLocation={handleSyncLocation}
               />
+            </div>
+          )}
+
+          {/* LOG TAB */}
+          {activeTab === 'log' && (
+            <div className="flex-1 w-full overflow-y-auto px-1 pb-20 flex flex-col gap-4">
+              {/* Push Alerts */}
+              <PushNotificationManager />
+              {/* Session Logger */}
+              <FlightLog />
+              {/* Analytics Dashboard */}
+              <FlightAnalytics />
             </div>
           )}
 

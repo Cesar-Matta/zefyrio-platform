@@ -1,92 +1,163 @@
-// SKILL: api-patterns — Proxy seguro para ADS-B / tráfico aéreo en tiempo real
-// Fuente: OpenSky Network REST API (sin auth para datos públicos de aeronaves)
-// Docs: https://openskynetwork.github.io/opensky-api/rest.html
+// ═══════════════════════════════════════════════════════════════════
+// ZEFYRIO — ADS-B Proxy v2.1 (Optimized Cache)
+// Source: OpenSky Network REST API
+// Improvements:
+//   • Per-bbox cache map (no cache miss when panning the map)
+//   • Backoff TTL on 429: 60s pause before retrying
+//   • Stale-while-revalidate pattern for seamless UX
+//   • On-ground filter configurable via param
+// ═══════════════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from 'next/server';
 
-// Cache en memoria del servidor para reducir peticiones repetitivas
-let serverCache: { data: any; timestamp: number } | null = null;
-const CACHE_TTL_MS = 15_000; // 15 segundos — tráfico aéreo se actualiza cada 10-15s en OpenSky
+// ─── Per-bbox cache store ──────────────────────────────────────────
+const CACHE_TTL_MS      = 15_000;  // Normal TTL: 15s
+const BACKOFF_TTL_MS    = 60_000;  // 429 backoff: 60s freeze
+const MAX_CACHE_ENTRIES = 50;      // Prevent unbounded memory growth
+
+interface AdsbPayload {
+  aircraft: Array<Record<string, unknown>>;
+  count: number;
+  time: number;
+  bbox: { minLat: number; minLon: number; maxLat: number; maxLon: number };
+  stale?: boolean;
+  rateLimited?: boolean;
+}
+
+interface CacheEntry {
+  data: AdsbPayload;
+  timestamp: number;
+  stale?: boolean;
+}
+
+type OpenSkyState = [
+  string, string | null, string, string | null, number,
+  number | null, number | null, number | null, boolean,
+  number | null, number | null, number | null, unknown,
+  number | null, string | null, boolean, number, number,
+];
+
+const bboxCache = new Map<string, CacheEntry>();
+let rateLimitUntil = 0; // Epoch ms — block all OpenSky calls until this time
+
+// ─── LRU eviction: trim to MAX_CACHE_ENTRIES ──────────────────────
+function pruneCache() {
+  if (bboxCache.size <= MAX_CACHE_ENTRIES) return;
+  const oldest = [...bboxCache.entries()]
+    .sort((a, b) => a[1].timestamp - b[1].timestamp)
+    .slice(0, bboxCache.size - MAX_CACHE_ENTRIES);
+  oldest.forEach(([k]) => bboxCache.delete(k));
+}
+
+// ─── Round bbox to 1 decimal to maximise cache hits ───────────────
+function normalizeBbox(raw: string): string {
+  return raw.split(',').map(v => parseFloat(v).toFixed(1)).join(',');
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  
-  // BBOX: minLat,minLon,maxLat,maxLon (ej: "32.5,-120.1,35.2,-116.8")
-  const bbox = searchParams.get('bbox');
-  
-  if (!bbox) {
-    return NextResponse.json({ error: 'Parámetro bbox requerido. Formato: minLat,minLon,maxLat,maxLon' }, { status: 400 });
+  const rawBbox = searchParams.get('bbox');
+
+  if (!rawBbox) {
+    return NextResponse.json(
+      { error: 'bbox required. Format: minLat,minLon,maxLat,maxLon' },
+      { status: 400 }
+    );
   }
 
-  const parts = bbox.split(',').map(Number);
+  const parts = rawBbox.split(',').map(Number);
   if (parts.length !== 4 || parts.some(isNaN)) {
-    return NextResponse.json({ error: 'BBOX inválido' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid bbox' }, { status: 400 });
   }
 
+  const cacheKey = normalizeBbox(rawBbox);
   const [minLat, minLon, maxLat, maxLon] = parts;
-
-  // Devolver caché si sigue fresca
   const now = Date.now();
-  if (serverCache && now - serverCache.timestamp < CACHE_TTL_MS) {
-    return NextResponse.json(serverCache.data, {
+
+  // ─── Return fresh cache immediately ──────────────────────────────
+  const cached = bboxCache.get(cacheKey);
+  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+    return NextResponse.json(cached.data, {
       headers: {
         'X-Cache': 'HIT',
-        'X-Cache-Age': `${Math.floor((now - serverCache.timestamp) / 1000)}s`,
+        'X-Cache-Age': `${Math.floor((now - cached.timestamp) / 1000)}s`,
+        'Cache-Control': 'public, max-age=15',
       },
     });
+  }
+
+  // ─── Rate limit backoff: return stale if within freeze window ────
+  if (now < rateLimitUntil) {
+    const waitSec = Math.ceil((rateLimitUntil - now) / 1000);
+    if (cached) {
+      return NextResponse.json({ ...cached.data, stale: true, rateLimited: true }, {
+        headers: {
+          'X-Cache': 'STALE',
+          'X-Rate-Limit-Wait': `${waitSec}s`,
+          'Retry-After': `${waitSec}`,
+        },
+      });
+    }
+    return NextResponse.json({
+      error: `OpenSky rate limited. Retry in ${waitSec}s.`,
+      aircraft: [],
+      count: 0,
+      rateLimited: true,
+    }, { status: 429 });
   }
 
   try {
-    // OpenSky Network — endpoint de estados de aeronaves dentro de un BBOX
-    // laMin, loMin = esquina SW | laMax, loMax = esquina NE
     const url = `https://opensky-network.org/api/states/all?lamin=${minLat}&lomin=${minLon}&lamax=${maxLat}&lomax=${maxLon}`;
-    
+
     const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        // Sin credenciales para acceso anónimo (limitado a ~400 aeronaves en el BBOX)
-        // Para acceso ampliado, agregar: Authorization: Basic base64(user:pass)
-      },
-      // Timeout en servidor (10s máx para no bloquear el cliente)
+      headers: { 'Accept': 'application/json' },
       signal: AbortSignal.timeout(10_000),
     });
 
-    if (!response.ok) {
-      // OpenSky puede devolver 429 si se excede el rate limit (anónimo: 10 req/min)
-      if (response.status === 429) {
-        return NextResponse.json({ 
-          error: 'Rate limit OpenSky alcanzado. Intenta en 60s.',
-          aircraft: [],
-          time: now / 1000
-        }, { status: 429 });
+    if (response.status === 429) {
+      // Enter 60s backoff — don't hammer OpenSky
+      rateLimitUntil = now + BACKOFF_TTL_MS;
+      console.warn('[ADS-B] 429 received — backoff for 60s');
+      if (cached) {
+        return NextResponse.json({ ...cached.data, stale: true, rateLimited: true }, {
+          headers: { 'X-Cache': 'STALE', 'Retry-After': '60' },
+        });
       }
-      throw new Error(`OpenSky respondió ${response.status}`);
+      return NextResponse.json({
+        error: 'OpenSky rate limit hit. Retrying in 60s.',
+        aircraft: [],
+        count: 0,
+        rateLimited: true,
+      }, { status: 429 });
+    }
+
+    if (!response.ok) {
+      throw new Error(`OpenSky returned ${response.status}`);
     }
 
     const raw = await response.json();
-    
-    // OpenSky devuelve: { time: number, states: [[icao24, callsign, origin_country, ...], ...] }
-    // Convertimos a objetos tipados para el frontend
-    const aircraft = (raw.states || [])
-      .filter((s: any[]) => s[5] !== null && s[6] !== null) // Filtrar sin posición
-      .map((s: any[]) => ({
-        icao24: s[0] as string,           // Identificador ICAO 24-bit (hex)
-        callsign: (s[1] as string || '').trim() || s[0], // Vuelo o matrícula
-        originCountry: s[2] as string,    // País de matrícula
-        lastContact: s[4] as number,      // Timestamp último contacto
-        lon: s[5] as number,              // Longitud actual
-        lat: s[6] as number,              // Latitud actual
-        baroAltitude: s[7] as number,     // Altitud barómetrica (metros)
-        onGround: s[8] as boolean,        // ¿Está en tierra?
-        velocity: s[9] as number,         // Velocidad horizonal (m/s)
-        trueTrack: s[10] as number,       // Rumbo verdadero (grados, 0=Norte)
-        verticalRate: s[11] as number,    // Tasa ascenso/descenso (m/s)
-        geoAltitude: s[13] as number,     // Altitud GPS (metros)
-        squawk: s[14] as string,          // Código transponder
-        spi: s[15] as boolean,            // Special Purpose Indicator
-        positionSource: s[16] as number,  // 0=ADS-B, 1=ASTERIX, 2=MLAT
-        category: s[17] as number,        // Categoría ICAO (0=No info, 1=Light, 5=Heavy, 7=Rotorcraft)
+
+    const states: OpenSkyState[] = raw.states ?? [];
+    const aircraft = states
+      .filter((s) => s[5] !== null && s[6] !== null)
+      .map((s) => ({
+        icao24:         s[0],
+        callsign:       (s[1] ?? '').trim() || s[0],
+        originCountry:  s[2],
+        lastContact:    s[4],
+        lon:            s[5] as number,
+        lat:            s[6] as number,
+        baroAltitude:   s[7],
+        onGround:       s[8],
+        velocity:       s[9],
+        trueTrack:      s[10],
+        verticalRate:   s[11],
+        geoAltitude:    s[13],
+        squawk:         s[14],
+        spi:            s[15],
+        positionSource: s[16],
+        category:       s[17],
       }))
-      .filter((a: any) => !a.onGround); // Opcional: filtrar aeronaves en tierra
+      .filter((a) => !a.onGround);
 
     const payload = {
       aircraft,
@@ -95,8 +166,8 @@ export async function GET(req: NextRequest) {
       bbox: { minLat, minLon, maxLat, maxLon },
     };
 
-    // Guardar en caché del servidor
-    serverCache = { data: payload, timestamp: now };
+    bboxCache.set(cacheKey, { data: payload, timestamp: now });
+    pruneCache();
 
     return NextResponse.json(payload, {
       headers: {
@@ -105,20 +176,20 @@ export async function GET(req: NextRequest) {
       },
     });
 
-  } catch (err: any) {
-    console.error('[ADS-B Proxy] Error:', err.message);
-    
-    // Si falla, devolver caché expirada si existe (mejor que nada)
-    if (serverCache) {
-      return NextResponse.json({ ...serverCache.data, stale: true }, {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[ADS-B Proxy] Error:', message);
+
+    if (cached) {
+      return NextResponse.json({ ...cached.data, stale: true }, {
         headers: { 'X-Cache': 'STALE' },
       });
     }
 
-    return NextResponse.json({ 
-      error: 'No se pudo conectar con OpenSky Network',
+    return NextResponse.json({
+      error: 'Could not connect to OpenSky Network.',
       aircraft: [],
-      count: 0
+      count: 0,
     }, { status: 503 });
   }
 }

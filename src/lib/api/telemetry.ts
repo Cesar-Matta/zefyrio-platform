@@ -1,4 +1,4 @@
-import { PilotProfile } from "@/store/useStore";
+import { PilotProfile, TelemetryData } from "@/store/useStore";
 
 // Utils
 function degToCompass(num: number) {
@@ -7,7 +7,17 @@ function degToCompass(num: number) {
     return arr[(val % 16)];
 }
 
-export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon: number, accuracy: number) {
+// Drone safety thresholds — tuned for sub-25 kg multirotors.
+const DRONE_LIMITS = {
+  gustsKmh: 30,        // Surface gust ceiling — abort takeoff above this
+  gustsCautionKmh: 22, // Marginal gusts
+  wind120mKmh: 25,     // Wind at 400 ft (typical hover ceiling)
+  kpStorm: 4.5,        // Geomagnetic Kp — fly-away risk above
+};
+
+export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon: number, accuracy: number): Promise<TelemetryData | null> {
+  // `profile` is reserved for future multi-profile expansion; locked to 'dron' today.
+  void profile;
   try {
     // 1. Fetch Open-Meteo (SFC, Temp, Ráfagas, Lluvia, Vientos Altura)
     // Usamos hourly array para wind_speed a diferentes alturas: 10m(~sfc), 80m(~250ft), 120m(~400ft), 180m(~600ft)
@@ -20,16 +30,12 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
     try {
         const noaaReq = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
         const noaaData = await noaaReq.json();
-        // El último elemento de la matriz suele ser la lectura más reciente [timestamp, kp]
         const latestKp = noaaData[noaaData.length - 1][1];
         if (latestKp) kp = parseFloat(latestKp);
-    } catch(err) {
+    } catch {
         console.warn("NOAA API fallback");
-        kp = 2.1; // Fallback
+        kp = 2.1;
     }
-
-    const isParaglider = profile === 'paraglider' || profile === 'parachute';
-    const isPlane = profile === 'plane';
 
     const currentMeteo = meteoData.current;
     
@@ -45,30 +51,43 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
     const wind120m = meteoData.hourly.wind_speed_120m[hourIdx] || wind80m * 1.2;
     const wind180m = meteoData.hourly.wind_speed_180m[hourIdx] || wind120m * 1.1;
 
-    // IA Logic 
-    let status = 'GO';
-    let message = "Ventana de vuelo inmejorable. Cielos despejados, vientos nominales y espacio aéreo seguro.";
+    // ─── GO / CAUTION / NO-GO Decision Engine (Drone) ─────────────────────────
+    let status: 'GO' | 'CAUTION' | 'NO-GO' = 'GO';
+    let message = "Ventana de vuelo inmejorable. Vientos nominales, GPS estable y espacio aéreo seguro.";
 
     if (currentMeteo.precipitation > 0) {
         status = 'NO-GO';
-        message = "Precipitación detectada. Riesgo de congelamiento de rotores o alas mojadas.";
-    } else if (currentMeteo.wind_gusts_10m > 30) {
+        message = "Precipitación detectada. Drones IP54+ requeridos. Riesgo de daño en motores y electrónica.";
+    } else if (currentMeteo.wind_gusts_10m > DRONE_LIMITS.gustsKmh) {
         status = 'NO-GO';
-        message = "Ráfagas extremas detectadas en superficie. Abortar despegues.";
-    } else if (kp > 4.5 && profile === 'dron') {
+        message = `Ráfagas extremas (${Math.round(currentMeteo.wind_gusts_10m)} km/h) en superficie. Abortar despegue — riesgo de fly-away.`;
+    } else if (wind120m > DRONE_LIMITS.wind120mKmh) {
         status = 'CAUTION';
-        message = "Tormenta geomagnética (Kp Alto). Probabilidad de pérdida de enlace satelital GPS o Fly-Away.";
-    } else if (wind120m > 25 && isParaglider) {
+        message = `Vientos altos a 400 ft (${Math.round(wind120m)} km/h). Posible drift al ganar altitud — limitar a < 200 ft.`;
+    } else if (kp > DRONE_LIMITS.kpStorm) {
         status = 'CAUTION';
-        message = "Vientos marginales a 400ft. Alto riesgo de deriva en vela. Mantenerse debajo de la capa de corte.";
-    } else if (isPlane) {
-        status = 'GO';
-        message = "Niveles de crucero despejados. Vuelo comercial e IFR sin restricciones reportadas.";
+        message = "Tormenta geomagnética (Kp alto). Riesgo de pérdida de enlace GPS o fly-away — usar Mode ATTI.";
+    } else if (currentMeteo.wind_gusts_10m > DRONE_LIMITS.gustsCautionKmh) {
+        status = 'CAUTION';
+        message = `Ráfagas marginales (${Math.round(currentMeteo.wind_gusts_10m)} km/h). Pilotos novatos aterricen.`;
+    } else if (currentMeteo.visibility < 3000) {
+        status = 'CAUTION';
+        message = "Visibilidad reducida. Mantener línea visual directa y no superar 120 m AGL.";
     }
 
     // Solar Window Calculation
     const sunriseStr = meteoData.daily.sunrise[0].split("T")[1];
     const sunsetStr = meteoData.daily.sunset[0].split("T")[1];
+    
+    // Calculate real solar progress percentage
+    const now = new Date();
+    const sunriseFull = new Date(meteoData.daily.sunrise[0]);
+    const sunsetFull = new Date(meteoData.daily.sunset[0]);
+    const totalDaylight = sunsetFull.getTime() - sunriseFull.getTime();
+    const elapsed = now.getTime() - sunriseFull.getTime();
+    const solarProgress = totalDaylight > 0
+      ? Math.max(0, Math.min(100, Math.round((elapsed / totalDaylight) * 100)))
+      : 0;
     
     // Simulating GPS Satellites via accuracy (Since JS Geolocation API only exposes accuracy in meters)
     // Max 30 sats, decreasing as accuracy gets worse.
@@ -76,6 +95,7 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
 
     return {
       timestamp: new Date().toISOString(),
+      gps: { lat, lon },
       status,
       aiMessage: message,
       surfaceWind: {
@@ -94,14 +114,14 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
       sun: {
         sunrise: sunriseStr,
         sunset: sunsetStr,
-        progressPercent: 50, // Lo dejaremos estático visualmente temporal, o se calcularía con Date(). Time API.
+        progressPercent: solarProgress,
       },
       verticalProfile: [
         { alt: '600ft+', speed: Math.round(wind180m), state: wind180m > 30 ? 'critical' : wind180m > 20 ? 'warn' : 'ok' },
         { alt: '400ft', speed: Math.round(wind120m), state: wind120m > 25 ? 'critical' : wind120m > 15 ? 'warn' : 'ok' },
         { alt: '200ft', speed: Math.round(wind80m), state: wind80m > 20 ? 'warn' : 'ok' },
-        { alt: 'SFC', speed: Math.round(wind10m), state: wind10m > 15 ? 'warn' : 'calm' }
-      ]
+        { alt: 'SFC', speed: Math.round(wind10m), state: wind10m > 15 ? 'warn' : 'calm' },
+      ],
     };
 
   } catch (error) {

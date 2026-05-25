@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import { Satellite, Map } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Tooltip, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -84,12 +85,22 @@ export interface AircraftState {
   positionSource: number; // 0=ADS-B, 1=ASTERIX, 2=MLAT
 }
 
+export interface RadarMetar {
+  icaoId: string;
+  name?: string;
+  lat?: number;
+  lon?: number;
+  fltcat?: string;
+  rawOb?: string;
+  [key: string]: unknown;
+}
+
 interface RadarMapProps {
   initialLat: number;
   initialLon: number;
-  metarList: any[];
+  metarList: RadarMetar[];
   selectedIcao: string | null;
-  onSelect: (metar: any) => void;
+  onSelect: (metar: RadarMetar) => void;
   onMapMove: (bbox: string) => void;
   aircraftList?: AircraftState[];
   showAircraft?: boolean;
@@ -106,6 +117,11 @@ export default function RadarMap({
   showAircraft = true,
 }: RadarMapProps) {
   const [mapSessionKey] = useState(() => Math.random().toString(36).substring(7));
+  const [isSatellite, setIsSatellite] = useState(false);
+
+  const tileUrl = isSatellite
+    ? "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+    : "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
 
   return (
     <div className="w-full h-[220px] rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative z-0 shrink-0">
@@ -134,7 +150,10 @@ export default function RadarMap({
         attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+          url={tileUrl}
+          subdomains={["0","1","2","3"]}
+          maxZoom={22}
+          maxNativeZoom={20}
         />
         <MapEvents onMoveEnd={(bbox) => onMapMove(bbox)} />
         
@@ -213,6 +232,23 @@ export default function RadarMap({
         ))}
       </MapContainer>
       
+      {/* SAT / MAP toggle button */}
+      <button
+        onClick={() => setIsSatellite(prev => !prev)}
+        className="absolute bottom-2 left-2 z-[500] flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-mono tracking-widest transition-all duration-300"
+        style={{
+          background: isSatellite ? 'rgba(0,240,255,0.15)' : 'rgba(0,0,0,0.65)',
+          borderColor: isSatellite ? '#00F0FF' : 'rgba(255,255,255,0.2)',
+          color: isSatellite ? '#00F0FF' : 'rgba(255,255,255,0.6)',
+          boxShadow: isSatellite ? '0 0 8px rgba(0,240,255,0.4)' : 'none',
+        }}
+      >
+        {isSatellite
+          ? <><Satellite size={10} /><span>SAT</span></>
+          : <><Map size={10} /><span>MAP</span></>
+        }
+      </button>
+
       {/* Radar Sweep Animation Overlay */}
       <div className="absolute inset-0 pointer-events-none z-[400] opacity-20">
          <div className="w-full h-full rounded-full border border-cyber-cyan absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-150 animate-ping" style={{ animationDuration: '4s' }}></div>

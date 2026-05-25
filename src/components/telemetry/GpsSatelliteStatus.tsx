@@ -1,8 +1,9 @@
 "use client";
-// SKILL: ui-ux-pro-max | stitch-premium-ux-master
 // GpsSatelliteStatus — Redesign Premium v4.0
+// i18n-ready
 
 import { Satellite } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface GpsSatelliteStatusProps {
   satellites: number;
@@ -11,6 +12,7 @@ interface GpsSatelliteStatusProps {
 }
 
 export default function GpsSatelliteStatus({ satellites, kpIndex, className = "" }: GpsSatelliteStatusProps) {
+  const { t } = useTranslation();
   const MAX_SAT = 32;
   const pct = Math.min(satellites / MAX_SAT, 1);
   const circumference = 2 * Math.PI * 36;
@@ -18,7 +20,7 @@ export default function GpsSatelliteStatus({ satellites, kpIndex, className = ""
 
   // Kp color
   const kpColor = kpIndex >= 6 ? '#ff0055' : kpIndex >= 4 ? '#ffb800' : '#00ff66';
-  const kpLabel = kpIndex >= 6 ? 'TORMENTA' : kpIndex >= 4 ? 'ACTIVO' : 'CALMO';
+  const kpLabel = kpIndex >= 6 ? t('kp_storm') : kpIndex >= 4 ? t('kp_active') : t('kp_calm');
 
   return (
     <div
@@ -33,7 +35,7 @@ export default function GpsSatelliteStatus({ satellites, kpIndex, className = ""
         </span>
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00ff66' }} />
-          <span className="text-[8px] font-data" style={{ color: '#00ff66' }}>SYNC</span>
+          <span className="text-[8px] font-data" style={{ color: '#00ff66' }}>{t('gps_sync')}</span>
         </div>
       </div>
 
@@ -59,7 +61,7 @@ export default function GpsSatelliteStatus({ satellites, kpIndex, className = ""
             style={{ color: 'var(--z-text)' }}>
             {satellites}
           </span>
-          <span className="text-[7px] font-data" style={{ color: 'var(--z-muted)' }}>SAT</span>
+          <span className="text-[7px] font-data" style={{ color: 'var(--z-muted)' }}>{t('gps_sat')}</span>
         </div>
       </div>
 

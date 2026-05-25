@@ -1,28 +1,23 @@
-export const getMockTelemetry = (profile: 'dron' | 'helicopter' | 'paraglider' | 'parachute' | 'plane') => {
-  const isParaglider = profile === 'paraglider';
-  const isPlane = profile === 'plane';
-  
-  let status = 'GO';
-  if (isParaglider) status = 'CAUTION';
-  if (isPlane) status = 'GO';
+import type { TelemetryData, FlightStatus } from '@/store/useStore';
 
-  let message = "Ventana 100% segura. Cero interferencia electromagnética (Kp 2.1). Ráfagas nulas a baja altitud.";
-  if (isParaglider) message = "Vientos sobre 15kts a 400ft. Riesgo de deriva alto para ultraligeros o velas sin propulsión.";
-  if (isPlane) message = "Niveles de crucero despejados. Vuelo comercial e IFR sin restricciones. Cero turbulencia reportada.";
+export const getMockTelemetry = (_profile: 'dron'): TelemetryData => {
+  const status: FlightStatus = 'GO';
+  const message = "Modo Demo — Datos de ejemplo. Sin señal GPS. Abre el navegador con HTTPS o acepta la geolocalización para ver datos reales.";
 
   return {
     timestamp: new Date().toISOString(),
-    status: status,
+    status,
     aiMessage: message,
+    gps: undefined,
     surfaceWind: {
       speedStr: "12",
       direction: "SW",
       angle: 210,
     },
-    maxGusts: isParaglider ? "25" : "18",
+    maxGusts: "18",
     satellites: 18,
     kpIndex: 2.1,
-    visibility: 10,
+    visibility: "10.0",      // string — matches TelemetryData.visibility
     temperature: 24,
     feelsLike: 26,
     rainChance: 0,
@@ -33,10 +28,10 @@ export const getMockTelemetry = (profile: 'dron' | 'helicopter' | 'paraglider' |
       progressPercent: 65,
     },
     verticalProfile: [
-      { alt: '400ft', speed: 28, state: isParaglider ? 'critical' : 'warn' },
-      { alt: '200ft', speed: 18, state: 'ok' },
-      { alt: '100ft', speed: 14, state: 'ok' },
-      { alt: 'SFC', speed: 8, state: 'calm' }
-    ]
+      { alt: '600ft+', speed: 18, state: 'ok' },
+      { alt: '400ft',  speed: 14, state: 'ok' },
+      { alt: '200ft',  speed: 10, state: 'calm' },
+      { alt: 'SFC',    speed: 8,  state: 'calm' },
+    ],
   };
 };

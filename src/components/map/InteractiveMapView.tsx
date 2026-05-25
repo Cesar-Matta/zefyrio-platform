@@ -1,27 +1,19 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Tooltip, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Tooltip, GeoJSON, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { 
-  Layers, 
-  Wind, 
-  CloudRain, 
-  Plane, 
-  Navigation, 
-  Map as MapIcon, 
-  Zap, 
-  AlertTriangle,
-  Radio,
-  Cloud,
-  Satellite,
-  Clock,
-  Skull,
-  Maximize
-} from 'lucide-react';
+import { Shield, Wind, Plane, Map as MapIcon, X, CloudRain, Navigation, RadioTower, Layers, Cloud, Sun, Crosshair, MapPin, Flag, Eye, AlertTriangle, ShieldAlert, Target, type LucideIcon } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import SmartAirportMarker from './SmartAirportMarker';
 import ForecastBar8Day from '../weather/ForecastBar8Day';
+import type { MetarData, AircraftPosition } from '@/lib/types/api';
+
+interface AirspaceProps {
+  type?: number | string;
+  icaoClass?: number | string;
+  activity?: number | string;
+}
 
 // ─── Icons & Components ──────────────────────────────────────────────────────
 
@@ -33,7 +25,54 @@ const HUD_COLORS = {
   purple: '#8B5CF6',
 };
 
-function MapEventsHandler({ onMoveEnd }: { onMoveEnd: (lat: number, lon: number, zoom: number, bbox: string) => void }) {
+const C = { E: 'E', F: 'F', G: 'G' };
+const T = { RESTRICTED: 'R', DANGER: 'D', PROHIBITED: 'P', CTR: 'CTR', TMA: 'TMA', SPECIAL: 'SUA' };
+const ACT = { MILITARY: 'MIL', GLIDING: 'GLD', HANGGLIDING: 'HG', RC: 'RC', PARACHUTING: 'PAR' };
+
+interface LayerDef { id: string; label: string; icon: LucideIcon; color: string; group: string; filter?: (p: AirspaceProps) => boolean; }
+
+const LAYER_DEFS: LayerDef[] = [
+  { id: 'classE',     label: 'Clase E',          icon: MapPin,     color: '#9B59B6', group: 'navigation',  filter: p => p.icaoClass === C.E },
+  { id: 'classF',     label: 'Clase F',          icon: MapPin,     color: '#6C3483', group: 'navigation',  filter: p => p.icaoClass === C.F },
+  { id: 'classG',     label: 'Clase G',          icon: MapPin,     color: '#27AE60', group: 'navigation',  filter: p => p.icaoClass === C.G },
+  { id: 'restricted', label: 'Área Restringida', icon: ShieldAlert,color: '#FF0055', group: 'navigation',  filter: p => p.type === T.RESTRICTED },
+  { id: 'danger',     label: 'Área de Peligro',  icon: AlertTriangle, color: '#FF6B00', group: 'navigation',  filter: p => p.type === T.DANGER },
+  { id: 'prohibited', label: 'Área Prohibida',   icon: X,          color: '#CC0000', group: 'navigation',  filter: p => p.type === T.PROHIBITED },
+  { id: 'ctr',        label: 'CTR',              icon: Target,     color: '#0088FF', group: 'navigation',  filter: p => p.type === T.CTR },
+  { id: 'tma',        label: 'TMA',              icon: Navigation, color: '#00CCFF', group: 'navigation',  filter: p => p.type === T.TMA },
+  { id: 'special',    label: 'Uso Especial',     icon: Flag,       color: '#C0392B', group: 'navigation',  filter: p => p.type === T.SPECIAL },
+  { id: 'military',   label: 'Área Militar',     icon: Shield,     color: '#808000', group: 'navigation',  filter: p => p.activity === ACT.MILITARY },
+  { id: 'gliding',    label: 'Sectores Planeo',  icon: Wind,       color: '#A8D08D', group: 'navigation',  filter: p => p.activity === ACT.GLIDING },
+  { id: 'hanggliding',label: 'Ala Delta',        icon: Wind,       color: '#FFA500', group: 'navigation',  filter: p => p.activity === ACT.HANGGLIDING },
+  { id: 'rc',         label: 'RC Airfields',     icon: RadioTower, color: '#00CED1', group: 'navigation',  filter: p => p.activity === ACT.RC },
+  { id: 'parachuting',label: 'Paracaidismo',     icon: Crosshair,  color: '#FFD700', group: 'navigation',  filter: p => p.activity === ACT.PARACHUTING },
+  { id: 'adsb',       label: 'Tráfico ADS-B en Vivo', icon: Plane, color: '#00FF66', group: 'traffic' },
+  { id: 'airports',   label: 'Aeropuertos y METAR', icon: RadioTower, color: '#00F0FF', group: 'airports' },
+  { id: 'radar',      label: 'Radar de Lluvia',  icon: CloudRain,  color: '#00BFFF', group: 'weather' },
+  { id: 'clouds',     label: 'Nubes (IR Satélite)', icon: Cloud,   color: '#FFFFFF', group: 'weather' },
+  { id: 'cloudsVis',  label: 'Nubes (Visible)',  icon: Sun,        color: '#FFFFAA', group: 'weather' },
+  { id: 'satellite',  label: 'Satélite Visual',  icon: Eye,        color: '#94A3B8', group: 'base' },
+];
+
+const LAYER_INITIAL: Record<string, boolean> = {
+  classE: false, classF: false, classG: false,
+  restricted: true, danger: true, prohibited: true, ctr: true, tma: false, special: false,
+  military: false, gliding: false, hanggliding: false, rc: false, parachuting: false,
+  adsb: true, radar: false, clouds: true, cloudsVis: false, satellite: false, airports: true,
+};
+
+const GROUP_META: Record<string, { label: string; icon: LucideIcon; accent: string }> = {
+  weather:     { label: 'METEOROLOGÍA',  icon: CloudRain,    accent: '#00BFFF' },
+  navigation:  { label: 'NAVEGACIÓN',    icon: MapIcon,      accent: '#FF0055' },
+  traffic:     { label: 'TRÁFICO VIVO',  icon: Plane,        accent: '#00FF66' },
+  airports:    { label: 'AERÓDROMOS',    icon: RadioTower,   accent: '#00F0FF' },
+  base:        { label: 'MAPA BASE',     icon: Layers,       accent: '#94A3B8' },
+};
+
+function MapEventsHandler({ onMoveEnd, onDoubleClick }: {
+  onMoveEnd: (lat: number, lon: number, zoom: number, bbox: string) => void;
+  onDoubleClick?: (lat: number, lon: number) => void;
+}) {
   const map = useMapEvents({
     moveend: () => {
       const center = map.getCenter();
@@ -41,6 +80,9 @@ function MapEventsHandler({ onMoveEnd }: { onMoveEnd: (lat: number, lon: number,
       const bounds = map.getBounds();
       const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
       onMoveEnd(center.lat, center.lng, zoom, bbox);
+    },
+    dblclick: (e) => {
+      if (onDoubleClick) onDoubleClick(e.latlng.lat, e.latlng.lng);
     },
   });
   return null;
@@ -61,63 +103,56 @@ const createAircraftIcon = (trueTrack: number, category: string) => {
   });
 };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
-
-interface LayerState {
-  satellite: boolean;
-  radar: boolean;
-  wind: boolean;
-  adsb: boolean;
-  metar: boolean;
-  airports: boolean;
-  radio: boolean;
-  notams: boolean;
-  nofly: boolean;
-  clouds: boolean;
+interface InteractiveMapViewProps {
+  initialLat: number;
+  initialLon: number;
+  onSyncLocation?: (lat: number, lon: number) => void;
 }
 
-export default function InteractiveMapView({ initialLat, initialLon }: { initialLat: number, initialLon: number }) {
+export default function InteractiveMapView({ initialLat, initialLon, onSyncLocation }: InteractiveMapViewProps) {
   const { isDark } = useTheme();
-  const [layers, setLayers] = useState<LayerState>({
-    satellite: true, radar: true, wind: false, adsb: true,
-    metar: true, airports: false, radio: false, notams: true,
-    nofly: true, clouds: true,
-  });
-  
+  const [layers, setLayers] = useState<Record<string, boolean>>(LAYER_INITIAL);
   const [showControls, setShowControls] = useState(true);
-  const [aircrafts, setAircrafts] = useState<any[]>([]);
-  const [notams, setNotams] = useState<any[]>([]);
-  const [metars, setMetars] = useState<any[]>([]);
-  const [rainTimestamp, setRainTimestamp] = useState<number | null>(null);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [aircrafts, setAircrafts] = useState<AircraftPosition[]>([]);
+  const [metars, setMetars] = useState<MetarData[]>([]);
+  const [tafs, setTafs] = useState<Array<{ icaoId: string; rawTAF?: string }>>([]);
+  const [notams, setNotams] = useState<Array<{ icaoId: string; id?: string; content?: string }>>([]);
+  const [rainPath, setRainPath] = useState<string | null>(null);
+  const [airspaces, setAirspaces] = useState<any[]>([]);
   
   const [mapState, setMapState] = useState({
     lat: initialLat, lon: initialLon, zoom: 9,
     bbox: `${initialLat-1},${initialLon-1},${initialLat+1},${initialLon+1}`
   });
 
-  // Fetch RainViewer Timestamp
   useEffect(() => {
     fetch('https://api.rainviewer.com/public/weather-maps.json')
       .then(res => res.json())
-      .then(data => {
+      .then(data => { 
         if (data.radar?.past?.length > 0) {
-          setRainTimestamp(data.radar.past[data.radar.past.length - 1].time);
-        }
+          const pathVal = data.radar.past[data.radar.past.length - 1].path;
+          console.log("RainViewer latest past path loaded:", pathVal);
+          setRainPath(pathVal); 
+        } 
       })
-      .catch(err => console.error("RainViewer TS Error:", err));
+      .catch(err => {
+        console.error("RainViewer TS Error:", err);
+        // Fallback: usar un path aproximado o vacío, o el de e780b0ed03f4
+        setRainPath('/v2/radar/e780b0ed03f4');
+      });
   }, []);
 
   const handleMapMove = useCallback((lat: number, lon: number, zoom: number, bbox: string) => {
     setMapState({ lat, lon, zoom, bbox });
   }, []);
 
-  // Sync ADS-B
   useEffect(() => {
     if (!layers.adsb) return;
     const fetchAdsb = async () => {
       try {
         const res = await fetch(`/api/adsb?bbox=${mapState.bbox}`);
-        const data = await res.json();
+        const data = await res.json() as { aircraft?: AircraftPosition[] };
         if (data.aircraft) setAircrafts(data.aircraft);
       } catch (err) { console.error("ADS-B Fetch Error:", err); }
     };
@@ -126,33 +161,44 @@ export default function InteractiveMapView({ initialLat, initialLon }: { initial
     return () => clearInterval(interval);
   }, [layers.adsb, mapState.bbox]);
 
-  // Sync NOTAMs & METARs
   useEffect(() => {
-    const fetchAeroData = async () => {
-      try {
-        const [nRes, mRes] = await Promise.all([
-          fetch(`/api/notams?lat=${mapState.lat}&lon=${mapState.lon}&radius=80`),
-          fetch(`/api/aero?lat=${mapState.lat}&lon=${mapState.lon}`)
-        ]);
-        const nData = await nRes.json();
-        const mData = await mRes.json();
-        if (nData.items) setNotams(nData.items);
-        if (mData.metar) setMetars(mData.metar);
-      } catch (err) { console.error("Aero Fetch Error:", err); }
-    };
-    fetchAeroData();
+    // Re-fetch aeronautical data when map center changes
+    fetch(`/api/aero?lat=${mapState.lat}&lon=${mapState.lon}`)
+      .then(r => r.json())
+      .then(d => { 
+        if (d.metar) setMetars(d.metar); 
+        if (d.taf) setTafs(d.taf);
+        if (d.notams) setNotams(d.notams);
+      })
+      .catch(() => {});
   }, [mapState.lat, mapState.lon]);
 
+  useEffect(() => {
+    const parts = mapState.bbox.split(',');
+    if (parts.length !== 4) return;
+    const [south, west, north, east] = parts;
+    fetch(`/api/airspaces?south=${south}&west=${west}&north=${north}&east=${east}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.features) setAirspaces(d.features);
+      })
+      .catch(() => {});
+  }, [mapState.bbox]);
+
   const baseMapUrl = layers.satellite 
-    ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    ? "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     : isDark 
-      ? "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+      ? "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" // Kept for HUD vector contrast, or can be replaced with Google Maps vector:
+      // "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+      : "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+ 
+  // Let's explicitly set both dark/light vector and satellite to Google Maps
+  const googleVectorUrl = "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+  const googleSatelliteUrl = "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}";
+  const activeBaseUrl = layers.satellite ? googleSatelliteUrl : googleVectorUrl;
 
   return (
     <div className="w-full h-full relative z-0">
-      
-      {/* HUD Layer Control */}
       <div className="absolute right-4 top-4 z-[1000] flex flex-col items-end">
         <button 
           onClick={() => setShowControls(!showControls)}
@@ -165,82 +211,96 @@ export default function InteractiveMapView({ initialLat, initialLon }: { initial
         {showControls && (
           <div className="mt-2 p-3 rounded-2xl shadow-xl border backdrop-blur-md animate-in slide-in-from-right w-48"
             style={{ background: 'var(--z-nav-bg)', borderColor: 'var(--z-border)' }}>
-            <div className="flex flex-col gap-2">
-              <LayerButton label="Satélite Visual" icon={Satellite} active={layers.satellite} onClick={() => setLayers(p => ({...p, satellite: !p.satellite}))} />
-              <LayerButton label="Nubes Infrarrojas" icon={Cloud} active={layers.clouds} onClick={() => setLayers(p => ({...p, clouds: !p.clouds}))} color={HUD_COLORS.purple} />
-              <LayerButton label="Radar Precipit." icon={CloudRain} active={layers.radar} onClick={() => setLayers(p => ({...p, radar: !p.radar}))} />
-              <LayerButton label="Tráfico ADS-B" icon={Plane} active={layers.adsb} onClick={() => setLayers(p => ({...p, adsb: !p.adsb}))} />
-              <LayerButton label="Aeropuertos OACI" icon={Navigation} active={layers.metar} onClick={() => setLayers(p => ({...p, metar: !p.metar}))} />
-              <hr className="border-white/5 my-1" />
-              <LayerButton label="Zonas WAR (NOTAM)" icon={Zap} active={layers.notams} onClick={() => setLayers(p => ({...p, notams: !p.notams}))} color={HUD_COLORS.amber} />
-              <LayerButton label="No-Fly Zones" icon={Skull} active={layers.nofly} onClick={() => setLayers(p => ({...p, nofly: !p.nofly}))} color={HUD_COLORS.red} />
-            </div>
+            {openGroup ? (
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--z-border)' }}>
+                  <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color: GROUP_META[openGroup].accent }}>
+                    {React.createElement(GROUP_META[openGroup].icon, { className: 'w-3 h-3' })} {GROUP_META[openGroup].label}
+                  </span>
+                  <button onClick={() => setOpenGroup(null)} className="opacity-40 hover:opacity-100 transition-opacity"><X className="w-3 h-3"/></button>
+                </div>
+                {LAYER_DEFS.filter(l => l.group === openGroup).map(l => (
+                   <LayerButton key={l.id} label={l.label} icon={l.icon} active={layers[l.id]} onClick={() => setLayers(p => ({...p, [l.id]: !p[l.id]}))} color={l.color} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {Object.keys(GROUP_META).map(group => (
+                  <button key={group} onClick={() => setOpenGroup(group)} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                    {React.createElement(GROUP_META[group].icon, { className: 'w-4 h-4', style: { color: GROUP_META[group].accent } })}
+                    <span className="text-[10px] font-bold text-white/70">{GROUP_META[group].label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      <div className="absolute top-4 left-4 z-[1000]">
-         <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 font-mono text-[9px] text-white flex items-center gap-2">
-           <Clock className="w-3.5 h-3.5 text-cyber-cyan" />
-           <span>{mapState.lat.toFixed(4)}, {mapState.lon.toFixed(4)} • ZOOM {mapState.zoom} • {new Date().toLocaleTimeString()}</span>
-           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-         </div>
-      </div>
-
-      <MapContainer 
-        center={[initialLat, initialLon]} zoom={9} 
-        style={{ height: '100%', width: '100%', background: isDark ? '#020617' : '#f0f2f5' }}
-        zoomControl={false} attributionControl={false}
-        maxZoom={18}
-      >
-        <MapEventsHandler onMoveEnd={handleMapMove} />
+      <MapContainer center={[initialLat, initialLon]} zoom={9} style={{ height: '100%', width: '100%', background: isDark ? '#020617' : '#f0f2f5' }} zoomControl={false} attributionControl={false} maxZoom={18} doubleClickZoom={!onSyncLocation}>
+        <MapEventsHandler onMoveEnd={handleMapMove} onDoubleClick={onSyncLocation} />
+        <TileLayer url={activeBaseUrl} subdomains={['0','1','2','3']} maxZoom={18} maxNativeZoom={17} />
         
-        <TileLayer 
-          url={baseMapUrl} 
-          maxZoom={18} 
-          maxNativeZoom={17} // Scale zoom 17 tiles if 18 doesn't exist
-        />
-        
-        {/* RainViewer Layers with Dynamic Timestamp */}
-        {layers.clouds && rainTimestamp && (
-          <TileLayer 
-            url={`https://tilecache.rainviewer.com/v2/satellite/${rainTimestamp}/256/{z}/{x}/{y}/2/0_0.png`}
-            opacity={0.4}
-            maxNativeZoom={10} // Higher scaling for low-res satellite
-            maxZoom={18}
+        {layers.radar && rainPath && (
+          <TileLayer
+            url={`https://tilecache.rainviewer.com${rainPath}/256/{z}/{x}/{y}/2/1_1.png`}
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
           />
         )}
 
-        {layers.radar && rainTimestamp && (
-          <TileLayer 
-            url={`https://tilecache.rainviewer.com/v2/radar/${rainTimestamp}/256/{z}/{x}/{y}/2/1_1.png`}
-            opacity={0.6}
-            maxNativeZoom={15} 
-            maxZoom={18}
+        {layers.clouds && (
+          <TileLayer
+            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch13/{z}/{x}/{y}.png"
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
           />
         )}
 
-        {layers.metar && metars.map((m) => <SmartAirportMarker key={m.icaoId} metar={m} />)}
+        {layers.cloudsVis && (
+          <TileLayer
+            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch02/{z}/{x}/{y}.png"
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
+          />
+        )}
 
-        {layers.notams && notams.map((notam, idx) => {
-          const geom = notam.properties?.geometry;
-          if (geom?.type === "Point") {
-            return (
-              <Marker key={`notam-${idx}`} position={[geom.coordinates[1], geom.coordinates[0]]}
-                icon={L.divIcon({
-                  className: 'notam-icon',
-                  html: `<div style="width:14px; height:14px; border:2px solid ${HUD_COLORS.red}; border-radius:50%; background:${HUD_COLORS.red}40; animation: pulse 2s infinite;"></div>`,
-                  iconSize: [14, 14]
-                })}>
-                <Popup><div className="max-w-[200px] text-[10px] font-mono p-1">
-                  <div className="font-bold text-red-500 mb-1">WARNING: NOTAM {notam.properties.notamNumber}</div>
-                  {notam.properties.notamEvent.text}
-                </div></Popup>
-              </Marker>
-            );
-          }
-          return null;
+        {/* ── Marcadores de Espacio Aéreo GeoJSON ── */}
+        {airspaces.map((f, idx) => {
+          const typeDef = LAYER_DEFS.find(l => l.filter && l.filter(f.properties));
+          if (!typeDef || !layers[typeDef.id]) return null;
+          return (
+            <GeoJSON
+              key={`airspace-${f.properties._id || f.properties.name || idx}`}
+              data={f}
+              style={{
+                color: typeDef.color,
+                weight: 1.5,
+                fillColor: typeDef.color,
+                fillOpacity: 0.2
+              }}
+            >
+              <Tooltip sticky>
+                <div className="font-mono text-[9px] bg-black/90 text-white p-2 rounded border border-white/10">
+                  <div className="font-bold uppercase tracking-wider" style={{ color: typeDef.color }}>{f.properties.name || 'Área Restringida'}</div>
+                  <div className="opacity-60 mt-1">LÍMITE SUPERIOR: {f.properties.upperLimit?.value ? `${f.properties.upperLimit.value} ${f.properties.upperLimit.unit === 1 ? 'FT' : 'FL'}` : 'SFC'}</div>
+                  <div className="opacity-60">LÍMITE INFERIOR: {f.properties.lowerLimit?.value ? `${f.properties.lowerLimit.value} ${f.properties.lowerLimit.unit === 1 ? 'FT' : 'FL'}` : 'SFC'}</div>
+                </div>
+              </Tooltip>
+            </GeoJSON>
+          );
         })}
+
+        {layers.airports && metars
+          .filter((v, i, a) => a.findIndex(t => t.icaoId === v.icaoId) === i)
+          .map((m) => (
+            <SmartAirportMarker 
+              key={m.icaoId} 
+              metar={m} 
+              taf={tafs.find(t => t.icaoId === m.icaoId)}
+            notams={notams.filter(n => n.icaoId === m.icaoId)}
+          />
+        ))}
 
         {layers.adsb && aircrafts.map((ac) => (
           <Marker key={ac.icao24} position={[ac.lat, ac.lon]} icon={createAircraftIcon(ac.trueTrack, String(ac.category))}>
@@ -252,7 +312,7 @@ export default function InteractiveMapView({ initialLat, initialLon }: { initial
                 </div>
                 <div className="flex justify-between">
                   <span className="opacity-60">ALT</span>
-                  <span>{Math.round(ac.baroAltitude * 3.28084)} FT</span>
+                  <span>{Math.round((ac.baroAltitude ?? 0) * 3.28084)} FT</span>
                 </div>
               </div>
             </Tooltip>
@@ -280,8 +340,8 @@ export default function InteractiveMapView({ initialLat, initialLon }: { initial
   );
 }
 
-function LayerButton({ label, icon: Icon, active, onClick, color }: { 
-  label: string, icon: any, active: boolean, onClick: () => void, color?: string 
+function LayerButton({ label, icon: Icon, active, onClick, color }: {
+  label: string, icon: LucideIcon, active: boolean, onClick: () => void, color?: string
 }) {
   return (
     <button onClick={onClick} className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-xl transition-all duration-200 border ${active ? 'border-white/10' : 'border-transparent'}`}

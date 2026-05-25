@@ -1,10 +1,9 @@
 "use client";
-// SKILL: ui-ux-pro-max | stitch-premium-ux-master
 // CopilotStatus — Redesign Premium v4.0
-// Stitch Design System: Zefyrio Avionics (Dark) / Zefyrio Horizon (Light)
+// i18n-ready
 
 import { ShieldAlert, ShieldCheck, ShieldX, ChevronRight } from "lucide-react";
-import { useTheme } from "@/components/providers/ThemeProvider";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface CopilotStatusProps {
   status: string;
@@ -13,15 +12,15 @@ interface CopilotStatusProps {
 }
 
 export default function CopilotStatus({ status, aiMessage, profileLabel }: CopilotStatusProps) {
-  const { isDark } = useTheme();
+  const { t } = useTranslation();
 
   const cfg = {
-    GO:      { Icon: ShieldCheck, accent: '#00ff66', label: 'GO — DESPEGUE AUTORIZADO',   bg: 'rgba(0,255,102,0.08)',   border: 'rgba(0,255,102,0.25)',   text: '#00ff66' },
-    CAUTION: { Icon: ShieldAlert, accent: '#ffb800', label: 'CAUTION — PRECAUCIÓN',       bg: 'rgba(255,184,0,0.08)',   border: 'rgba(255,184,0,0.30)',   text: '#ffb800' },
-    'NO-GO': { Icon: ShieldX,    accent: '#ff0055', label: 'NO-GO — VUELO CANCELADO',    bg: 'rgba(255,0,85,0.08)',    border: 'rgba(255,0,85,0.30)',    text: '#ff0055' },
-  }[status] ?? { Icon: ShieldAlert, accent: '#ffb800', label: status, bg: 'rgba(255,184,0,0.08)', border: 'rgba(255,184,0,0.30)', text: '#ffb800' };
+    GO:      { Icon: ShieldCheck, accent: '#00ff66', labelKey: 'status_go'      as const, bg: 'rgba(0,255,102,0.08)',   border: 'rgba(0,255,102,0.25)',   text: '#00ff66' },
+    CAUTION: { Icon: ShieldAlert, accent: '#ffb800', labelKey: 'status_caution' as const, bg: 'rgba(255,184,0,0.08)',   border: 'rgba(255,184,0,0.30)',   text: '#ffb800' },
+    'NO-GO': { Icon: ShieldX,    accent: '#ff0055', labelKey: 'status_nogo'    as const, bg: 'rgba(255,0,85,0.08)',    border: 'rgba(255,0,85,0.30)',    text: '#ff0055' },
+  }[status] ?? { Icon: ShieldAlert, accent: '#ffb800', labelKey: 'status_caution' as const, bg: 'rgba(255,184,0,0.08)', border: 'rgba(255,184,0,0.30)', text: '#ffb800' };
 
-  const { Icon, accent, label, bg, border, text } = cfg;
+  const { Icon, accent, labelKey, bg, border, text } = cfg;
 
   return (
     <section
@@ -46,11 +45,11 @@ export default function CopilotStatus({ status, aiMessage, profileLabel }: Copil
           <div className="flex-1 min-w-0">
             <p className="text-[9px] uppercase tracking-[0.18em] font-semibold mb-0.5"
               style={{ color: 'var(--z-muted)' }}>
-              Análisis {profileLabel}
+              {t('status_analysis')} {profileLabel}
             </p>
             <h2 className="text-lg font-black tracking-tight leading-none font-heading"
               style={{ color: text }}>
-              {label}
+              {t(labelKey)}
             </h2>
           </div>
           <ChevronRight className="w-4 h-4 opacity-30 flex-shrink-0" style={{ color: text }} />

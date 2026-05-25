@@ -1,8 +1,9 @@
 "use client";
-// SKILL: ui-ux-pro-max | stitch-premium-ux-master
 // WindCompass — Redesign Premium v4.0
+// i18n-ready
 
 import { Navigation } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface WindCompassProps {
   surfaceWind: { speedStr: string; direction: string; angle: number; };
@@ -11,6 +12,8 @@ interface WindCompassProps {
 }
 
 export default function WindCompass({ surfaceWind, maxGusts, className = "" }: WindCompassProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       className={`rounded-2xl flex flex-col items-center justify-between p-4 relative overflow-hidden theme-transition ${className}`}
@@ -20,7 +23,7 @@ export default function WindCompass({ surfaceWind, maxGusts, className = "" }: W
       <div className="w-full flex items-center justify-between">
         <span className="text-[9px] uppercase tracking-[0.16em] font-semibold"
           style={{ color: 'var(--z-muted)' }}>
-          Viento
+          {t('wind_surface')}
         </span>
         <span className="text-[8px] font-data font-bold" style={{ color: 'var(--z-cyan)' }}>
           {surfaceWind.direction}
@@ -75,7 +78,7 @@ export default function WindCompass({ surfaceWind, maxGusts, className = "" }: W
 
       {/* Gusts */}
       <div className="w-full flex items-center justify-between px-1">
-        <span className="text-[8px] font-data" style={{ color: 'var(--z-muted)' }}>Ráfagas</span>
+        <span className="text-[8px] font-data" style={{ color: 'var(--z-muted)' }}>{t('wind_gusts')}</span>
         <span className="text-[11px] font-black font-data" style={{ color: '#ffb800' }}>
           {maxGusts} kts
         </span>

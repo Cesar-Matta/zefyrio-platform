@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { Cloud, Sun, CloudRain, CloudLightning, Wind } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Cloud, Sun, CloudRain, CloudLightning, Wind, RefreshCw } from 'lucide-react';
 
 interface DayForecast {
   date: string;
@@ -19,13 +19,17 @@ const getWeatherIcon = (code: number) => {
 
 export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number }) {
   const [forecast, setForecast] = useState<DayForecast[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchForecast = async () => {
-      try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`);
-        const data = await res.json();
-        
+  const fetchForecast = useCallback(async () => {
+    if (!lat || !lon) return;
+    setIsLoading(true);
+    try {
+      const timestamp = new Date().getTime(); // Cache busting
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&_t=${timestamp}`, { cache: 'no-store' });
+      const data = await res.json();
+      
+      if (data && data.daily) {
         const days = data.daily.time.map((t: string, i: number) => ({
           date: t,
           max: data.daily.temperature_2m_max[i],
@@ -33,36 +37,55 @@ export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number
           code: data.daily.weathercode[i]
         }));
         setForecast(days);
-      } catch (err) {
-        console.error("Forecast fetch error", err);
       }
-    };
-    fetchForecast();
+    } catch (err) {
+      console.error("Forecast fetch error", err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [lat, lon]);
 
-  if (!forecast.length) return null;
+  useEffect(() => {
+    fetchForecast();
+  }, [fetchForecast]);
+
+  if (!forecast.length && !isLoading) return null;
 
   return (
-    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[1000] w-[92%] max-w-[800px] overflow-x-auto no-scrollbar">
-      <div className="flex gap-2 p-3 bg-[#0b0d17]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl min-w-max">
-        {forecast.map((day, i) => {
-          const date = new Date(day.date);
-          const isToday = i === 0;
-          return (
-            <div key={day.date} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${isToday ? 'bg-white/5 border border-cyber-cyan/30' : ''}`}>
-              <span className="text-[10px] opacity-40 uppercase font-bold tracking-tighter">
-                {isToday ? 'Today' : date.toLocaleDateString('es-ES', { weekday: 'short' })}
-              </span>
-              <div className="p-1">
-                {getWeatherIcon(day.code)}
+    <div className="w-full flex flex-col gap-2 relative">
+      <div className="flex justify-between items-center px-1">
+        <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Próximos Días</span>
+        <button 
+          onClick={fetchForecast} 
+          disabled={isLoading}
+          className="p-1 rounded-md hover:bg-white/5 transition-colors disabled:opacity-50"
+          title="Actualizar pronóstico"
+        >
+          <RefreshCw className={`w-3 h-3 text-slate-400 ${isLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      <div className="w-full overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 min-w-max">
+          {forecast.map((day, i) => {
+            const date = new Date(day.date + 'T12:00:00Z'); // force midday to avoid timezone shifts
+            const isToday = i === 0;
+            return (
+              <div key={day.date} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${isToday ? 'bg-white/5 border border-cyber-cyan/30' : ''}`}>
+                <span className="text-[10px] opacity-40 uppercase font-bold tracking-tighter">
+                  {isToday ? 'Hoy' : date.toLocaleDateString('es-ES', { weekday: 'short' })}
+                </span>
+                <div className="p-1">
+                  {getWeatherIcon(day.code)}
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-bold">{Math.round(day.max)}°</span>
+                  <span className="text-[9px] opacity-30 font-mono">{Math.round(day.min)}°</span>
+                </div>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs font-bold">{Math.round(day.max)}°</span>
-                <span className="text-[9px] opacity-30 font-mono">{Math.round(day.min)}°</span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

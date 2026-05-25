@@ -3,6 +3,18 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Plane, Radio, Wind, AlertTriangle, Radar } from "lucide-react";
 import dynamic from 'next/dynamic';
 import type { AircraftState } from './RadarMap';
+import { useTranslation } from "@/lib/i18n/useTranslation";
+
+interface MetarStation {
+  icaoId: string;
+  name?: string;
+  fltcat?: string;
+  rawOb?: string;
+  lat?: number;
+  lon?: number;
+  clouds?: Array<{ base?: number }>;
+  [key: string]: unknown;
+}
 
 const RadarMap = dynamic(() => import('./RadarMap'), { 
   ssr: false, 
@@ -15,15 +27,16 @@ interface MetarBoardProps {
 }
 
 export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBoardProps) {
-  const [metarList, setMetarList] = useState<any[]>([]);
-  const [selectedMetar, setSelectedMetar] = useState<any>(null);
+  const { t } = useTranslation();
+  const [metarList, setMetarList] = useState<MetarStation[]>([]);
+  const [selectedMetar, setSelectedMetar] = useState<MetarStation | null>(null);
   const [loading, setLoading] = useState(true);
 
   // ─── ADS-B State ──────────────────────────────────────────────────────────
   const [aircraftList, setAircraftList] = useState<AircraftState[]>([]);
   const [showAircraft, setShowAircraft] = useState(true);
   const [adsbError, setAdsbError] = useState(false);
-  const currentBboxRef = useRef<string | null>(null); // Último BBOX conocido del mapa
+  const currentBboxRef = useRef<string | null>(null);
   const adsbIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── METAR fetch (acumulativo) ──────────────────────────────────────────────
@@ -34,7 +47,6 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
         ? `?bbox=${bboxOrLat}` 
         : `?lat=${bboxOrLat}&lon=${mapLon}`;
       
-      // Guardar BBOX actual para reusar en el polling ADS-B
       if (typeof bboxOrLat === 'string') {
         currentBboxRef.current = bboxOrLat;
       }
@@ -43,14 +55,15 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
       const apiResponse = await res.json();
       
       if (apiResponse.metar) {
-        const uniqueMetars = apiResponse.metar.filter((v: any, i: number, a: any[]) => 
-          a.findIndex(t => (t.icaoId === v.icaoId)) === i
+        const metars = apiResponse.metar as MetarStation[];
+        const uniqueMetars = metars.filter((v, i, a) =>
+          a.findIndex(t => t.icaoId === v.icaoId) === i
         );
-        
+
         setMetarList((prevList) => {
           const combined = [...prevList, ...uniqueMetars];
-          const deduplicated = combined.filter((v: any, i: number, a: any[]) => 
-            a.findIndex(t => (t.icaoId === v.icaoId)) === i
+          const deduplicated = combined.filter((v, i, a) =>
+            a.findIndex(t => t.icaoId === v.icaoId) === i
           );
           if (deduplicated.length > 2000) {
             return deduplicated.slice(deduplicated.length - 2000);
@@ -59,10 +72,10 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
         });
 
         if (uniqueMetars.length > 0) {
-          setSelectedMetar((prev: any) => {
+          setSelectedMetar((prev) => {
             if (!prev) return uniqueMetars[0];
-            const stillExists = uniqueMetars.find((m: any) => m.icaoId === prev.icaoId);
-            return stillExists ? stillExists : prev;
+            const stillExists = uniqueMetars.find((m) => m.icaoId === prev.icaoId);
+            return stillExists ?? prev;
           });
         }
       }
@@ -78,7 +91,6 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
     try {
       const res = await fetch(`/api/adsb?bbox=${bbox}`);
       if (!res.ok) {
-        // 429 o 503 — no tirar error visible, solo limpiar lista
         if (res.status === 429 || res.status === 503) {
           setAdsbError(true);
           return;
@@ -93,51 +105,32 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
     }
   }, []);
 
-  // ── Iniciar polling ADS-B cuando tenemos un BBOX ────────────────────────
   const startAdsbPolling = useCallback((bbox: string) => {
-    // Fetch inmediato
     fetchAdsbData(bbox);
-    
-    // Limpiar interval anterior si existe
     if (adsbIntervalRef.current) clearInterval(adsbIntervalRef.current);
-    
-    // Polling cada 15s (respeta el TTL del proxy OpenSky)
     adsbIntervalRef.current = setInterval(() => {
-      if (currentBboxRef.current) {
-        fetchAdsbData(currentBboxRef.current);
-      }
+      if (currentBboxRef.current) fetchAdsbData(currentBboxRef.current);
     }, 15_000);
   }, [fetchAdsbData]);
 
-  // ── Cuando el mapa se mueve, fetch METAR + ADS-B ─────────────────────────
   const handleMapMove = useCallback((bbox: string) => {
     currentBboxRef.current = bbox;
     fetchAeroData(bbox);
     if (showAircraft) startAdsbPolling(bbox);
   }, [fetchAeroData, showAircraft, startAdsbPolling]);
 
-  // ── Montar: fetch inicial ─────────────────────────────────────────────────
   useEffect(() => {
-    // Fetch METAR inicial
     fetchAeroData(initialLat, initialLon);
-
-    // Calcular BBOX inicial (~1.5° de radio ≈ ~165km) para ADS-B sin esperar moveend
     const delta = 1.5;
     const initialBbox = `${(initialLat - delta).toFixed(2)},${(initialLon - delta).toFixed(2)},${(initialLat + delta).toFixed(2)},${(initialLon + delta).toFixed(2)}`;
     currentBboxRef.current = initialBbox;
-    
-    // Arrancar el polling ADS-B inmediatamente si está habilitado
-    if (showAircraft) {
-      startAdsbPolling(initialBbox);
-    }
-
+    if (showAircraft) startAdsbPolling(initialBbox);
     return () => {
       if (adsbIntervalRef.current) clearInterval(adsbIntervalRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLat, initialLon]);
 
-  // ── Toggle ADS-B ──────────────────────────────────────────────────────────
   const toggleAircraft = () => {
     setShowAircraft(prev => {
       const next = !prev;
@@ -156,7 +149,9 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
       
       {/* Controles del Radar */}
       <div className="flex items-center justify-between px-1">
-        <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">Radar Táctico</span>
+        <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">
+          {t('metar_tactical_radar')}
+        </span>
         <button
           onClick={toggleAircraft}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[9px] font-mono tracking-widest transition-all ${
@@ -191,18 +186,20 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
       {adsbError && showAircraft && (
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FFB800]/10 border border-[#FFB800]/20">
           <Radar className="w-3 h-3 text-[#FFB800] shrink-0" />
-          <span className="text-[9px] font-mono text-[#FFB800]">ADS-B: Límite OpenSky alcanzado — reintentando...</span>
+          <span className="text-[9px] font-mono text-[#FFB800]">{t('metar_adsb_limit')}</span>
         </div>
       )}
 
       {loading && metarList.length === 0 && (
-        <div className="p-8 text-center text-cyber-cyan font-mono text-xs animate-pulse">Sintonizando Frecuencias METAR...</div>
+        <div className="p-8 text-center text-cyber-cyan font-mono text-xs animate-pulse">
+          {t('metar_scanning')}
+        </div>
       )}
 
       {!loading && metarList.length === 0 && (
         <div className="glass-panel p-6 rounded-3xl bg-[#111625]/50 border-white/10 flex flex-col items-center text-center">
           <AlertTriangle className="w-8 h-8 text-plasma-warn mb-3" />
-          <span className="text-sm text-gray-400 font-mono">No hay terminales aéreas en esta cuadrícula. Desplaza el radar para buscar.</span>
+          <span className="text-sm text-gray-400 font-mono">{t('metar_no_stations')}</span>
         </div>
       )}
 
@@ -211,9 +208,13 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
         <div className="glass-panel p-6 rounded-3xl relative bg-[#111625]/50 border-white/10 overflow-hidden shadow-2xl shrink-0">
           <div className="flex justify-between items-start mb-4">
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Estación Base Fix</span>
+              <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">
+                {t('metar_base_station')}
+              </span>
               <span className="text-3xl font-black text-white tracking-widest">{selectedMetar.icaoId}</span>
-              <span className="text-[10px] text-cyber-cyan font-mono mt-1 drop-shadow-md tracking-wider">{selectedMetar.name || "AEROPUERTO"}</span>
+              <span className="text-[10px] text-cyber-cyan font-mono mt-1 drop-shadow-md tracking-wider">
+                {selectedMetar.name || t('metar_airport')}
+              </span>
             </div>
             <div className="w-10 h-10 rounded-full bg-cyber-cyan/10 flex items-center justify-center border border-cyber-cyan/30 shrink-0">
               <Radio className={`w-5 h-5 text-cyber-cyan ${loading ? 'animate-ping' : 'animate-pulse'}`} />
@@ -221,7 +222,7 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
           </div>
 
           <div className="bg-black/40 rounded-xl p-4 border border-white/5 font-mono text-sm text-gray-300 leading-relaxed tracking-tight shadow-inner break-words">
-            <span className="text-radium-go font-bold">RAW METAR: </span>
+            <span className="text-radium-go font-bold">{t('metar_raw')} </span>
             <br/>
             <span className="opacity-80 leading-7">{selectedMetar.rawOb}</span>
           </div>
@@ -230,7 +231,7 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
             <div className="flex items-center gap-3 bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition cursor-pointer">
               <Plane className="w-6 h-6 text-indigo-400" />
               <div className="flex flex-col">
-                <span className="text-[9px] text-gray-500 uppercase tracking-widest">Cat. Vuelo</span>
+                <span className="text-[9px] text-gray-500 uppercase tracking-widest">{t('metar_flight_cat')}</span>
                 <span className={`font-black ${selectedMetar.fltcat === 'VFR' ? 'text-radium-go drop-shadow-[0_0_5px_#00ff66]' : selectedMetar.fltcat === 'IFR' || selectedMetar.fltcat === 'LIFR' ? 'text-crimson-nogo drop-shadow-[0_0_5px_#ff0055]' : 'text-plasma-warn drop-shadow-[0_0_5px_#ffb800]'}`}>
                   {selectedMetar.fltcat || 'VFR'}
                 </span>
@@ -240,8 +241,10 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
             <div className="flex items-center gap-3 bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition cursor-pointer">
               <Wind className="w-6 h-6 text-gray-400" />
               <div className="flex flex-col">
-                <span className="text-[9px] text-gray-500 uppercase tracking-widest">Techo Nubes</span>
-                <span className="font-black text-white text-xs">{selectedMetar.clouds?.[0]?.base ? `${selectedMetar.clouds[0].base}00 ft` : 'Despejado'}</span>
+                <span className="text-[9px] text-gray-500 uppercase tracking-widest">{t('metar_cloud_ceiling')}</span>
+                <span className="font-black text-white text-xs">
+                  {selectedMetar.clouds?.[0]?.base ? `${selectedMetar.clouds[0].base}00 ft` : t('metar_ceiling_clear')}
+                </span>
               </div>
             </div>
           </div>

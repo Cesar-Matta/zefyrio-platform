@@ -1,8 +1,9 @@
 "use client";
-// SKILL: ui-ux-pro-max | stitch-premium-ux-master
 // FlightWindow (Solar Window) — Redesign Premium v4.0
+// i18n-ready
 
 import { Sunrise, Sunset } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface FlightWindowProps {
   sun: {
@@ -14,6 +15,7 @@ interface FlightWindowProps {
 }
 
 export default function FlightWindow({ sun, className = "" }: FlightWindowProps) {
+  const { t } = useTranslation();
   const pct = Math.max(0, Math.min(100, sun.progressPercent));
   const isDaytime = pct > 0 && pct < 100;
   const progressColor = pct > 80 ? '#f97316' : pct > 60 ? '#fbbf24' : pct > 20 ? '#facc15' : '#f97316';
@@ -29,7 +31,7 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
           <Sunrise className="w-3 h-3" style={{ color: '#fbbf24' }} />
           <span className="text-[9px] uppercase tracking-[0.16em] font-semibold"
             style={{ color: 'var(--z-muted)' }}>
-            Ventana de Vuelo Solar
+            {t('telem_flight_window')}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -39,7 +41,7 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
           />
           <span className="text-[8px] font-data"
             style={{ color: isDaytime ? '#00ff66' : '#6366f1' }}>
-            {isDaytime ? 'DIURNO' : 'NOCTURNO'}
+            {isDaytime ? t('telem_daytime') : t('telem_nighttime')}
           </span>
         </div>
       </div>

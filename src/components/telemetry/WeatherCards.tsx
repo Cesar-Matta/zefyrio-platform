@@ -1,8 +1,9 @@
 "use client";
-// SKILL: ui-ux-pro-max | stitch-premium-ux-master
 // WeatherCards — Redesign Premium v4.0
+// i18n-ready
 
 import { Thermometer, Droplets } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface WeatherCardsProps {
   temperature: number;
@@ -13,6 +14,7 @@ interface WeatherCardsProps {
 }
 
 export default function WeatherCards({ temperature, feelsLike, rainChance, clouds, className = "" }: WeatherCardsProps) {
+  const { t } = useTranslation();
   const tempColor = temperature > 35 ? '#ff5733' : temperature < 5 ? '#60a5fa' : 'var(--z-text)';
   const rainColor = rainChance > 70 ? '#3b82f6' : rainChance > 40 ? '#60a5fa' : '#00ff66';
 
@@ -27,7 +29,7 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
           <Thermometer className="w-3 h-3" style={{ color: '#f97316' }} />
           <span className="text-[9px] uppercase tracking-[0.16em] font-semibold"
             style={{ color: 'var(--z-muted)' }}>
-            Temperatura
+            {t('weather_temp')}
           </span>
         </div>
 
@@ -40,7 +42,7 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
         </div>
 
         <span className="text-[10px] font-data mt-1" style={{ color: 'var(--z-muted)' }}>
-          Sensación: {feelsLike}°
+          {t('weather_feels')}: {feelsLike}°
         </span>
       </div>
 
@@ -53,7 +55,7 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
           <Droplets className="w-3 h-3" style={{ color: '#60a5fa' }} />
           <span className="text-[9px] uppercase tracking-[0.16em] font-semibold"
             style={{ color: 'var(--z-muted)' }}>
-            Lluvia
+            {t('weather_rain')}
           </span>
         </div>
 
@@ -68,7 +70,7 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
         {/* Cloud bar */}
         <div className="mt-2">
           <div className="flex justify-between mb-1">
-            <span className="text-[8px] font-data" style={{ color: 'var(--z-muted)' }}>Nubes</span>
+            <span className="text-[8px] font-data" style={{ color: 'var(--z-muted)' }}>{t('weather_clouds')}</span>
             <span className="text-[8px] font-data font-bold" style={{ color: 'var(--z-muted)' }}>{clouds}%</span>
           </div>
           <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--z-surface)' }}>

@@ -3,10 +3,11 @@
 // NotamAlert — Critical NOTAMs Dashboard Widget
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle, MapPin, Clock, ChevronRight, Info } from 'lucide-react';
+import { AlertTriangle, Clock, ChevronRight, Info } from 'lucide-react';
+import type { NotamItem } from '@/lib/types/api';
 
 export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
-  const [notams, setNotams] = useState<any[]>([]);
+  const [notams, setNotams] = useState<NotamItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,8 +20,8 @@ export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
           const critical = data.items.slice(0, 3);
           setNotams(critical);
         }
-      } catch (err) {
-        console.error("NotamAlert fetch error:", err);
+      } catch (error) {
+        console.error("NotamAlert fetch error:", error);
       } finally {
         setLoading(false);
       }
@@ -65,7 +66,7 @@ export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
                 </span>
                 <div className="flex items-center gap-1 text-[9px] text-white/40">
                   <Clock className="w-3 h-3" />
-                  <span>EFECTIVO: {new Date(notam.properties.startDate).toLocaleDateString()}</span>
+                  <span>EFECTIVO: {notam.properties.notamEvent?.effectiveStart ? new Date(notam.properties.notamEvent.effectiveStart).toLocaleDateString() : '—'}</span>
                 </div>
               </div>
               
