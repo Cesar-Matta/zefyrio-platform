@@ -47,46 +47,83 @@ export default function Home() {
 
   useEffect(() => {
     const bootAvionics = async () => {
-      // Mostrar la app inmediatamente con mock — GPS actualiza en background
+      // Mostrar skeleton inmediatamente, sin bloquear
       const mock = getMockTelemetry('dron');
       setTelemetryData(mock);
-      setLoadingTelemetry(false);
 
-      const handleSuccess = async (lat: number, lon: number, acc: number) => {
+      const loadTelemetry = async (lat: number, lon: number, acc: number) => {
+        setCoords({ lat, lon });
+        setLoadingTelemetry(true);
         try {
-          setCoords({ lat, lon });
-          setLoadingTelemetry(true);
           const data = await fetchLiveTelemetry(activeProfile, lat, lon, acc);
-          if (data) setTelemetryData(data);
-          else throw new Error('no data');
-          setOfflineMode(false);
-        } catch {
-          setOfflineMode(true);
-        }
+          if (data) { setTelemetryData(data); setOfflineMode(false); }
+        } catch { setOfflineMode(true); }
         setLoadingTelemetry(false);
       };
 
-      const handleFallback = async (_reason: string) => {
-        try {
-          const res = await fetch('https://ipapi.co/json/');
-          const ipData = await res.json() as { latitude?: number; longitude?: number };
-          if (ipData.latitude && ipData.longitude) {
-            await handleSuccess(ipData.latitude, ipData.longitude, 5000);
-          } else throw new Error('no ip');
-        } catch {
-          setOfflineMode(true);
+      // IP geolocation — múltiples servicios como cadena de fallback
+      const getLocationByIP = async (): Promise<{lat: number; lon: number} | null> => {
+        const services = [
+          async () => {
+            const r = await fetch('https://ipapi.co/json/');
+            const d = await r.json() as {latitude?: number; longitude?: number};
+            if (d.latitude && d.longitude) return { lat: d.latitude, lon: d.longitude };
+            throw new Error('no data');
+          },
+          async () => {
+            const r = await fetch('https://ip-api.com/json/');
+            const d = await r.json() as {lat?: number; lon?: number; status?: string};
+            if (d.status === 'success' && d.lat && d.lon) return { lat: d.lat, lon: d.lon };
+            throw new Error('no data');
+          },
+          async () => {
+            const r = await fetch('https://ipwho.is/');
+            const d = await r.json() as {latitude?: number; longitude?: number; success?: boolean};
+            if (d.success && d.latitude && d.longitude) return { lat: d.latitude, lon: d.longitude };
+            throw new Error('no data');
+          },
+        ];
+        for (const svc of services) {
+          try { return await svc(); } catch { continue; }
         }
+        return null;
       };
 
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => handleSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
-          (err) => handleFallback(`GPS error (${err.message})`),
-          { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
-        );
-      } else {
-        handleFallback(t('gps_no_support'));
-      }
+      // GPS del navegador como promesa con timeout
+      const getGPS = (): Promise<{lat: number; lon: number; acc: number} | null> =>
+        new Promise((resolve) => {
+          if (!('geolocation' in navigator)) { resolve(null); return; }
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, acc: pos.coords.accuracy }),
+            () => resolve(null),
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+          );
+          // Fallback si el browser no dispara el callback en 9s
+          setTimeout(() => resolve(null), 9000);
+        });
+
+      // Lanzar ambos en paralelo — el que llegue primero carga los datos
+      let resolved = false;
+
+      getLocationByIP().then((loc) => {
+        if (loc && !resolved) {
+          resolved = true;
+          loadTelemetry(loc.lat, loc.lon, 5000);
+        }
+      });
+
+      getGPS().then((loc) => {
+        if (loc) {
+          // GPS siempre actualiza aunque IP ya haya cargado (más preciso)
+          resolved = true;
+          loadTelemetry(loc.lat, loc.lon, loc.acc);
+        } else if (!resolved) {
+          // Ninguno funcionó — quedarse con mock y marcar offline
+          resolved = true;
+          setOfflineMode(true);
+          setLoadingTelemetry(false);
+        }
+      });
     };
 
     bootAvionics();
