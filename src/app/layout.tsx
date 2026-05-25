@@ -35,6 +35,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // viewport-fit=cover lets the HUD bleed under the iOS notch / dynamic island
+  // and exposes safe-area-inset-* CSS env() values for future padding work.
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {

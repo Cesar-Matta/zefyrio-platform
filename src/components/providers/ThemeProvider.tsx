@@ -1,6 +1,13 @@
 "use client";
 // SKILL: zustand-store-ts | react-best-practices
-// Theme toggle store — persisted in localStorage
+// Theme toggle store — persisted in localStorage.
+//
+// Hydration safety: the initial useState value MUST match what the server
+// rendered, otherwise React 18+/Next 16 throws a hydration mismatch and
+// (on mobile especially) shows a blank white screen until JS recovers.
+// We always start with the SSR default ("dark", matching the data-theme
+// attribute hardcoded on <html>) and then hydrate the real theme inside
+// useEffect, where window/localStorage are safe to touch.
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
@@ -18,15 +25,30 @@ const ThemeContext = createContext<ThemeContextValue>({
   isDark: true,
 });
 
-function readInitialTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const stored = localStorage.getItem("zefyrio-theme") as Theme | null;
-  if (stored === "dark" || stored === "light") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
+const STORAGE_KEY = "zefyrio-theme";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(readInitialTheme);
+  // SSR-stable initial value — matches data-theme="dark" on <html>.
+  const [theme, setTheme] = useState<Theme>("dark");
+
+  // Hydrate persisted/system preference after mount (client-only).
+  // The synchronous setState here is intentional: it's a one-time post-mount
+  // hydration to avoid an SSR/CSR mismatch. The alternative (initializing
+  // useState from localStorage) breaks hydration on mobile.
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+      if (stored === "dark" || stored === "light") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTheme(stored);
+        return;
+      }
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setTheme(prefersDark ? "dark" : "light");
+    } catch {
+      // localStorage can throw in private mode on iOS Safari — keep default.
+    }
+  }, []);
 
   // Sync DOM attribute when theme changes (external system synchronisation).
   useEffect(() => {
@@ -37,7 +59,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme((prev) => {
       const next = prev === "dark" ? "light" : "dark";
       document.documentElement.setAttribute("data-theme", next);
-      localStorage.setItem("zefyrio-theme", next);
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // ignore quota/private-mode failures
+      }
       return next;
     });
   };

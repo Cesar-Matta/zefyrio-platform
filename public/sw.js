@@ -1,17 +1,19 @@
 // ═══════════════════════════════════════════════════════════════════
-// ZEFYRIO — Service Worker v2.0
-// Strategy: Cache-First for static assets, Network-First for API data
-// Offline fallback page for complete disconnection scenarios
+// ZEFYRIO — Service Worker v3.0
+// Strategy: Network-First for app shell (HTML/JS/CSS) so users always
+// receive the freshest page; Cache-First for tiles/images; Network-First
+// for API data. Offline fallback for complete disconnection scenarios.
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'zefyrio-v2';
+// IMPORTANT: bump CACHE_VERSION to purge old caches that may be serving
+// a stale (possibly broken) page.tsx to returning mobile users.
+const CACHE_VERSION = 'zefyrio-v3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const API_CACHE = `${CACHE_VERSION}-api`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
 // Critical assets — always available offline
 const PRECACHE_ASSETS = [
-  '/',
   '/manifest.json',
   '/offline.html',
 ];
@@ -45,21 +47,50 @@ self.addEventListener('install', (event) => {
 // ─── ACTIVATE ────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
+    (async () => {
+      // Purge ALL caches whose name doesn't match the current CACHE_VERSION.
+      // This is more aggressive than the v2 filter (which only purged buckets
+      // whose suffix changed) — guarantees stale page shells from v2 die.
+      const cacheNames = await caches.keys();
+      await Promise.all(
         cacheNames
-          .filter((name) => name.startsWith('zefyrio-') && name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
+          .filter((name) => !name.startsWith(CACHE_VERSION + '-'))
           .map((name) => {
             console.log('[SW] Purging old cache:', name);
             return caches.delete(name);
           })
       );
-    })
+      // Take control of all open clients immediately so the new SW serves
+      // their next navigation (no need to close all tabs first).
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
+});
+
+// Allow the page to trigger an immediate activation (used by the registry
+// when a waiting worker is detected, to skip the "close all tabs" dance).
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING' || event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // ─── FETCH ───────────────────────────────────────────────────────
+// Heuristic: an app-shell request is either an HTML navigation, the root
+// document, a Next.js build asset (which is fingerprinted per deploy), or
+// an RSC payload. ALL of these must be network-first so users with a
+// stale SW receive new code instead of the cached broken bundle.
+function isAppShellRequest(request, url) {
+  if (request.mode === 'navigate') return true;
+  if (request.destination === 'document') return true;
+  // RSC payload requests carry this header / query param
+  if (request.headers.get('RSC') === '1') return true;
+  if (url.searchParams.has('_rsc')) return true;
+  if (url.pathname.startsWith('/_next/')) return true;
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname.endsWith('.map')) return true;
+  return false;
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -69,6 +100,14 @@ self.addEventListener('fetch', (event) => {
 
   // Skip Chrome extension requests
   if (url.protocol === 'chrome-extension:') return;
+
+  // Strategy 0 (NEW): App shell — Network First with cache fallback.
+  // Previously this fell through to stale-while-revalidate, which is what
+  // pinned mobile users to the old broken page.tsx forever.
+  if (url.origin === self.location.origin && isAppShellRequest(request, url)) {
+    event.respondWith(networkFirstAppShell(request, STATIC_CACHE));
+    return;
+  }
 
   // Strategy 1: Internal API routes — Network First, fall back to cache
   if (API_PATTERNS.some((p) => url.pathname.startsWith(p))) {
@@ -88,7 +127,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy 4: Static assets — Cache First with network update
+  // Strategy 4: Other same-origin static assets (icons, images, fonts) —
+  // safe to stale-while-revalidate since they aren't the app shell.
   if (url.origin === self.location.origin) {
     event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
     return;
@@ -106,8 +146,8 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     const options = {
       body: data.body || 'Condiciones meteorológicas han cambiado.',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      icon: '/globe.svg',
+      badge: '/globe.svg',
       vibrate: [200, 100, 200],
       tag: data.tag || 'weather-alert',
       data: {
@@ -144,6 +184,32 @@ self.addEventListener('notificationclick', (event) => {
 // ═══════════════════════════════════════════════════════════════════
 // CACHING STRATEGIES
 // ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Network First (App Shell) — Always try network so users get fresh code.
+ * On failure: fall back to cached copy if any, then offline page for nav.
+ * NOTE: Next.js fingerprints /_next/ assets per deploy, so the cache fallback
+ * for a missing-from-cache asset is OK — the navigation request that fetches
+ * the new HTML will reference the new fingerprinted URLs.
+ */
+async function networkFirstAppShell(request, cacheName) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    if (request.mode === 'navigate') {
+      const offlinePage = await caches.match('/offline.html');
+      if (offlinePage) return offlinePage;
+    }
+    return new Response('Offline', { status: 503 });
+  }
+}
 
 /**
  * Network First — Try network, fall back to cache if offline or timeout.

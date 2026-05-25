@@ -47,19 +47,41 @@ export default function Home() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    let cancelled = false;
+    // Tracks which source last wrote telemetry — GPS always wins over IP,
+    // and once GPS has written we ignore any straggling IP response so the
+    // user never sees their precise location replaced by their carrier's
+    // IP-geo guess.
+    let lastSource: 'none' | 'ip' | 'gps' = 'none';
+
     const bootAvionics = async () => {
       // Mostrar skeleton inmediatamente, sin bloquear
       const mock = getMockTelemetry('dron');
       setTelemetryData(mock);
 
-      const loadTelemetry = async (lat: number, lon: number, acc: number) => {
+      const loadTelemetry = async (source: 'ip' | 'gps', lat: number, lon: number, acc: number) => {
+        // GPS supersedes IP — drop late IP writes that arrive after a GPS fix.
+        if (source === 'ip' && lastSource === 'gps') return;
         setCoords({ lat, lon });
         setLoadingTelemetry(true);
         try {
           const data = await fetchLiveTelemetry(activeProfile, lat, lon, acc);
-          if (data) { setTelemetryData(data); setOfflineMode(false); }
-        } catch { setOfflineMode(true); }
-        setLoadingTelemetry(false);
+          if (cancelled) return;
+          // Re-check ordering after the await — GPS may have landed mid-flight.
+          if (source === 'ip' && lastSource === 'gps') return;
+          if (data) {
+            lastSource = source;
+            setTelemetryData(data);
+            setOfflineMode(false);
+          } else {
+            // fetchLiveTelemetry returned null (API error / malformed) — surface as offline
+            setOfflineMode(true);
+          }
+        } catch {
+          if (!cancelled) setOfflineMode(true);
+        } finally {
+          if (!cancelled) setLoadingTelemetry(false);
+        }
       };
 
       // IP geolocation — prefer Vercel edge headers (zero-latency, no CORS,
@@ -104,24 +126,34 @@ export default function Home() {
           setTimeout(() => resolve(null), 9000);
         });
 
-      // Lanzar ambos en paralelo — el que llegue primero carga los datos
-      let resolved = false;
+      // Lanzar ambos en paralelo — IP da telemetría rápida mientras GPS
+      // arranca; GPS la sobreescribe cuando llega.
+      let ipDone = false;
+      let gpsDone = false;
+      let ipLoc: {lat: number; lon: number} | null = null;
+      let gpsLoc: {lat: number; lon: number; acc: number} | null = null;
 
       getLocationByIP().then((loc) => {
-        if (loc && !resolved) {
-          resolved = true;
-          loadTelemetry(loc.lat, loc.lon, 5000);
+        if (cancelled) return;
+        ipDone = true;
+        ipLoc = loc;
+        if (loc && lastSource !== 'gps') {
+          loadTelemetry('ip', loc.lat, loc.lon, 5000);
+        } else if (gpsDone && !gpsLoc && !loc) {
+          // Both sources failed — keep mock, mark offline
+          setOfflineMode(true);
+          setLoadingTelemetry(false);
         }
       });
 
       getGPS().then((loc) => {
+        if (cancelled) return;
+        gpsDone = true;
+        gpsLoc = loc;
         if (loc) {
-          // GPS siempre actualiza aunque IP ya haya cargado (más preciso)
-          resolved = true;
-          loadTelemetry(loc.lat, loc.lon, loc.acc);
-        } else if (!resolved) {
-          // Ninguno funcionó — quedarse con mock y marcar offline
-          resolved = true;
+          loadTelemetry('gps', loc.lat, loc.lon, loc.acc);
+        } else if (ipDone && !ipLoc) {
+          // Both sources failed — keep mock, mark offline
           setOfflineMode(true);
           setLoadingTelemetry(false);
         }
@@ -129,6 +161,7 @@ export default function Home() {
     };
 
     bootAvionics();
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -149,6 +182,14 @@ export default function Home() {
   const profileLabel = t('profile_dron');
 
   if (!telemetryData) return null;
+
+  // Resolve effective location once — avoids the same fallback expression
+  // spread across six call sites and prevents location-dependent components
+  // from firing with lat=0,lon=0 (an ocean tile off Africa) when neither
+  // GPS nor IP geo have resolved yet.
+  const effectiveLat = telemetryData.gps?.lat ?? coords?.lat ?? null;
+  const effectiveLon = telemetryData.gps?.lon ?? coords?.lon ?? null;
+  const hasLocation = effectiveLat !== null && effectiveLon !== null;
 
   // Demo mode banner (shown when offline fallback triggered)
   const isDemo = !telemetryData.gps?.lat && !coords;
@@ -217,23 +258,20 @@ export default function Home() {
                   profileLabel={profileLabel} 
                 />
                 
-                {/* TFR / NO-FLY ZONES */}
-                <NoFlyZones 
-                  lat={telemetryData.gps?.lat || coords?.lat || 0} 
-                  lon={telemetryData.gps?.lon || coords?.lon || 0} 
-                />
-                
+                {/* TFR / NO-FLY ZONES — skip while we have no real location */}
+                {hasLocation && (
+                  <NoFlyZones lat={effectiveLat as number} lon={effectiveLon as number} />
+                )}
+
                 {/* NOTAM ALERTS */}
-                <NotamAlert 
-                  lat={telemetryData.gps?.lat || coords?.lat || 0} 
-                  lon={telemetryData.gps?.lon || coords?.lon || 0} 
-                />
+                {hasLocation && (
+                  <NotamAlert lat={effectiveLat as number} lon={effectiveLon as number} />
+                )}
 
                 {/* SIGMET / AIRMET ALERTS */}
-                <SigmetAlert 
-                  lat={telemetryData.gps?.lat || coords?.lat || 0} 
-                  lon={telemetryData.gps?.lon || coords?.lon || 0} 
-                />
+                {hasLocation && (
+                  <SigmetAlert lat={effectiveLat as number} lon={effectiveLon as number} />
+                )}
 
                 <VerticalWindProfile 
                   verticalProfile={telemetryData.verticalProfile} 
@@ -249,15 +287,12 @@ export default function Home() {
           )}
 
           {/* WEATHER/METAR TAB */}
-          {activeTab === 'weather' && (telemetryData.gps || coords) && (
-             <MetarBoard 
-               lat={telemetryData.gps?.lat || coords?.lat || 0} 
-               lon={telemetryData.gps?.lon || coords?.lon || 0} 
-             />
+          {activeTab === 'weather' && hasLocation && (
+             <MetarBoard lat={effectiveLat as number} lon={effectiveLon as number} />
           )}
- 
+
           {/* FORECAST TAB */}
-          {activeTab === 'forecast' && (telemetryData.gps || coords) && (
+          {activeTab === 'forecast' && hasLocation && (
             <div className="flex-1 w-full flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-8 duration-500 pb-10">
               {/* Section header */}
               <div className="flex items-center gap-2">
@@ -270,10 +305,7 @@ export default function Home() {
                 className="rounded-2xl border overflow-x-auto no-scrollbar p-4"
                 style={{ background: 'var(--z-card)', borderColor: 'var(--z-border)' }}
               >
-                <ForecastBar8Day 
-                  lat={telemetryData.gps?.lat || coords?.lat || 0} 
-                  lon={telemetryData.gps?.lon || coords?.lon || 0} 
-                />
+                <ForecastBar8Day lat={effectiveLat as number} lon={effectiveLon as number} />
               </div>
               {/* Hourly drone outlook — wind, UV, humidity, visibility */}
               <div className="flex items-center gap-2 mt-1">
@@ -281,19 +313,16 @@ export default function Home() {
                 <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--z-text)' }}>Próximas 24h</h2>
                 <span className="text-[10px] font-mono" style={{ color: 'var(--z-muted)' }}>drone outlook</span>
               </div>
-              <ForecastCards 
-                lat={telemetryData.gps?.lat || coords?.lat || 0} 
-                lon={telemetryData.gps?.lon || coords?.lon || 0} 
-              />
+              <ForecastCards lat={effectiveLat as number} lon={effectiveLon as number} />
             </div>
           )}
 
           {/* MAP TAB */}
-          {activeTab === 'map' && (
+          {activeTab === 'map' && hasLocation && (
             <div className="flex-1 w-full rounded-3xl overflow-hidden border border-white/5 animate-in fade-in zoom-in duration-500">
-              <InteractiveMapView 
-                initialLat={telemetryData.gps?.lat || coords?.lat || 0} 
-                initialLon={telemetryData.gps?.lon || coords?.lon || 0} 
+              <InteractiveMapView
+                initialLat={effectiveLat as number}
+                initialLon={effectiveLon as number}
                 onSyncLocation={handleSyncLocation}
               />
             </div>
