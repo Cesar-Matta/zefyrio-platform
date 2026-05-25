@@ -68,11 +68,22 @@ export default function PushNotificationManager() {
         applicationServerKey: urlB64ToUint8Array(vapidKey).buffer as ArrayBuffer,
       });
 
+      // Get current coordinates to enable cron evaluator
+      let lat: number | undefined;
+      let lon: number | undefined;
+      try {
+        const pos = await new Promise<GeolocationPosition>((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+        );
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+      } catch { /* location optional */ }
+
       // Send to server
       await fetch('/api/push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription),
+        body: JSON.stringify({ ...subscription.toJSON(), lat, lon }),
       });
 
       setStatus('subscribed');
