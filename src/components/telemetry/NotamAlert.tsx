@@ -19,14 +19,17 @@ export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
   };
 
   useEffect(() => {
+    const DRONE_RADIUS_NM = 15;
     const fetchNotams = async () => {
       try {
-        const res = await fetch(`/api/notams?lat=${lat}&lon=${lon}&radius=30`);
+        const res = await fetch(`/api/notams?lat=${lat}&lon=${lon}&radius=${DRONE_RADIUS_NM}`);
         const data = await res.json();
         if (data.items) {
-          // Filter most relevant (those starting recently or containing critical words)
-          const critical = data.items.slice(0, 3);
-          setNotams(critical);
+          const nearby = (data.items as NotamItem[]).filter(n => {
+            const d = (n.properties as { distanceNm?: number }).distanceNm;
+            return d == null || d <= DRONE_RADIUS_NM;
+          });
+          setNotams(nearby.slice(0, 3));
         }
       } catch (error) {
         console.error("NotamAlert fetch error:", error);
@@ -53,7 +56,7 @@ export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
       <div className="flex items-center gap-2 px-1">
         <AlertTriangle className="w-4 h-4 text-amber-500" />
         <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/50">
-          NOTAMs Críticos (Área 30nm)
+          NOTAMs Críticos (Área 15nm)
         </h3>
         <span className="ml-auto text-[9px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-bold">
           {notams.length} ACTIVOS

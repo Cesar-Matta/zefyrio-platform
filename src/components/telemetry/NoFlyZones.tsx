@@ -59,11 +59,20 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
     if (lat == null || lon == null) return;
     const ctrl = new AbortController();
 
-    fetch(`/api/notams?lat=${lat}&lon=${lon}&radius=50`, { signal: ctrl.signal })
+    // Drone-relevant radius: 15 nm (~28 km).
+    // Consumer drones range 1-5 km, pro drones 10-30 km.
+    // Anything beyond 15 nm is informational noise for a drone pilot.
+    const DRONE_RADIUS_NM = 15;
+
+    fetch(`/api/notams?lat=${lat}&lon=${lon}&radius=${DRONE_RADIUS_NM}`, { signal: ctrl.signal })
       .then(r => r.json())
       .then((data: { items?: AirspaceItem[] }) => {
-        const items: AirspaceItem[] = data.items ?? [];
-        // Sort by severity priority, then by distance
+        const rawItems: AirspaceItem[] = data.items ?? [];
+        // Defensive client-side filter: API sometimes returns farther zones.
+        const items = rawItems.filter(z => {
+          const d = z.properties.distanceNm;
+          return d == null || d <= DRONE_RADIUS_NM;
+        });
         items.sort((a, b) => {
           const pa = SEVERITY[a.properties.airspaceType]?.priority ?? 99;
           const pb = SEVERITY[b.properties.airspaceType]?.priority ?? 99;
@@ -113,7 +122,7 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
             Espacio Aéreo Despejado
           </h3>
           <p className="text-[10px]" style={{ color: 'var(--z-muted)' }}>
-            Sin restricciones activas en 50 nm para drones
+            Sin restricciones activas en 15 nm para drones
           </p>
         </div>
       </div>
@@ -131,7 +140,7 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
       <div className="flex items-center gap-2 px-1">
         <AlertOctagon className="w-4 h-4 text-red-500 animate-pulse" />
         <h3 className="text-[10px] font-bold uppercase tracking-widest text-red-500">
-          Zonas de Exclusión (Dron)
+          Zonas de Exclusión (15 nm)
         </h3>
         <span className="ml-auto flex items-center gap-1.5">
           {critical.length > 0 && (

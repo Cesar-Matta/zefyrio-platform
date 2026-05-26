@@ -49,21 +49,22 @@ export default function AlertDetailModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] flex items-end justify-center animate-in fade-in duration-200"
       onClick={onClose}
-      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-[480px] max-h-[88vh] sm:max-h-[80vh] flex flex-col rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom sm:zoom-in-95 duration-300"
+        className="w-full max-w-[440px] max-h-[78vh] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300"
         style={{
           background: 'var(--z-surface)',
           border: `1px solid ${accent}40`,
-          boxShadow: `0 0 60px ${accent}30`,
+          borderBottom: 'none',
+          boxShadow: `0 -10px 40px ${accent}25`,
         }}
       >
-        {/* Drag handle (mobile visual hint) */}
-        <div className="sm:hidden flex justify-center pt-2 pb-1">
+        {/* Drag handle */}
+        <div className="flex justify-center pt-2 pb-1">
           <div className="w-10 h-1 rounded-full opacity-30" style={{ background: 'var(--z-muted)' }} />
         </div>
 
