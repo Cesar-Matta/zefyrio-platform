@@ -209,15 +209,15 @@ export default function Home() {
     setIcaoLoading(true);
     setIcaoError('');
     try {
-      const res = await fetch(`https://aviationweather.gov/api/data/airport?ids=${code}&format=json`);
-      const data = await res.json() as Array<{ icaoId?: string; name?: string; lat?: number; lon?: number }>;
-      const airport = Array.isArray(data) ? data[0] : null;
-      if (!airport?.lat || !airport?.lon) {
+      const res = await fetch(`/api/airport?icao=${code}`);
+      if (res.status === 404) {
         setIcaoError(`Aeropuerto ${code} no encontrado`);
         setIcaoLoading(false);
         return;
       }
-      setViewingAirport({ icao: code, name: airport.name || code, lat: airport.lat, lon: airport.lon });
+      if (!res.ok) throw new Error('upstream');
+      const airport = await res.json() as { icao: string; name: string; lat: number; lon: number };
+      setViewingAirport({ icao: airport.icao, name: airport.name, lat: airport.lat, lon: airport.lon });
       setIcaoInput('');
       await handleSyncLocation(airport.lat, airport.lon);
     } catch {
