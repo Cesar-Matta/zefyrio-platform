@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { ShieldAlert, AlertOctagon, Ban, Lock, ChevronDown } from 'lucide-react';
+import AlertDetailModal from '@/components/ui/AlertDetailModal';
 
 interface AirspaceItem {
   properties: {
@@ -42,6 +43,17 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [selected, setSelected] = useState<AirspaceItem | null>(null);
+
+  const ACCENT: Record<string, string> = {
+    red: '#ff0055', orange: '#ff6b00', amber: '#ffb800', yellow: '#eab308',
+  };
+
+  const fmtDate = (iso?: string) => {
+    if (!iso) return null;
+    try { return new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch { return iso; }
+  };
 
   useEffect(() => {
     if (lat == null || lon == null) return;
@@ -143,6 +155,10 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
         return (
           <div
             key={`${zone.properties.notamNumber}-${i}`}
+            onClick={() => setSelected(zone)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelected(zone); }}
             className={`relative p-4 rounded-3xl border ${styles.border} ${styles.bg} group hover:brightness-110 transition-all cursor-pointer overflow-hidden`}
           >
             {/* Danger stripes for critical zones */}
@@ -212,6 +228,29 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
           Colapsar
         </button>
       )}
+
+      {selected && (() => {
+        const sev = SEVERITY[selected.properties.airspaceType] ?? { tone: 'amber', label: 'ZONA', priority: 99 };
+        const ev = selected.properties.notamEvent;
+        return (
+          <AlertDetailModal
+            open={true}
+            onClose={() => setSelected(null)}
+            icon={Ban}
+            accent={ACCENT[sev.tone] || ACCENT.amber}
+            badge={sev.label}
+            title={selected.properties.notamNumber}
+            subtitle={`${selected.properties.typeLabel}${selected.properties.distanceNm != null ? `  ·  ${selected.properties.distanceNm} nm` : ''}`}
+            body={ev?.text || 'Sin descripción disponible.'}
+            fields={[
+              { label: 'Ubicación', value: ev?.location, mono: true },
+              { label: 'Distancia', value: selected.properties.distanceNm != null ? `${selected.properties.distanceNm} nm` : null, mono: true },
+              { label: 'Vigente desde', value: fmtDate(ev?.effectiveStart), mono: true },
+              { label: 'Vigente hasta', value: fmtDate(ev?.effectiveEnd), mono: true },
+            ]}
+          />
+        );
+      })()}
     </div>
   );
 }

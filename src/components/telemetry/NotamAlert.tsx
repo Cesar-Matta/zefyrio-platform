@@ -5,10 +5,18 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Clock, ChevronRight, Info } from 'lucide-react';
 import type { NotamItem } from '@/lib/types/api';
+import AlertDetailModal from '@/components/ui/AlertDetailModal';
 
 export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
   const [notams, setNotams] = useState<NotamItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<NotamItem | null>(null);
+
+  const fmtDate = (iso?: string) => {
+    if (!iso) return null;
+    try { return new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch { return iso; }
+  };
 
   useEffect(() => {
     const fetchNotams = async () => {
@@ -53,7 +61,13 @@ export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
       </div>
 
       {notams.map((notam, i) => (
-        <div key={i} className="glass-panel p-4 rounded-3xl border border-amber-500/20 bg-amber-500/5 group hover:bg-amber-500/10 transition-all cursor-pointer">
+        <div
+          key={i}
+          onClick={() => setSelected(notam)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelected(notam); }}
+          className="glass-panel p-4 rounded-3xl border border-amber-500/20 bg-amber-500/5 group hover:bg-amber-500/10 transition-all cursor-pointer">
           <div className="flex items-start gap-4">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
               <Info className="w-4 h-4 text-amber-500" />
@@ -79,6 +93,27 @@ export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
           </div>
         </div>
       ))}
+
+      {selected && (() => {
+        const ev = selected.properties.notamEvent;
+        return (
+          <AlertDetailModal
+            open={true}
+            onClose={() => setSelected(null)}
+            icon={Info}
+            accent="#ffb800"
+            badge="NOTAM"
+            title={selected.properties.notamNumber}
+            subtitle={ev?.location || undefined}
+            body={ev?.text || 'Sin descripción disponible.'}
+            fields={[
+              { label: 'Ubicación', value: ev?.location, mono: true },
+              { label: 'Vigente desde', value: fmtDate(ev?.effectiveStart), mono: true },
+              { label: 'Vigente hasta', value: fmtDate(ev?.effectiveEnd), mono: true },
+            ]}
+          />
+        );
+      })()}
     </div>
   );
 }

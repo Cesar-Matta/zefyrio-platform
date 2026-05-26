@@ -13,7 +13,9 @@ import { useTranslation } from "@/lib/i18n/useTranslation";
 import CopilotStatus from "@/components/telemetry/CopilotStatus";
 import NoFlyZones from "@/components/telemetry/NoFlyZones";
 import NotamAlert from "@/components/telemetry/NotamAlert";
-import SigmetAlert from "@/components/telemetry/SigmetAlert";
+// SigmetAlert removed from drone HUD — SIGMETs cover FL100-FL450 (10k-45k ft),
+// not relevant for drone ops (<400 ft). Keep for future fixed-wing fork.
+// import SigmetAlert from "@/components/telemetry/SigmetAlert";
 import VerticalWindProfile from "@/components/telemetry/VerticalWindProfile";
 import GpsSatelliteStatus from "@/components/telemetry/GpsSatelliteStatus";
 import WindCompass from "@/components/telemetry/WindCompass";
@@ -377,12 +379,7 @@ export default function Home() {
                   <NotamAlert lat={effectiveLat as number} lon={effectiveLon as number} />
                 )}
 
-                {/* SIGMET / AIRMET ALERTS */}
-                {hasLocation && (
-                  <SigmetAlert lat={effectiveLat as number} lon={effectiveLon as number} />
-                )}
-
-                <VerticalWindProfile 
+                <VerticalWindProfile
                   verticalProfile={telemetryData.verticalProfile} 
                 />
       
