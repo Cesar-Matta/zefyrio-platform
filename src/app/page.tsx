@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { MapPin, Plane, Search, X, Loader2 } from "lucide-react";
+import { MapPin, Plane, PlaneTakeoff, Search, X, Loader2 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { fetchLiveTelemetry } from "@/lib/api/telemetry";
 import { fetchWithTimeout } from "@/lib/api/fetchWithTimeout";
@@ -258,7 +258,7 @@ export default function Home() {
         {/* Background Grid - only in dark mode */}
         {isDark && <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:24px_24px]" />}
         
-        <div className="w-full h-full overflow-y-auto px-5 pt-10 pb-36 scrollbar-hide flex flex-col gap-5 relative z-10 transition-all">
+        <div className="w-full h-full overflow-y-auto px-5 pt-3 pb-36 scrollbar-hide flex flex-col gap-3 relative z-10 transition-all" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           
           {/* Demo mode banner */}
           {isDemo && (
@@ -271,8 +271,27 @@ export default function Home() {
           )}
 
           {/* Main App Header */}
-          <header className="flex justify-between items-center mb-1 shrink-0">
-            <h1 className="text-3xl font-black tracking-tighter font-heading" style={{ color: 'var(--z-text)', letterSpacing: '-0.03em' }}>ZEFYRIO</h1>
+          <header className="flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(0,240,255,0.22), rgba(0,240,255,0.05))',
+                  border: '1px solid rgba(0,240,255,0.4)',
+                  boxShadow: '0 0 14px rgba(0,240,255,0.18)',
+                }}
+              >
+                <PlaneTakeoff className="w-4.5 h-4.5" style={{ color: 'var(--z-cyan)' }} strokeWidth={2.5} />
+              </div>
+              <div className="flex flex-col leading-none">
+                <h1 className="text-xl font-black tracking-tighter font-heading" style={{ color: 'var(--z-text)', letterSpacing: '-0.03em' }}>
+                  ZEFYRIO
+                </h1>
+                <span className="text-[8px] font-mono tracking-[0.25em] uppercase opacity-70 mt-0.5" style={{ color: 'var(--z-cyan)' }}>
+                  Aero HUD
+                </span>
+              </div>
+            </div>
             <UserMenu />
           </header>
 
