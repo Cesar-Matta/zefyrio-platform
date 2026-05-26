@@ -1,8 +1,9 @@
 "use client";
-// AlertDetailModal — reusable bottom-sheet / center modal for full alert detail.
-// Used by NoFlyZones, NotamAlert, SigmetAlert.
+// AlertDetailModal — reusable bottom-sheet modal for full alert detail.
+// Renders into #phone-modal-root portal so it stays inside the phone frame.
 
 import { useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X, type LucideIcon } from 'lucide-react';
 
 interface Field {
@@ -28,34 +29,28 @@ interface AlertDetailModalProps {
 export default function AlertDetailModal({
   open, onClose, icon: Icon, accent, badge, title, subtitle, body, fields, raw, footer,
 }: AlertDetailModalProps) {
-
-  // Close on Escape key
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
-    // Lock body scroll while open
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-    };
+    return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
   if (!open) return null;
+  const portalEl = typeof document !== 'undefined' ? document.getElementById('phone-modal-root') : null;
+  if (!portalEl) return null;
 
-  return (
+  const content = (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[9999] flex items-end justify-center animate-in fade-in duration-200"
+      className="absolute inset-0 flex items-end justify-center animate-in fade-in duration-200 pointer-events-auto"
       onClick={onClose}
       style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[440px] max-h-[78vh] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300"
+        className="w-full max-h-[80%] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300"
         style={{
           background: 'var(--z-surface)',
           border: `1px solid ${accent}40`,
@@ -151,4 +146,6 @@ export default function AlertDetailModal({
       </div>
     </div>
   );
+
+  return createPortal(content, portalEl);
 }

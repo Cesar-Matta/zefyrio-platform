@@ -449,6 +449,9 @@ export default function Home() {
         </div>
 
         <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+
+        {/* Portal target for modals — keeps them inside the phone frame */}
+        <div id="phone-modal-root" className="absolute inset-0 pointer-events-none z-[60]" />
       </main>
     </div>
   );
