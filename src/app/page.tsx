@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Activity } from "lucide-react";
-import { DroneIcon } from "@/components/ui/AircraftIcons";
+import { Activity, MapPin, Plane, Search, X, Loader2 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { fetchLiveTelemetry } from "@/lib/api/telemetry";
 import { fetchWithTimeout } from "@/lib/api/fetchWithTimeout";
@@ -41,6 +40,11 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 export default function Home() {
   const [activeTab, setActiveTab] = useState('telemetry');
   const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
+  const [gpsCoords, setGpsCoords] = useState<{lat: number, lon: number} | null>(null);
+  const [viewingAirport, setViewingAirport] = useState<{icao: string; name: string; lat: number; lon: number} | null>(null);
+  const [icaoInput, setIcaoInput] = useState('');
+  const [icaoLoading, setIcaoLoading] = useState(false);
+  const [icaoError, setIcaoError] = useState('');
 
   const { activeProfile, telemetryData, setTelemetryData, setLoadingTelemetry, setOfflineMode } = useStore();
   const { isDark } = useTheme();
@@ -138,6 +142,7 @@ export default function Home() {
         ipDone = true;
         ipLoc = loc;
         if (loc && lastSource !== 'gps') {
+          setGpsCoords({ lat: loc.lat, lon: loc.lon });
           loadTelemetry('ip', loc.lat, loc.lon, 5000);
         } else if (gpsDone && !gpsLoc && !loc) {
           // Both sources failed — keep mock, mark offline
@@ -151,6 +156,7 @@ export default function Home() {
         gpsDone = true;
         gpsLoc = loc;
         if (loc) {
+          setGpsCoords({ lat: loc.lat, lon: loc.lon });
           loadTelemetry('gps', loc.lat, loc.lon, loc.acc);
         } else if (ipDone && !ipLoc) {
           // Both sources failed — keep mock, mark offline
@@ -180,6 +186,50 @@ export default function Home() {
   };
 
   const profileLabel = t('profile_dron');
+
+  // Convert decimal degrees to aeronautical format: 4.7110 → "04°42'40"N"
+  const toAeronautical = (decimal: number, isLat: boolean): string => {
+    const sign = decimal < 0 ? (isLat ? 'S' : 'W') : (isLat ? 'N' : 'E');
+    const abs = Math.abs(decimal);
+    const deg = Math.floor(abs);
+    const minTotal = (abs - deg) * 60;
+    const min = Math.floor(minTotal);
+    const sec = Math.round((minTotal - min) * 60);
+    const degStr = String(deg).padStart(isLat ? 2 : 3, '0');
+    return `${degStr}°${String(min).padStart(2, '0')}'${String(sec).padStart(2, '0')}"${sign}`;
+  };
+
+  const handleIcaoSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = icaoInput.toUpperCase().trim();
+    if (code.length !== 4) {
+      setIcaoError('ICAO debe tener 4 letras (ej: SKBO, KJFK)');
+      return;
+    }
+    setIcaoLoading(true);
+    setIcaoError('');
+    try {
+      const res = await fetch(`https://aviationweather.gov/api/data/airport?ids=${code}&format=json`);
+      const data = await res.json() as Array<{ icaoId?: string; name?: string; lat?: number; lon?: number }>;
+      const airport = Array.isArray(data) ? data[0] : null;
+      if (!airport?.lat || !airport?.lon) {
+        setIcaoError(`Aeropuerto ${code} no encontrado`);
+        setIcaoLoading(false);
+        return;
+      }
+      setViewingAirport({ icao: code, name: airport.name || code, lat: airport.lat, lon: airport.lon });
+      setIcaoInput('');
+      await handleSyncLocation(airport.lat, airport.lon);
+    } catch {
+      setIcaoError('Error de red. Intenta de nuevo.');
+    }
+    setIcaoLoading(false);
+  };
+
+  const exitAirportView = async () => {
+    setViewingAirport(null);
+    if (gpsCoords) await handleSyncLocation(gpsCoords.lat, gpsCoords.lon);
+  };
 
   if (!telemetryData) return null;
 
@@ -225,29 +275,88 @@ export default function Home() {
 
           {/* Main App Header */}
           <header className="flex justify-between items-center mb-1 shrink-0">
-            <div>
-              <h1 className="text-3xl font-black tracking-tighter font-heading" style={{ color: 'var(--z-text)', letterSpacing: '-0.03em' }}>ZEFYRIO</h1>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-[var(--z-cyan)]/10 border-[var(--z-cyan)] shadow-[0_0_10px_var(--z-cyan)]">
-                  <DroneIcon className="w-3 h-3" style={{ color: 'var(--z-cyan)' }} />
-                  <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--z-cyan)' }}>
-                    Drone HUD
-                  </span>
-                </div>
-              </div>
-            </div>
-            {/* Header Right: Theme Toggle + Status */}
+            <h1 className="text-3xl font-black tracking-tighter font-heading" style={{ color: 'var(--z-text)', letterSpacing: '-0.03em' }}>ZEFYRIO</h1>
             <div className="flex items-center gap-2">
               <LocaleToggle size="sm" />
               <ThemeToggle size="sm" />
               <button className="w-10 h-10 rounded-full flex items-center justify-center transition backdrop-blur-md relative shrink-0 cursor-pointer"
                 style={{ backgroundColor: 'var(--z-glass-bg)', border: '1px solid var(--z-border)' }}>
-                <span className={`absolute top-0 right-0 w-2.5 h-2.5 rounded-full ${statusBg} animate-pulse`} 
+                <span className={`absolute top-0 right-0 w-2.5 h-2.5 rounded-full ${statusBg} animate-pulse`}
                   style={{ border: '2px solid var(--z-surface)' }} />
                 <Activity className="w-4 h-4" style={{ color: 'var(--z-text)' }} />
               </button>
             </div>
           </header>
+
+          {/* Location Bar — current coords OR airport badge */}
+          {viewingAirport ? (
+            <div className="rounded-xl px-3 py-2.5 flex items-center gap-2 shrink-0"
+              style={{ background: 'rgba(255,184,0,0.10)', border: '1px solid rgba(255,184,0,0.4)' }}>
+              <Plane className="w-4 h-4 shrink-0" style={{ color: '#ffb800' }} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs font-black tracking-wider" style={{ color: '#ffb800' }}>
+                    {viewingAirport.icao}
+                  </span>
+                  <span className="text-[10px] truncate" style={{ color: 'var(--z-text)' }}>
+                    {viewingAirport.name}
+                  </span>
+                </div>
+                <span className="text-[9px] font-mono opacity-70" style={{ color: 'var(--z-text)' }}>
+                  {toAeronautical(viewingAirport.lat, true)}  {toAeronautical(viewingAirport.lon, false)}
+                </span>
+              </div>
+              <button
+                onClick={exitAirportView}
+                className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/10 transition"
+                title="Volver a mi ubicación"
+              >
+                <X className="w-4 h-4" style={{ color: '#ffb800' }} />
+              </button>
+            </div>
+          ) : hasLocation ? (
+            <div className="rounded-xl px-3 py-2 flex items-center gap-2 shrink-0"
+              style={{ background: 'var(--z-glass-bg)', border: '1px solid var(--z-border)' }}>
+              <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--z-cyan)' }} />
+              <span className="text-[10px] font-mono tracking-wider" style={{ color: 'var(--z-text)' }}>
+                {toAeronautical(effectiveLat as number, true)}  {toAeronautical(effectiveLon as number, false)}
+              </span>
+              <span className="ml-auto text-[8px] uppercase tracking-widest opacity-60" style={{ color: 'var(--z-cyan)' }}>
+                MI POSICIÓN
+              </span>
+            </div>
+          ) : null}
+
+          {/* ICAO Airport Search */}
+          <form onSubmit={handleIcaoSearch} className="shrink-0">
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2 transition-all"
+              style={{
+                background: 'var(--z-glass-bg)',
+                border: `1px solid ${icaoError ? '#ff0055' : 'var(--z-border)'}`,
+              }}>
+              <Search className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--z-muted)' }} />
+              <input
+                type="text"
+                value={icaoInput}
+                onChange={(e) => { setIcaoInput(e.target.value.toUpperCase().slice(0, 4)); setIcaoError(''); }}
+                placeholder="Ver otro aeropuerto (ej: SKBO, KJFK, MMMX)"
+                maxLength={4}
+                className="flex-1 bg-transparent outline-none text-xs font-mono tracking-wider placeholder:opacity-50"
+                style={{ color: 'var(--z-text)' }}
+              />
+              <button
+                type="submit"
+                disabled={icaoLoading || icaoInput.length !== 4}
+                className="shrink-0 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest disabled:opacity-40 transition"
+                style={{ background: 'var(--z-cyan)', color: '#000' }}
+              >
+                {icaoLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Buscar'}
+              </button>
+            </div>
+            {icaoError && (
+              <p className="text-[10px] mt-1 px-1" style={{ color: '#ff0055' }}>{icaoError}</p>
+            )}
+          </form>
 
           {/* TELEMETRY TAB */}
           {activeTab === 'telemetry' && (
