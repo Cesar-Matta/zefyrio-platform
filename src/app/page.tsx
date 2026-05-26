@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Activity, MapPin, Plane, Search, X, Loader2 } from "lucide-react";
+import { MapPin, Plane, Search, X, Loader2 } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { fetchLiveTelemetry } from "@/lib/api/telemetry";
 import { fetchWithTimeout } from "@/lib/api/fetchWithTimeout";
@@ -35,8 +35,7 @@ const InteractiveMapView = dynamic(() => import("@/components/map/InteractiveMap
   loading: () => <div className="w-full h-full bg-black/20 animate-pulse flex items-center justify-center font-mono text-[10px] text-white/40">INICIALIZANDO RADAR...</div>
 });
 
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { LocaleToggle } from "@/components/ui/LocaleToggle";
+import UserMenu from "@/components/ui/UserMenu";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
 export default function Home() {
@@ -246,10 +245,6 @@ export default function Home() {
   // Demo mode banner (shown when offline fallback triggered)
   const isDemo = !telemetryData.gps?.lat && !coords;
 
-  const statusBg = telemetryData.status === 'GO' ? 'bg-radium-go' : 
-                   telemetryData.status === 'CAUTION' ? 'bg-plasma-warn' : 
-                   'bg-crimson-nogo';
-
   return (
     <div className="min-h-screen flex items-center justify-center p-0 md:p-8 font-sans theme-transition"
       style={{ backgroundColor: isDark ? '#050505' : '#e2e8f0' }}>
@@ -278,16 +273,7 @@ export default function Home() {
           {/* Main App Header */}
           <header className="flex justify-between items-center mb-1 shrink-0">
             <h1 className="text-3xl font-black tracking-tighter font-heading" style={{ color: 'var(--z-text)', letterSpacing: '-0.03em' }}>ZEFYRIO</h1>
-            <div className="flex items-center gap-2">
-              <LocaleToggle size="sm" />
-              <ThemeToggle size="sm" />
-              <button className="w-10 h-10 rounded-full flex items-center justify-center transition backdrop-blur-md relative shrink-0 cursor-pointer"
-                style={{ backgroundColor: 'var(--z-glass-bg)', border: '1px solid var(--z-border)' }}>
-                <span className={`absolute top-0 right-0 w-2.5 h-2.5 rounded-full ${statusBg} animate-pulse`}
-                  style={{ border: '2px solid var(--z-surface)' }} />
-                <Activity className="w-4 h-4" style={{ color: 'var(--z-text)' }} />
-              </button>
-            </div>
+            <UserMenu />
           </header>
 
           {/* Location Bar — current coords OR airport badge */}
