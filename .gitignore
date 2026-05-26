@@ -12,3 +12,5 @@ dev.err.log
 Thumbs.db
 .vercel
 tsconfig.tsbuildinfo
+
+.vercel

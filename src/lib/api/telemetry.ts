@@ -24,7 +24,7 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
   try {
     // 1. Fetch Open-Meteo (SFC, Temp, Ráfagas, Lluvia, Vientos Altura)
     // Usamos hourly array para wind_speed a diferentes alturas: 10m(~sfc), 80m(~250ft), 120m(~400ft), 180m(~600ft)
-    const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m&daily=sunrise,sunset&timezone=auto`;
+    const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,dew_point_2m,precipitation,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m&daily=sunrise,sunset&timezone=auto`;
     const meteoReq = await fetchWithTimeout(meteoUrl, {}, 6000);
     if (!meteoReq.ok) throw new Error(`Open-Meteo HTTP ${meteoReq.status}`);
     const meteoData = await meteoReq.json();
@@ -79,8 +79,14 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
     const precip = num(currentMeteo.precipitation);
     const tempC = num(currentMeteo.temperature_2m);
     const feelsC = num(currentMeteo.apparent_temperature, tempC);
+    const dewC = num(currentMeteo.dew_point_2m, tempC - 5);
     const cloudPct = num(currentMeteo.cloud_cover);
     const visM = num(currentMeteo.visibility, 10000);
+
+    // Cloud base (Espy formula): ~125m per 1°C dew-point spread.
+    // Converted to feet AGL. Capped at 10,000 ft (above drone ceiling anyway).
+    const spreadC = Math.max(0, tempC - dewC);
+    const cloudBaseFt = Math.min(10000, Math.round(spreadC * 125 * 3.281));
 
     // ─── GO / CAUTION / NO-GO Decision Engine (Drone) ─────────────────────────
     let status: 'GO' | 'CAUTION' | 'NO-GO' = 'GO';
@@ -145,7 +151,9 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
       visibility: (visM / 1000).toFixed(1), // in KM
       temperature: tempC,
       feelsLike: feelsC,
-      rainChance: precip > 0 ? 100 : 0, // open-meteo current has precipitation value in mm
+      dewPoint: dewC,
+      cloudBase: cloudBaseFt,
+      rainChance: precip > 0 ? 100 : 0,
       clouds: cloudPct,
       sun: {
         sunrise: sunriseStr,

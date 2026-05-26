@@ -349,10 +349,11 @@ export default function Home() {
           {/* TELEMETRY TAB */}
           {activeTab === 'telemetry' && (
              <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-8 duration-500 pb-10">
-                <CopilotStatus 
-                  status={telemetryData.status} 
-                  aiMessage={telemetryData.aiMessage} 
-                  profileLabel={profileLabel} 
+                <CopilotStatus
+                  status={telemetryData.status}
+                  aiMessage={telemetryData.aiMessage}
+                  profileLabel={profileLabel}
+                  data={telemetryData}
                 />
                 
                 {/* TFR / NO-FLY ZONES — skip while we have no real location */}

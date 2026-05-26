@@ -20,6 +20,8 @@ export const getMockTelemetry = (_profile: 'dron'): TelemetryData => {
     visibility: "10.0",      // string — matches TelemetryData.visibility
     temperature: 24,
     feelsLike: 26,
+    dewPoint: 18,
+    cloudBase: 2460,
     rainChance: 0,
     clouds: 10,
     sun: {

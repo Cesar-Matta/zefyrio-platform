@@ -40,6 +40,8 @@ export interface TelemetryData {
   visibility: string;
   temperature: number;
   feelsLike: number;
+  dewPoint: number;        // °C — fog/condensation risk
+  cloudBase: number;       // ft AGL — drone ceiling (Espy formula)
   rainChance: number;
   clouds: number;
   sun: SunData;
