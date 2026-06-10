@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
 
   const isPublicRoute =
     pathname.startsWith('/login') ||
+    pathname.startsWith('/demo') ||        // guest demo: signs in anonymously client-side
     pathname.startsWith('/auth/') ||       // callback + cualquier ruta de auth
     pathname === '/manifest.json' ||
     pathname === '/sw.js' ||

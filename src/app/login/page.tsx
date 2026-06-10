@@ -57,6 +57,18 @@ export default function LoginPage() {
     if (error) setError('No se pudo conectar con Google. Intenta de nuevo.');
   };
 
+  const handleGuest = async () => {
+    setError('');
+    setLoading(true);
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setError('No se pudo iniciar el demo. Intenta de nuevo.');
+      setLoading(false);
+      return;
+    }
+    window.location.href = '/';
+  };
+
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -240,6 +252,16 @@ export default function LoginPage() {
             >
               <GoogleIcon />
               Continuar con Google
+            </button>
+
+            {/* Guest demo — try without registering */}
+            <button
+              type="button"
+              onClick={handleGuest}
+              disabled={loading}
+              className="w-full text-cyber-cyan/80 hover:text-cyber-cyan font-mono text-[11px] uppercase tracking-[0.2em] py-2 transition-colors disabled:opacity-50"
+            >
+              Probar como invitado →
             </button>
 
           </div>
