@@ -9,15 +9,15 @@ import type { FlightStatus, TelemetryData } from '@/store/useStore';
 import { computeFactors, type FactorTier } from '@/lib/api/factors';
 
 const STATUS_CONFIG: Record<FlightStatus, { label: string; color: string; icon: LucideIcon }> = {
-  'GO':      { label: 'GOOD TO FLY', color: '#00ff66', icon: ShieldCheck },
-  'CAUTION': { label: 'CAUTION',     color: '#ffb800', icon: ShieldAlert },
-  'NO-GO':   { label: 'NO-GO',       color: '#ff0055', icon: ShieldX },
+  'GO':      { label: 'GOOD TO FLY', color: 'var(--color-system-green)', icon: ShieldCheck },
+  'CAUTION': { label: 'CAUTION',     color: 'var(--color-system-orange)', icon: ShieldAlert },
+  'NO-GO':   { label: 'NO-GO',       color: 'var(--color-system-red)', icon: ShieldX },
 };
 
 const TIER_VISUAL: Record<FactorTier, { bg: string; color: string; icon: LucideIcon }> = {
-  good: { bg: 'rgba(0,255,102,0.10)',  color: '#00ff66', icon: CheckCircle  },
-  warn: { bg: 'rgba(255,184,0,0.10)',  color: '#ffb800', icon: AlertTriangle },
-  bad:  { bg: 'rgba(255,0,85,0.10)',   color: '#ff0055', icon: XOctagon     },
+  good: { bg: 'rgba(0,255,102,0.10)',  color: 'var(--color-system-green)', icon: CheckCircle  },
+  warn: { bg: 'rgba(255,184,0,0.10)',  color: 'var(--color-system-orange)', icon: AlertTriangle },
+  bad:  { bg: 'rgba(255,0,85,0.10)',   color: 'var(--color-system-red)', icon: XOctagon     },
   info: { bg: 'transparent',            color: '#94a3b8', icon: Minus        },
 };
 
@@ -66,7 +66,7 @@ export default function StatusFactorsModal({ open, onClose, status, aiMessage, p
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-2 pb-1">
-          <div className="w-10 h-1 rounded-full opacity-30" style={{ background: 'var(--z-muted)' }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: 'var(--z-muted)' }} />
         </div>
 
         {/* Header — large status banner */}
@@ -76,7 +76,7 @@ export default function StatusFactorsModal({ open, onClose, status, aiMessage, p
             <StatusIcon className="w-6 h-6" style={{ color: cfg.color }} strokeWidth={2.5} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] uppercase tracking-widest opacity-70" style={{ color: 'var(--z-text)' }}>
+            <p className="text-[9px] tracking-tight" style={{ color: 'var(--z-text)' }}>
               Análisis · {profileLabel}
             </p>
             <h2 className="text-xl font-black font-heading leading-tight" style={{ color: cfg.color }}>
@@ -97,7 +97,7 @@ export default function StatusFactorsModal({ open, onClose, status, aiMessage, p
 
           {/* AI explanation */}
           <section>
-            <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60" style={{ color: 'var(--z-text)' }}>
+            <h3 className="text-[10px] font-bold tracking-tight mb-2" style={{ color: 'var(--z-text)' }}>
               Explicación
             </h3>
             <p className="text-[12px] leading-relaxed" style={{ color: 'var(--z-text)' }}>
@@ -107,12 +107,12 @@ export default function StatusFactorsModal({ open, onClose, status, aiMessage, p
 
           {/* Factors table */}
           <section>
-            <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60" style={{ color: 'var(--z-text)' }}>
+            <h3 className="text-[10px] font-bold tracking-tight mb-2" style={{ color: 'var(--z-text)' }}>
               Factores
             </h3>
             <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--z-border)' }}>
               {/* Header row */}
-              <div className="grid grid-cols-[1.4fr_1fr_0.9fr_0.4fr] gap-2 px-3 py-2 text-[9px] font-bold uppercase tracking-widest"
+              <div className="grid grid-cols-[1.4fr_1fr_0.9fr_0.4fr] gap-2 px-3 py-2 text-[9px] font-bold tracking-tight"
                 style={{ background: 'var(--z-card)', color: 'var(--z-muted)' }}>
                 <span>Factor</span>
                 <span className="text-right">Valor</span>
@@ -133,8 +133,8 @@ export default function StatusFactorsModal({ open, onClose, status, aiMessage, p
                     }}
                   >
                     <span className="truncate">{f.label}</span>
-                    <span className="text-right font-mono font-bold" style={{ color: v.color }}>{f.value}</span>
-                    <span className="text-right font-mono opacity-70 text-[10px]">{f.threshold}</span>
+                    <span className="text-right font-medium font-bold" style={{ color: v.color }}>{f.value}</span>
+                    <span className="text-right font-medium text-[10px]">{f.threshold}</span>
                     <span className="flex justify-center">
                       <IconV className="w-3.5 h-3.5" style={{ color: v.color }} />
                     </span>
@@ -147,9 +147,9 @@ export default function StatusFactorsModal({ open, onClose, status, aiMessage, p
           {/* Color legend */}
           <section className="rounded-xl p-3 grid grid-cols-2 gap-2"
             style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
-            <LegendItem icon={CheckCircle}   color="#00ff66" label="OK" />
-            <LegendItem icon={AlertTriangle} color="#ffb800" label="Precaución" />
-            <LegendItem icon={XOctagon}      color="#ff0055" label="Crítico" />
+            <LegendItem icon={CheckCircle}   color="var(--color-system-green)" label="OK" />
+            <LegendItem icon={AlertTriangle} color="var(--color-system-orange)" label="Precaución" />
+            <LegendItem icon={XOctagon}      color="var(--color-system-red)" label="Crítico" />
             <LegendItem icon={Minus}         color="#94a3b8" label="Informativo" />
           </section>
 

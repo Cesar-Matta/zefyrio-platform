@@ -33,10 +33,10 @@ interface AirspaceFeature {
 // ─── Icons & Components ──────────────────────────────────────────────────────
 
 const HUD_COLORS = {
-  cyan: '#00F0FF',
-  green: '#00FF66',
-  amber: '#FFB800',
-  red: '#FF0055',
+  cyan: 'var(--color-system-blue)',
+  green: 'var(--color-system-green)',
+  amber: 'var(--color-system-orange)',
+  red: 'var(--color-system-red)',
   purple: '#8B5CF6',
 };
 
@@ -50,19 +50,19 @@ const LAYER_DEFS: LayerDef[] = [
   { id: 'classE',     label: 'Clase E',          icon: MapPin,     color: '#9B59B6', group: 'navigation',  filter: p => p.icaoClass === C.E },
   { id: 'classF',     label: 'Clase F',          icon: MapPin,     color: '#6C3483', group: 'navigation',  filter: p => p.icaoClass === C.F },
   { id: 'classG',     label: 'Clase G',          icon: MapPin,     color: '#27AE60', group: 'navigation',  filter: p => p.icaoClass === C.G },
-  { id: 'restricted', label: 'Área Restringida', icon: ShieldAlert,color: '#FF0055', group: 'navigation',  filter: p => p.type === T.RESTRICTED },
-  { id: 'danger',     label: 'Área de Peligro',  icon: AlertTriangle, color: '#FF6B00', group: 'navigation',  filter: p => p.type === T.DANGER },
+  { id: 'restricted', label: 'Área Restringida', icon: ShieldAlert,color: 'var(--color-system-red)', group: 'navigation',  filter: p => p.type === T.RESTRICTED },
+  { id: 'danger',     label: 'Área de Peligro',  icon: AlertTriangle, color: 'var(--color-system-orange)', group: 'navigation',  filter: p => p.type === T.DANGER },
   { id: 'prohibited', label: 'Área Prohibida',   icon: X,          color: '#CC0000', group: 'navigation',  filter: p => p.type === T.PROHIBITED },
   { id: 'ctr',        label: 'CTR',              icon: Target,     color: '#0088FF', group: 'navigation',  filter: p => p.type === T.CTR },
   { id: 'tma',        label: 'TMA',              icon: Navigation, color: '#00CCFF', group: 'navigation',  filter: p => p.type === T.TMA },
   { id: 'special',    label: 'Uso Especial',     icon: Flag,       color: '#C0392B', group: 'navigation',  filter: p => p.type === T.SPECIAL },
   { id: 'military',   label: 'Área Militar',     icon: Shield,     color: '#808000', group: 'navigation',  filter: p => p.activity === ACT.MILITARY },
-  { id: 'gliding',    label: 'Sectores Planeo',  icon: Wind,       color: '#A8D08D', group: 'navigation',  filter: p => p.activity === ACT.GLIDING },
+  { id: 'gliding',    label: 'Sectores Planeo',  icon: Wind,       color: 'var(--color-system-green)', group: 'navigation',  filter: p => p.activity === ACT.GLIDING },
   { id: 'hanggliding',label: 'Ala Delta',        icon: Wind,       color: '#FFA500', group: 'navigation',  filter: p => p.activity === ACT.HANGGLIDING },
   { id: 'rc',         label: 'RC Airfields',     icon: RadioTower, color: '#00CED1', group: 'navigation',  filter: p => p.activity === ACT.RC },
   { id: 'parachuting',label: 'Paracaidismo',     icon: Crosshair,  color: '#FFD700', group: 'navigation',  filter: p => p.activity === ACT.PARACHUTING },
-  { id: 'adsb',       label: 'Tráfico ADS-B en Vivo', icon: Plane, color: '#00FF66', group: 'traffic' },
-  { id: 'airports',   label: 'Aeropuertos y METAR', icon: RadioTower, color: '#00F0FF', group: 'airports' },
+  { id: 'adsb',       label: 'Tráfico ADS-B en Vivo', icon: Plane, color: 'var(--color-system-green)', group: 'traffic' },
+  { id: 'airports',   label: 'Aeropuertos y METAR', icon: RadioTower, color: 'var(--color-system-blue)', group: 'airports' },
   { id: 'radar',      label: 'Radar de Lluvia',  icon: CloudRain,  color: '#00BFFF', group: 'weather' },
   { id: 'clouds',     label: 'Nubes (IR Satélite)', icon: Cloud,   color: '#FFFFFF', group: 'weather' },
   { id: 'cloudsVis',  label: 'Nubes (Visible)',  icon: Sun,        color: '#FFFFAA', group: 'weather' },
@@ -78,9 +78,9 @@ const LAYER_INITIAL: Record<string, boolean> = {
 
 const GROUP_META: Record<string, { label: string; icon: LucideIcon; accent: string }> = {
   weather:     { label: 'METEOROLOGÍA',  icon: CloudRain,    accent: '#00BFFF' },
-  navigation:  { label: 'NAVEGACIÓN',    icon: MapIcon,      accent: '#FF0055' },
-  traffic:     { label: 'TRÁFICO VIVO',  icon: Plane,        accent: '#00FF66' },
-  airports:    { label: 'AERÓDROMOS',    icon: RadioTower,   accent: '#00F0FF' },
+  navigation:  { label: 'NAVEGACIÓN',    icon: MapIcon,      accent: 'var(--color-system-red)' },
+  traffic:     { label: 'TRÁFICO VIVO',  icon: Plane,        accent: 'var(--color-system-green)' },
+  airports:    { label: 'AERÓDROMOS',    icon: RadioTower,   accent: 'var(--color-system-blue)' },
   base:        { label: 'MAPA BASE',     icon: Layers,       accent: '#94A3B8' },
 };
 
@@ -222,10 +222,10 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
             {openGroup ? (
               <div className="flex flex-col">
                 <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--z-border)' }}>
-                  <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5" style={{ color: GROUP_META[openGroup].accent }}>
+                  <span className="text-[10px] font-black tracking-tight flex items-center gap-1.5" style={{ color: GROUP_META[openGroup].accent }}>
                     {React.createElement(GROUP_META[openGroup].icon, { className: 'w-3 h-3' })} {GROUP_META[openGroup].label}
                   </span>
-                  <button onClick={() => setOpenGroup(null)} className="opacity-40 hover:opacity-100 transition-opacity"><X className="w-3 h-3"/></button>
+                  <button onClick={() => setOpenGroup(null)} className="hover:opacity-100 transition-opacity"><X className="w-3 h-3"/></button>
                 </div>
                 {LAYER_DEFS.filter(l => l.group === openGroup).map(l => (
                    <LayerButton key={l.id} label={l.label} icon={l.icon} active={layers[l.id]} onClick={() => setLayers(p => ({...p, [l.id]: !p[l.id]}))} color={l.color} />
@@ -236,7 +236,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
                 {Object.keys(GROUP_META).map(group => (
                   <button key={group} onClick={() => setOpenGroup(group)} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
                     {React.createElement(GROUP_META[group].icon, { className: 'w-4 h-4', style: { color: GROUP_META[group].accent } })}
-                    <span className="text-[10px] font-bold text-white/70">{GROUP_META[group].label}</span>
+                    <span className="text-[10px] font-bold text-[var(--z-muted)]">{GROUP_META[group].label}</span>
                   </button>
                 ))}
               </div>
@@ -289,10 +289,10 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
               }}
             >
               <Tooltip sticky>
-                <div className="font-mono text-[9px] bg-black/90 text-white p-2 rounded border border-white/10">
-                  <div className="font-bold uppercase tracking-wider" style={{ color: typeDef.color }}>{f.properties.name || 'Área Restringida'}</div>
-                  <div className="opacity-60 mt-1">LÍMITE SUPERIOR: {f.properties.upperLimit?.value ? `${f.properties.upperLimit.value} ${f.properties.upperLimit.unit === 1 ? 'FT' : 'FL'}` : 'SFC'}</div>
-                  <div className="opacity-60">LÍMITE INFERIOR: {f.properties.lowerLimit?.value ? `${f.properties.lowerLimit.value} ${f.properties.lowerLimit.unit === 1 ? 'FT' : 'FL'}` : 'SFC'}</div>
+                <div className="font-medium text-[9px] bg-[var(--z-card)] text-[var(--z-text)] p-2 rounded border border-[var(--z-border)]">
+                  <div className="font-bold tracking-wider" style={{ color: typeDef.color }}>{f.properties.name || 'Área Restringida'}</div>
+                  <div className="mt-1">LÍMITE SUPERIOR: {f.properties.upperLimit?.value ? `${f.properties.upperLimit.value} ${f.properties.upperLimit.unit === 1 ? 'FT' : 'FL'}` : 'SFC'}</div>
+                  <div className="">LÍMITE INFERIOR: {f.properties.lowerLimit?.value ? `${f.properties.lowerLimit.value} ${f.properties.lowerLimit.unit === 1 ? 'FT' : 'FL'}` : 'SFC'}</div>
                 </div>
               </Tooltip>
             </GeoJSON>
@@ -311,39 +311,39 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
         ))}
 
         {layers.adsb && aircrafts.length === 0 && (
-          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] bg-black/70 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-            <span className="text-[10px] font-mono text-[#FFB800]">SIN TRÁFICO ADS-B EN ESTA ZONA</span>
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] bg-[var(--z-card)] backdrop-blur-md px-4 py-2 rounded-xl border border-[var(--z-border)]">
+            <span className="text-[10px] font-medium text-[var(--color-system-orange)]">SIN TRÁFICO ADS-B EN ESTA ZONA</span>
           </div>
         )}
 
         {layers.adsb && aircrafts.map((ac) => (
           <Marker key={ac.icao24} position={[ac.lat, ac.lon]} icon={createAircraftIcon(ac.trueTrack, String(ac.category))}>
             <Tooltip direction="right" offset={[10, 0]}>
-              <div className="p-1.5 min-w-[140px] font-mono text-[10px]">
-                <div className="flex justify-between items-center border-b border-white/20 pb-1 mb-1">
-                  <span className="text-cyber-cyan font-bold">{ac.callsign}</span>
-                  <span className="text-[9px] opacity-60">#{ac.icao24.toUpperCase()}</span>
+              <div className="p-1.5 min-w-[140px] font-medium text-[10px]">
+                <div className="flex justify-between items-center border-b border-[var(--z-border)] pb-1 mb-1">
+                  <span className="text-[var(--z-muted)] font-bold">{ac.callsign}</span>
+                  <span className="text-[9px]">#{ac.icao24.toUpperCase()}</span>
                 </div>
                 {(ac.registration || ac.aircraftType) && (
-                  <div className="flex justify-between border-b border-white/10 pb-1 mb-1">
-                    {ac.registration && <span className="text-[#00FF66]">{ac.registration}</span>}
-                    {ac.aircraftType && <span className="opacity-70">{ac.aircraftType}</span>}
+                  <div className="flex justify-between border-b border-[var(--z-border)] pb-1 mb-1">
+                    {ac.registration && <span className="text-[var(--color-system-green)]">{ac.registration}</span>}
+                    {ac.aircraftType && <span className="">{ac.aircraftType}</span>}
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="opacity-60">ALT</span>
+                  <span className="">ALT</span>
                   <span>{Math.round((ac.baroAltitude ?? 0) * 3.28084)} FT</span>
                 </div>
                 {ac.velocity != null && ac.velocity > 0 && (
                   <div className="flex justify-between">
-                    <span className="opacity-60">GS</span>
+                    <span className="">GS</span>
                     <span>{Math.round(ac.velocity * 1.94384)} KT</span>
                   </div>
                 )}
                 {ac.verticalRate != null && ac.verticalRate !== 0 && (
                   <div className="flex justify-between">
-                    <span className="opacity-60">VS</span>
-                    <span style={{ color: ac.verticalRate > 0 ? '#00FF66' : '#FF6B00' }}>
+                    <span className="">VS</span>
+                    <span style={{ color: ac.verticalRate > 0 ? 'var(--color-system-green)' : 'var(--color-system-orange)' }}>
                       {ac.verticalRate > 0 ? '▲' : '▼'} {Math.abs(Math.round(ac.verticalRate * 196.85))} FPM
                     </span>
                   </div>
@@ -378,9 +378,9 @@ function LayerButton({ label, icon: Icon, active, onClick, color }: {
   label: string, icon: LucideIcon, active: boolean, onClick: () => void, color?: string
 }) {
   return (
-    <button onClick={onClick} className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-xl transition-all duration-200 border ${active ? 'border-white/10' : 'border-transparent'}`}
+    <button onClick={onClick} className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-xl transition-all duration-200 border ${active ? 'border-[var(--z-border)]' : 'border-transparent'}`}
       style={{ background: active ? 'var(--z-surface)' : 'transparent' }}>
-      <Icon className={`w-4 h-4 transition-all ${active ? '' : 'filter grayscale opacity-30 shadow-none'}`} 
+      <Icon className={`w-4 h-4 transition-all ${active ? '' : 'filter grayscale  shadow-none'}`} 
         style={{ color: active ? (color || 'var(--z-cyan)') : 'var(--z-text)', filter: active ? `drop-shadow(0 0 4px ${color || 'var(--z-cyan)'}80)` : 'none' }} />
       <span className="text-[10px] font-bold tracking-tight" style={{ color: 'var(--z-text)', opacity: active ? 1 : 0.4 }}>{label}</span>
     </button>

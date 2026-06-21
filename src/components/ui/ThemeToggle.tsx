@@ -29,7 +29,7 @@ export function ThemeToggle({ size = "md", className = "" }: ThemeToggleProps) {
         border theme-transition cursor-pointer
         active:scale-95 hover:scale-105
         ${isDark 
-          ? "bg-white/10 border-white/20 hover:bg-white/20 text-yellow-300 hover:text-yellow-200" 
+          ? "bg-white/10 border-[var(--z-border)] hover:bg-white/20 text-yellow-300 hover:text-yellow-200" 
           : "bg-slate-100 border-slate-300 hover:bg-slate-200 text-slate-700 hover:text-slate-900"
         }
         ${className}

@@ -16,9 +16,9 @@ import {
 } from "@/lib/api/sessions";
 
 const STATUS_COLORS: Record<string, string> = {
-  GO: '#00ff66',
-  CAUTION: '#ffb800',
-  'NO-GO': '#ff0055',
+  GO: 'var(--color-system-green)',
+  CAUTION: 'var(--color-system-orange)',
+  'NO-GO': 'var(--color-system-red)',
 };
 
 function formatDuration(seconds: number) {
@@ -112,15 +112,15 @@ export default function FlightLog() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BookOpen className="w-4 h-4" style={{ color: 'var(--z-cyan)' }} />
-          <span className="text-[11px] uppercase tracking-[0.16em] font-bold" style={{ color: 'var(--z-text)' }}>
+          <span className="text-[11px] tracking-[0.16em] font-bold" style={{ color: 'var(--z-text)' }}>
             {t('log_title')}
           </span>
           {/* Sync indicator */}
           <span
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider"
             style={{
               background: isLive ? 'rgba(0,255,102,0.1)' : 'rgba(255,184,0,0.1)',
-              color: isLive ? '#00ff66' : '#ffb800',
+              color: isLive ? 'var(--color-system-green)' : 'var(--color-system-orange)',
               border: `1px solid ${isLive ? 'rgba(0,255,102,0.3)' : 'rgba(255,184,0,0.3)'}`,
             }}
             title={isLive ? 'Sincronizado con la nube' : 'Solo local (offline o sin sesión)'}
@@ -133,7 +133,7 @@ export default function FlightLog() {
           {sessions.length > 0 && (
             <button
               onClick={exportLog}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-wider transition cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[8px] font-bold tracking-wider transition cursor-pointer"
               style={{ background: 'var(--z-glass-bg)', border: '1px solid var(--z-border)', color: 'var(--z-muted)' }}
             >
               <Download className="w-3 h-3" /> CSV
@@ -142,8 +142,8 @@ export default function FlightLog() {
           <button
             onClick={handleSave}
             disabled={!telemetryData}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-wider transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: 'rgba(0,255,102,0.1)', border: '1px solid rgba(0,255,102,0.3)', color: '#00ff66' }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[8px] font-bold tracking-wider transition cursor-pointer disabled: disabled:cursor-not-allowed"
+            style={{ background: 'rgba(0,255,102,0.1)', border: '1px solid rgba(0,255,102,0.3)', color: 'var(--color-system-green)' }}
           >
             <Plus className="w-3 h-3" /> {t('log_save')}
           </button>
@@ -156,14 +156,14 @@ export default function FlightLog() {
           className="rounded-2xl p-8 flex flex-col items-center gap-3"
           style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}
         >
-          <BookOpen className="w-8 h-8 opacity-30" style={{ color: 'var(--z-muted)' }} />
+          <BookOpen className="w-8 h-8" style={{ color: 'var(--z-muted)' }} />
           <p className="text-[11px] font-data" style={{ color: 'var(--z-muted)' }}>{t('log_empty')}</p>
         </div>
       )}
 
       {/* Sessions */}
       {sessions.map((session) => {
-        const statusColor = STATUS_COLORS[session.status] || '#ffb800';
+        const statusColor = STATUS_COLORS[session.status] || 'var(--color-system-orange)';
         const isExpanded = expanded === session.id;
         return (
           <div
@@ -189,7 +189,7 @@ export default function FlightLog() {
                     {session.profile.toUpperCase()}
                   </span>
                   {session._pending && (
-                    <span className="text-[7px] font-data px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,184,0,0.15)', color: '#ffb800' }}>
+                    <span className="text-[7px] font-data px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,184,0,0.15)', color: 'var(--color-system-orange)' }}>
                       PENDING
                     </span>
                   )}
@@ -233,10 +233,10 @@ export default function FlightLog() {
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}
-                    className="p-1.5 rounded-lg transition cursor-pointer hover:opacity-80"
+                    className="p-1.5 rounded-lg transition cursor-pointer hover:"
                     style={{ background: 'rgba(255,0,85,0.1)' }}
                   >
-                    <Trash2 className="w-3 h-3" style={{ color: '#ff0055' }} />
+                    <Trash2 className="w-3 h-3" style={{ color: 'var(--color-system-red)' }} />
                   </button>
                 </div>
               </div>

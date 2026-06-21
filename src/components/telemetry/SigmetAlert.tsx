@@ -25,12 +25,12 @@ interface SigmetAlertProps {
 }
 
 const HAZARD_CONFIG: Record<string, { icon: LucideIcon; label: string; color: string }> = {
-  TURB:       { icon: Wind,           label: 'Turbulencia',        color: '#ffb800' },
+  TURB:       { icon: Wind,           label: 'Turbulencia',        color: 'var(--color-system-orange)' },
   ICE:        { icon: Snowflake,      label: 'Engelamiento',       color: '#00b4d8' },
   IFR:        { icon: Eye,            label: 'Baja Visibilidad',   color: '#ff6b6b' },
   'MTN OBSCN':{ icon: Mountain,       label: 'Montaña Obscurecida',color: '#a78bfa' },
-  TS:         { icon: CloudLightning, label: 'Tormenta Eléctrica', color: '#ff0055' },
-  CONVECTIVE: { icon: CloudLightning, label: 'Convección Severa',  color: '#ff0055' },
+  TS:         { icon: CloudLightning, label: 'Tormenta Eléctrica', color: 'var(--color-system-red)' },
+  CONVECTIVE: { icon: CloudLightning, label: 'Convección Severa',  color: 'var(--color-system-red)' },
 };
 
 export default function SigmetAlert({ lat, lon }: SigmetAlertProps) {
@@ -71,7 +71,7 @@ export default function SigmetAlert({ lat, lon }: SigmetAlertProps) {
   const critical = sigmets.filter(s => s.severity === 'SEV' || s.hazard === 'TS' || s.hazard === 'CONVECTIVE');
   const hasCritical = critical.length > 0;
 
-  const borderColor = hasCritical ? '#ff0055' : '#ffb800';
+  const borderColor = hasCritical ? 'var(--color-system-red)' : 'var(--color-system-orange)';
   const bgColor = hasCritical ? 'rgba(255,0,85,0.06)' : 'rgba(255,184,0,0.06)';
 
   return (
@@ -89,7 +89,7 @@ export default function SigmetAlert({ lat, lon }: SigmetAlertProps) {
               <AlertTriangle className="w-4 h-4" style={{ color: borderColor }} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] uppercase tracking-[0.16em] font-semibold" style={{ color: 'var(--z-muted)' }}>
+              <p className="text-[9px] tracking-[0.16em] font-semibold" style={{ color: 'var(--z-muted)' }}>
                 SIGMET / AIRMET
               </p>
               <p className="text-[13px] font-black font-heading" style={{ color: borderColor }}>
@@ -102,18 +102,18 @@ export default function SigmetAlert({ lat, lon }: SigmetAlertProps) {
           {/* Chips — each one opens detail modal */}
           <div className="flex flex-wrap gap-1.5">
             {sigmets.map((sigmet, idx) => {
-              const cfg = HAZARD_CONFIG[sigmet.hazard] || { icon: AlertTriangle, label: sigmet.hazard, color: '#ffb800' };
+              const cfg = HAZARD_CONFIG[sigmet.hazard] || { icon: AlertTriangle, label: sigmet.hazard, color: 'var(--color-system-orange)' };
               const Icon = cfg.icon;
               return (
                 <button
                   key={idx}
                   onClick={() => setSelected(sigmet)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider hover:brightness-125 transition"
+                  className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-bold tracking-wider hover:brightness-125 transition"
                   style={{ background: `${cfg.color}15`, color: cfg.color, border: `1px solid ${cfg.color}30` }}
                 >
                   <Icon className="w-3 h-3" />
                   {cfg.label}
-                  {sigmet.severity && <span className="opacity-60">({sigmet.severity})</span>}
+                  {sigmet.severity && <span className="">({sigmet.severity})</span>}
                 </button>
               );
             })}
@@ -126,7 +126,7 @@ export default function SigmetAlert({ lat, lon }: SigmetAlertProps) {
       </section>
 
       {selected && (() => {
-        const cfg = HAZARD_CONFIG[selected.hazard] || { icon: AlertTriangle, label: selected.hazard, color: '#ffb800' };
+        const cfg = HAZARD_CONFIG[selected.hazard] || { icon: AlertTriangle, label: selected.hazard, color: 'var(--color-system-orange)' };
         return (
           <AlertDetailModal
             open={true}

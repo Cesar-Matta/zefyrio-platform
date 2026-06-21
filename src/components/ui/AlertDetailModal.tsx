@@ -17,7 +17,7 @@ interface AlertDetailModalProps {
   onClose: () => void;
   icon: LucideIcon;
   accent: string;             // HEX color — sets border, badges, accents
-  badge: string;              // small uppercase label, e.g. "RESTRINGIDO"
+  badge: string;              // small  label, e.g. "RESTRINGIDO"
   title: string;              // big title, e.g. "SKE3"
   subtitle?: string;          // small caption under title, e.g. "RESTRICTED AREA · 28.9 nm"
   body: string;               // main long-form text
@@ -60,7 +60,7 @@ export default function AlertDetailModal({
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-2 pb-1">
-          <div className="w-10 h-1 rounded-full opacity-30" style={{ background: 'var(--z-muted)' }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: 'var(--z-muted)' }} />
         </div>
 
         {/* Header */}
@@ -74,7 +74,7 @@ export default function AlertDetailModal({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span
-                className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+                className="text-[9px] font-black tracking-tight px-2 py-0.5 rounded-full"
                 style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}40` }}
               >
                 {badge}
@@ -84,7 +84,7 @@ export default function AlertDetailModal({
               {title}
             </h2>
             {subtitle && (
-              <p className="text-[10px] uppercase tracking-wider mt-0.5 font-mono opacity-70" style={{ color: 'var(--z-text)' }}>
+              <p className="text-[10px] tracking-wider mt-0.5 font-medium" style={{ color: 'var(--z-text)' }}>
                 {subtitle}
               </p>
             )}
@@ -103,10 +103,10 @@ export default function AlertDetailModal({
 
           {/* Main description */}
           <section>
-            <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60" style={{ color: 'var(--z-text)' }}>
+            <h3 className="text-[10px] font-bold tracking-tight mb-2" style={{ color: 'var(--z-text)' }}>
               Descripción
             </h3>
-            <p className="text-[12px] leading-relaxed font-mono" style={{ color: 'var(--z-text)' }}>
+            <p className="text-[12px] leading-relaxed font-medium" style={{ color: 'var(--z-text)' }}>
               {body}
             </p>
           </section>
@@ -117,10 +117,10 @@ export default function AlertDetailModal({
               style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
               {fields.filter(f => f.value != null && f.value !== '').map((f, i) => (
                 <div key={i}>
-                  <p className="text-[8px] uppercase tracking-widest opacity-50 mb-0.5" style={{ color: 'var(--z-text)' }}>
+                  <p className="text-[8px] tracking-tight mb-0.5" style={{ color: 'var(--z-text)' }}>
                     {f.label}
                   </p>
-                  <p className={`text-[11px] ${f.mono ? 'font-mono' : ''}`} style={{ color: 'var(--z-text)' }}>
+                  <p className={`text-[11px] ${f.mono ? 'font-medium' : ''}`} style={{ color: 'var(--z-text)' }}>
                     {f.value}
                   </p>
                 </div>
@@ -131,10 +131,10 @@ export default function AlertDetailModal({
           {/* Raw payload (collapsible-style) */}
           {raw && (
             <section>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60" style={{ color: 'var(--z-text)' }}>
+              <h3 className="text-[10px] font-bold tracking-tight mb-2" style={{ color: 'var(--z-text)' }}>
                 Texto crudo
               </h3>
-              <pre className="text-[10px] font-mono leading-relaxed p-3 rounded-xl overflow-x-auto whitespace-pre-wrap break-words"
+              <pre className="text-[10px] font-medium leading-relaxed p-3 rounded-xl overflow-x-auto whitespace-pre-wrap break-words"
                 style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)', color: 'var(--z-text)' }}>
                 {raw}
               </pre>

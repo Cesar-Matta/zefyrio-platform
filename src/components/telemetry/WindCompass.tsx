@@ -21,7 +21,7 @@ export default function WindCompass({ surfaceWind, maxGusts, className = "" }: W
     >
       {/* Label */}
       <div className="w-full flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-[0.16em] font-semibold"
+        <span className="text-[9px] tracking-[0.16em] font-semibold"
           style={{ color: 'var(--z-muted)' }}>
           {t('wind_surface')}
         </span>
@@ -79,7 +79,7 @@ export default function WindCompass({ surfaceWind, maxGusts, className = "" }: W
       {/* Gusts */}
       <div className="w-full flex items-center justify-between px-1">
         <span className="text-[8px] font-data" style={{ color: 'var(--z-muted)' }}>{t('wind_gusts')}</span>
-        <span className="text-[11px] font-black font-data" style={{ color: '#ffb800' }}>
+        <span className="text-[11px] font-black font-data" style={{ color: 'var(--color-system-orange)' }}>
           {maxGusts} kts
         </span>
       </div>

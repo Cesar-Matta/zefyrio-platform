@@ -32,9 +32,9 @@ const SEVERITY: Record<number, { tone: string; label: string; priority: number }
 };
 
 const TONE_STYLES: Record<string, { border: string; bg: string; text: string; dot: string }> = {
-  red:    { border: 'border-red-500/40',    bg: 'bg-red-500/10',    text: 'text-red-300',    dot: 'bg-red-500' },
+  red:    { border: 'border-[var(--color-system-red)]/20',    bg: 'bg-[var(--color-system-red)]/10',    text: 'text-red-300',    dot: 'bg-[var(--color-system-red)]' },
   orange: { border: 'border-orange-500/40', bg: 'bg-orange-500/10', text: 'text-orange-300', dot: 'bg-orange-500' },
-  amber:  { border: 'border-amber-500/40',  bg: 'bg-amber-500/10',  text: 'text-amber-300',  dot: 'bg-amber-500' },
+  amber:  { border: 'border-amber-500/40',  bg: 'bg-[var(--color-system-orange)]/10',  text: 'text-amber-300',  dot: 'bg-[var(--color-system-orange)]' },
   yellow: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/10', text: 'text-yellow-300', dot: 'bg-yellow-500' },
 };
 
@@ -46,7 +46,7 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
   const [selected, setSelected] = useState<AirspaceItem | null>(null);
 
   const ACCENT: Record<string, string> = {
-    red: '#ff0055', orange: '#ff6b00', amber: '#ffb800', yellow: '#eab308',
+    red: 'var(--color-system-red)', orange: 'var(--color-system-orange)', amber: 'var(--color-system-orange)', yellow: '#eab308',
   };
 
   const fmtDate = (iso?: string) => {
@@ -94,8 +94,8 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
   if (loading) return (
     <div className="rounded-3xl p-4 border animate-pulse" style={{ background: 'var(--z-card)', borderColor: 'var(--z-border)' }}>
       <div className="flex items-center gap-2 mb-3">
-        <ShieldAlert className="w-4 h-4 text-cyan-400 animate-pulse" />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--z-muted)' }}>
+        <ShieldAlert className="w-4 h-4 text-[var(--color-system-blue)] animate-pulse" />
+        <span className="text-[10px] font-bold tracking-tight" style={{ color: 'var(--z-muted)' }}>
           Escaneando espacio aéreo (OpenAIP)…
         </span>
       </div>
@@ -105,20 +105,20 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
 
   // ─── Error ──────────────────────────────────────────────────────────────────
   if (error) return (
-    <div className="rounded-3xl p-4 border border-red-500/40 bg-red-500/5">
-      <span className="text-[10px] font-bold text-red-400">⚠ {error}</span>
+    <div className="rounded-3xl p-4 border border-[var(--color-system-red)]/20 bg-[var(--color-system-red)]/10">
+      <span className="text-[10px] font-bold text-[var(--color-system-red)]">⚠ {error}</span>
     </div>
   );
 
   // ─── Clear sky ──────────────────────────────────────────────────────────────
   if (zones.length === 0) return (
-    <div className="rounded-3xl p-4 border border-emerald-500/30 bg-emerald-500/5">
+    <div className="rounded-3xl p-4 border border-[var(--color-system-green)]/20 bg-[var(--color-system-green)]/10">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-          <ShieldAlert className="w-4 h-4 text-emerald-400" />
+        <div className="w-8 h-8 rounded-full bg-[var(--color-system-green)]/10 flex items-center justify-center shrink-0">
+          <ShieldAlert className="w-4 h-4 text-[var(--color-system-green)]" />
         </div>
         <div>
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-emerald-400">
+          <h3 className="text-[11px] font-bold tracking-tight text-[var(--color-system-green)]">
             Espacio Aéreo Despejado
           </h3>
           <p className="text-[10px]" style={{ color: 'var(--z-muted)' }}>
@@ -138,18 +138,18 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
     <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom duration-500">
       {/* Header */}
       <div className="flex items-center gap-2 px-1">
-        <AlertOctagon className="w-4 h-4 text-red-500 animate-pulse" />
-        <h3 className="text-[10px] font-bold uppercase tracking-widest text-red-500">
+        <AlertOctagon className="w-4 h-4 text-[var(--color-system-red)] animate-pulse" />
+        <h3 className="text-[10px] font-bold tracking-tight text-[var(--color-system-red)]">
           Zonas de Exclusión (15 nm)
         </h3>
         <span className="ml-auto flex items-center gap-1.5">
           {critical.length > 0 && (
-            <span className="text-[9px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+            <span className="text-[9px] bg-[var(--color-system-red)] text-[var(--z-text)] px-2 py-0.5 rounded-full font-bold animate-pulse">
               {critical.length} CRÍTICO
             </span>
           )}
           {caution.length > 0 && (
-            <span className="text-[9px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold">
+            <span className="text-[9px] bg-[var(--color-system-orange)] text-[var(--z-text)] px-2 py-0.5 rounded-full font-bold">
               {caution.length} PRECAUCIÓN
             </span>
           )}
@@ -183,7 +183,7 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1 gap-2">
-                  <span className={`text-[10px] font-black uppercase tracking-wider ${styles.text} truncate`}>
+                  <span className={`text-[10px] font-black  tracking-wider ${styles.text} truncate`}>
                     {zone.properties.notamNumber}
                   </span>
                   <div className="flex items-center gap-1 shrink-0">
@@ -193,20 +193,20 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
                 </div>
 
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[9px] font-mono uppercase opacity-60" style={{ color: 'var(--z-text)' }}>
+                  <span className="text-[9px] font-medium" style={{ color: 'var(--z-text)' }}>
                     {zone.properties.typeLabel}
                   </span>
                   {dist !== null && (
                     <>
-                      <span className="text-[8px] opacity-40" style={{ color: 'var(--z-text)' }}>•</span>
-                      <span className="text-[9px] font-mono" style={{ color: 'var(--z-text)' }}>
+                      <span className="text-[8px]" style={{ color: 'var(--z-text)' }}>•</span>
+                      <span className="text-[9px] font-medium" style={{ color: 'var(--z-text)' }}>
                         {dist} nm
                       </span>
                     </>
                   )}
                 </div>
 
-                <p className={`text-[10px] leading-relaxed line-clamp-2 font-mono ${styles.text}/70`}>
+                <p className={`text-[10px] leading-relaxed line-clamp-2 font-medium ${styles.text}/70`}>
                   {zone.properties.notamEvent.text}
                 </p>
               </div>
@@ -221,7 +221,7 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
       {zones.length > visible.length && (
         <button
           onClick={() => setExpanded(true)}
-          className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest py-2 rounded-2xl border transition-all hover:bg-white/5"
+          className="flex items-center justify-center gap-2 text-[10px] font-bold tracking-tight py-2 rounded-2xl border transition-all hover:bg-white/5"
           style={{ borderColor: 'var(--z-border)', color: 'var(--z-muted)' }}
         >
           <ChevronDown className="w-3 h-3" />
@@ -231,7 +231,7 @@ export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {
       {expanded && zones.length > 3 && (
         <button
           onClick={() => setExpanded(false)}
-          className="text-[9px] uppercase tracking-widest py-1.5 opacity-50 hover:opacity-100"
+          className="text-[9px] tracking-tight py-1.5 hover:opacity-100"
           style={{ color: 'var(--z-muted)' }}
         >
           Colapsar

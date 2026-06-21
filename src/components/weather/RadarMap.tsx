@@ -11,10 +11,10 @@ const createNeonIcon = (isSelected: boolean) => L.divIcon({
   html: `<div style="
     width: 24px; 
     height: 24px; 
-    background-color: ${isSelected ? '#00F0FF' : 'rgba(11, 13, 23, 0.8)'}; 
-    border: 2px solid ${isSelected ? '#FFFFFF' : '#00F0FF'};
+    background-color: ${isSelected ? 'var(--color-system-blue)' : 'rgba(11, 13, 23, 0.8)'}; 
+    border: 2px solid ${isSelected ? '#FFFFFF' : 'var(--color-system-blue)'};
     border-radius: 50%;
-    box-shadow: 0 0 ${isSelected ? '20px' : '8px'} #00F0FF;
+    box-shadow: 0 0 ${isSelected ? '20px' : '8px'} var(--color-system-blue);
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -22,7 +22,7 @@ const createNeonIcon = (isSelected: boolean) => L.divIcon({
   ">
     ${isSelected 
       ? '<div style="width:8px;height:8px;background:#fff;border-radius:50%;"></div>' 
-      : '<div style="width:4px;height:4px;background:#00F0FF;border-radius:50%;"></div>'}
+      : '<div style="width:4px;height:4px;background:var(--color-system-blue);border-radius:50%;"></div>'}
   </div>`,
   iconSize: [24, 24],
   iconAnchor: [12, 12]
@@ -30,7 +30,7 @@ const createNeonIcon = (isSelected: boolean) => L.divIcon({
 
 // ─── ADS-B Icon: Animated aircraft with true heading rotation ────────────────
 const createAircraftIcon = (trueTrack: number, velocity: number, onGround: boolean) => {
-  const color = onGround ? '#FFB800' : velocity > 250 ? '#FF6B6B' : '#00FF66';
+  const color = onGround ? 'var(--color-system-orange)' : velocity > 250 ? '#FF6B6B' : 'var(--color-system-green)';
   const size = velocity > 300 ? 22 : 18;
   // Sumamos 45° porque el SVG original apunta a la derecha (este), no al norte
   const rotate = (trueTrack || 0) - 45;
@@ -124,10 +124,10 @@ export default function RadarMap({
     : "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
 
   return (
-    <div className="w-full h-[220px] rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative z-0 shrink-0">
+    <div className="w-full h-[220px] rounded-3xl overflow-hidden border border-[var(--z-border)] shadow-[0_0_30px_rgba(0,0,0,0.5)] relative z-0 shrink-0">
       
       {/* Crosshair Militar */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 pointer-events-none z-[400] flex items-center justify-center opacity-30">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 pointer-events-none z-[400] flex items-center justify-center">
         <div className="absolute w-full h-[1px] bg-white"></div>
         <div className="absolute w-[1px] h-full bg-white"></div>
         <div className="absolute w-full h-full border border-white rounded-full"></div>
@@ -135,9 +135,9 @@ export default function RadarMap({
 
       {/* Contador ADS-B live */}
       {showAircraft && aircraftList.length > 0 && (
-        <div className="absolute top-2 right-2 z-[500] bg-black/70 border border-[#00FF66]/40 rounded-xl px-2 py-1 flex items-center gap-1 pointer-events-none">
-          <div className="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse"></div>
-          <span className="text-[9px] font-mono text-[#00FF66] tracking-widest">{aircraftList.length} AERONAVES</span>
+        <div className="absolute top-2 right-2 z-[500] bg-[var(--z-card)] border border-[var(--color-system-green)]/40 rounded-xl px-2 py-1 flex items-center gap-1 pointer-events-none">
+          <div className="w-2 h-2 rounded-full bg-[var(--color-system-green)] animate-pulse"></div>
+          <span className="text-[9px] font-medium text-[var(--color-system-green)] tracking-tight">{aircraftList.length} AERONAVES</span>
         </div>
       )}
 
@@ -180,7 +180,7 @@ export default function RadarMap({
                 <span style={{ 
                   fontFamily: 'monospace', 
                   fontSize: '10px', 
-                  color: '#00F0FF',
+                  color: 'var(--color-system-blue)',
                   background: 'rgba(0,0,0,0.8)',
                   padding: '2px 6px',
                   borderRadius: '4px',
@@ -216,7 +216,7 @@ export default function RadarMap({
                 border: '1px solid rgba(0,255,102,0.4)',
                 minWidth: '100px'
               }}>
-                <div style={{ color: '#00FF66', fontWeight: 'bold' }}>{aircraft.callsign}</div>
+                <div style={{ color: 'var(--color-system-green)', fontWeight: 'bold' }}>{aircraft.callsign}</div>
                 <div style={{ color: '#aaa', marginTop: '2px' }}>
                   ALT: {aircraft.baroAltitude ? `${Math.round(aircraft.baroAltitude * 3.28084).toLocaleString()} ft` : 'N/A'}
                 </div>
@@ -235,11 +235,11 @@ export default function RadarMap({
       {/* SAT / MAP toggle button */}
       <button
         onClick={() => setIsSatellite(prev => !prev)}
-        className="absolute bottom-2 left-2 z-[500] flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-mono tracking-widest transition-all duration-300"
+        className="absolute bottom-2 left-2 z-[500] flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-medium tracking-tight transition-all duration-300"
         style={{
           background: isSatellite ? 'rgba(0,240,255,0.15)' : 'rgba(0,0,0,0.65)',
-          borderColor: isSatellite ? '#00F0FF' : 'rgba(255,255,255,0.2)',
-          color: isSatellite ? '#00F0FF' : 'rgba(255,255,255,0.6)',
+          borderColor: isSatellite ? 'var(--color-system-blue)' : 'rgba(255,255,255,0.2)',
+          color: isSatellite ? 'var(--color-system-blue)' : 'rgba(255,255,255,0.6)',
           boxShadow: isSatellite ? '0 0 8px rgba(0,240,255,0.4)' : 'none',
         }}
       >
@@ -251,7 +251,7 @@ export default function RadarMap({
 
       {/* Radar Sweep Animation Overlay */}
       <div className="absolute inset-0 pointer-events-none z-[400] opacity-20">
-         <div className="w-full h-full rounded-full border border-cyber-cyan absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-150 animate-ping" style={{ animationDuration: '4s' }}></div>
+         <div className="w-full h-full rounded-full border border-[var(--z-border)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-150 animate-ping" style={{ animationDuration: '4s' }}></div>
       </div>
     </div>
   );

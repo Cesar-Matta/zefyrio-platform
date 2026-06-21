@@ -124,8 +124,8 @@ export default function PushNotificationManager() {
     return (
       <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
         style={{ background: 'rgba(255,0,85,0.06)', border: '1px solid rgba(255,0,85,0.2)' }}>
-        <BellOff className="w-3 h-3 flex-shrink-0" style={{ color: '#ff0055' }} />
-        <span className="text-[9px] font-data" style={{ color: '#ff0055' }}>
+        <BellOff className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--color-system-red)' }} />
+        <span className="text-[9px] font-data" style={{ color: 'var(--color-system-red)' }}>
           {t('push_denied')}
         </span>
       </div>
@@ -148,7 +148,7 @@ export default function PushNotificationManager() {
     <button
       onClick={status === 'subscribed' ? unsubscribe : subscribe}
       disabled={status === 'subscribing'}
-      className="flex items-center gap-2 px-3 py-2 rounded-xl w-full transition cursor-pointer disabled:opacity-50"
+      className="flex items-center gap-2 px-3 py-2 rounded-xl w-full transition cursor-pointer disabled:"
       style={{
         background: status === 'subscribed' ? 'rgba(0,255,102,0.08)' : 'var(--z-surface)',
         border: `1px solid ${status === 'subscribed' ? 'rgba(0,255,102,0.3)' : 'var(--z-border)'}`,
@@ -157,13 +157,13 @@ export default function PushNotificationManager() {
       {status === 'subscribing' ? (
         <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--z-cyan)' }} />
       ) : status === 'subscribed' ? (
-        <BellRing className="w-3.5 h-3.5" style={{ color: '#00ff66' }} />
+        <BellRing className="w-3.5 h-3.5" style={{ color: 'var(--color-system-green)' }} />
       ) : (
         <Bell className="w-3.5 h-3.5" style={{ color: 'var(--z-muted)' }} />
       )}
       <div className="flex flex-col items-start flex-1 min-w-0">
         <span className="text-[10px] font-bold font-data"
-          style={{ color: status === 'subscribed' ? '#00ff66' : 'var(--z-text)' }}>
+          style={{ color: status === 'subscribed' ? 'var(--color-system-green)' : 'var(--z-text)' }}>
           {status === 'subscribed' ? t('push_active') : t('push_enable')}
         </span>
         <span className="text-[8px] font-data" style={{ color: 'var(--z-muted)' }}>
@@ -172,7 +172,7 @@ export default function PushNotificationManager() {
       </div>
       {status === 'subscribed' && (
         <div className="w-1.5 h-1.5 rounded-full animate-pulse"
-          style={{ background: '#00ff66', boxShadow: '0 0 6px #00ff66' }} />
+          style={{ background: 'var(--color-system-green)', boxShadow: '0 0 6px var(--color-system-green)' }} />
       )}
     </button>
   );

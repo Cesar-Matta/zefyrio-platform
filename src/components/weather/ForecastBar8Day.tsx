@@ -11,9 +11,9 @@ interface DayForecast {
 }
 
 const getWeatherIcon = (code: number) => {
-  if (code === 0) return <Sun className="w-5 h-5 text-amber-400" />;
+  if (code === 0) return <Sun className="w-5 h-5 text-[var(--color-system-orange)]" />;
   if (code < 3) return <Cloud className="w-5 h-5 text-blue-300" />;
-  if (code < 60) return <CloudRain className="w-5 h-5 text-cyan-400" />;
+  if (code < 60) return <CloudRain className="w-5 h-5 text-[var(--color-system-blue)]" />;
   if (code < 90) return <CloudLightning className="w-5 h-5 text-purple-400" />;
   return <Wind className="w-5 h-5 text-slate-400" />;
 };
@@ -55,11 +55,11 @@ export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number
   return (
     <div className="w-full flex flex-col gap-2 relative">
       <div className="flex justify-between items-center px-1">
-        <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Próximos Días</span>
+        <span className="text-[10px] font-bold tracking-tight text-slate-400">Próximos Días</span>
         <button 
           onClick={fetchForecast} 
           disabled={isLoading}
-          className="p-1 rounded-md hover:bg-white/5 transition-colors disabled:opacity-50"
+          className="p-1 rounded-md hover:bg-white/5 transition-colors disabled:"
           title="Actualizar pronóstico"
         >
           <RefreshCw className={`w-3 h-3 text-slate-400 ${isLoading ? 'animate-spin' : ''}`} />
@@ -72,8 +72,8 @@ export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number
             const date = new Date(day.date + 'T12:00:00Z'); // force midday to avoid timezone shifts
             const isToday = i === 0;
             return (
-              <div key={day.date} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${isToday ? 'bg-white/5 border border-cyber-cyan/30' : ''}`}>
-                <span className="text-[10px] opacity-40 uppercase font-bold tracking-tighter">
+              <div key={day.date} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${isToday ? 'bg-white/5 border border-[var(--z-border)]/30' : ''}`}>
+                <span className="text-[10px] font-bold tracking-tighter">
                   {isToday ? 'Hoy' : date.toLocaleDateString('es-ES', { weekday: 'short' })}
                 </span>
                 <div className="p-1">
@@ -81,7 +81,7 @@ export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="text-xs font-bold">{Math.round(day.max)}°</span>
-                  <span className="text-[9px] opacity-30 font-mono">{Math.round(day.min)}°</span>
+                  <span className="text-[9px] font-medium">{Math.round(day.min)}°</span>
                 </div>
               </div>
             );

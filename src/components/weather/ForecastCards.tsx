@@ -25,9 +25,9 @@ interface MetricConfig {
 }
 
 const TIER_COLOR: Record<"ok" | "warn" | "crit", string> = {
-  ok:   "#00ff66",
-  warn: "#ffb800",
-  crit: "#ff0055",
+  ok:   "var(--color-system-green)",
+  warn: "var(--color-system-orange)",
+  crit: "var(--color-system-red)",
 };
 
 const METRIC: Record<ForecastMetric, MetricConfig> = {
@@ -35,7 +35,7 @@ const METRIC: Record<ForecastMetric, MetricConfig> = {
     label: "Viento por horas",
     unit: "km/h",
     Icon: Wind,
-    accent: "#00f0ff",
+    accent: "var(--color-system-blue)",
     pick: (h) => h.windSpeed,
     tier: (v) => (v >= 25 ? "crit" : v >= 15 ? "warn" : "ok"),
     tip: (v) =>
@@ -191,7 +191,7 @@ function ForecastCard({
       <div className="rounded-2xl p-4 border animate-pulse" style={{ background: "var(--z-card)", borderColor: "var(--z-border)" }}>
         <div className="flex items-center gap-2 mb-3">
           <Icon className="w-3 h-3" style={{ color: cfg.accent }} />
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "var(--z-muted)" }}>
+          <span className="text-[9px] font-bold tracking-tight" style={{ color: "var(--z-muted)" }}>
             {cfg.label}
           </span>
         </div>
@@ -205,7 +205,7 @@ function ForecastCard({
       <div className="rounded-2xl p-4 border" style={{ background: "var(--z-card)", borderColor: "var(--z-border)" }}>
         <div className="flex items-center gap-2 mb-2">
           <Icon className="w-3 h-3" style={{ color: cfg.accent }} />
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "var(--z-muted)" }}>
+          <span className="text-[9px] font-bold tracking-tight" style={{ color: "var(--z-muted)" }}>
             {cfg.label}
           </span>
         </div>
@@ -219,11 +219,11 @@ function ForecastCard({
       {/* Header */}
       <div className="flex items-center gap-2">
         <Icon className="w-3.5 h-3.5" style={{ color: cfg.accent, filter: `drop-shadow(0 0 4px ${cfg.accent}80)` }} />
-        <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "var(--z-muted)" }}>
+        <span className="text-[9px] font-bold tracking-tight" style={{ color: "var(--z-muted)" }}>
           {cfg.label}
         </span>
         <span
-          className="ml-auto text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full"
+          className="ml-auto text-[8px] font-bold tracking-tight px-1.5 py-0.5 rounded-full"
           style={{ background: `${TIER_COLOR[currentTier]}1a`, color: TIER_COLOR[currentTier], border: `1px solid ${TIER_COLOR[currentTier]}40` }}
         >
           {currentTier === "ok" ? "OK" : currentTier === "warn" ? "WARN" : "CRIT"}
@@ -246,7 +246,7 @@ function ForecastCard({
       </div>
 
       {/* Footer — peak + tip */}
-      <div className="flex items-center justify-between text-[8px] uppercase tracking-widest" style={{ color: "var(--z-muted)" }}>
+      <div className="flex items-center justify-between text-[8px] tracking-tight" style={{ color: "var(--z-muted)" }}>
         <span>Pico {fmt(peak)} {cfg.unit} · {peakHour}</span>
         <span className="font-bold" style={{ color: TIER_COLOR[currentTier] }}>
           {cfg.tip(current)}

@@ -19,7 +19,7 @@ export default function GpsSatelliteStatus({ satellites, kpIndex, className = ""
   const strokeOffset = circumference * (1 - pct);
 
   // Kp color
-  const kpColor = kpIndex >= 6 ? '#ff0055' : kpIndex >= 4 ? '#ffb800' : '#00ff66';
+  const kpColor = kpIndex >= 6 ? 'var(--color-system-red)' : kpIndex >= 4 ? 'var(--color-system-orange)' : 'var(--color-system-green)';
   const kpLabel = kpIndex >= 6 ? t('kp_storm') : kpIndex >= 4 ? t('kp_active') : t('kp_calm');
 
   return (
@@ -29,13 +29,13 @@ export default function GpsSatelliteStatus({ satellites, kpIndex, className = ""
     >
       {/* Label */}
       <div className="w-full flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-[0.16em] font-semibold"
+        <span className="text-[9px] tracking-[0.16em] font-semibold"
           style={{ color: 'var(--z-muted)' }}>
           GPS
         </span>
         <div className="flex items-center gap-1">
-          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00ff66' }} />
-          <span className="text-[8px] font-data" style={{ color: '#00ff66' }}>{t('gps_sync')}</span>
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--color-system-green)' }} />
+          <span className="text-[8px] font-data" style={{ color: 'var(--color-system-green)' }}>{t('gps_sync')}</span>
         </div>
       </div>
 
@@ -47,16 +47,16 @@ export default function GpsSatelliteStatus({ satellites, kpIndex, className = ""
             stroke="var(--z-surface)" strokeWidth="5" />
           {/* Progress */}
           <circle cx="42" cy="42" r="36" fill="none"
-            stroke="#00ff66" strokeWidth="5"
+            stroke="var(--color-system-green)" strokeWidth="5"
             strokeDasharray={circumference}
             strokeDashoffset={strokeOffset}
             strokeLinecap="round"
-            style={{ filter: 'drop-shadow(0 0 6px #00ff6688)', transition: 'stroke-dashoffset 1s ease-out' }}
+            style={{ filter: 'drop-shadow(0 0 6px var(--color-system-green)88)', transition: 'stroke-dashoffset 1s ease-out' }}
           />
         </svg>
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Satellite className="w-3.5 h-3.5 mb-0.5" style={{ color: '#00ff66' }} />
+          <Satellite className="w-3.5 h-3.5 mb-0.5" style={{ color: 'var(--color-system-green)' }} />
           <span className="text-[22px] font-black leading-none font-data"
             style={{ color: 'var(--z-text)' }}>
             {satellites}

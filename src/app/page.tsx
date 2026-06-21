@@ -32,7 +32,7 @@ import ForecastCards from "@/components/weather/ForecastCards";
 // FIX: Leaflet SSR Error - Import Map component ONLY on client
 const InteractiveMapView = dynamic(() => import("@/components/map/InteractiveMapView"), { 
   ssr: false,
-  loading: () => <div className="w-full h-full bg-black/20 animate-pulse flex items-center justify-center font-mono text-[10px] text-white/40">INICIALIZANDO RADAR...</div>
+  loading: () => <div className="w-full h-full bg-[var(--z-card)] animate-pulse flex items-center justify-center font-medium text-[10px] text-[var(--z-muted)]">INICIALIZANDO RADAR...</div>
 });
 
 import UserMenu from "@/components/ui/UserMenu";
@@ -247,11 +247,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-0 md:p-8 font-sans theme-transition"
-      style={{ backgroundColor: isDark ? '#050505' : '#e2e8f0' }}>
+      style={{ backgroundColor: 'var(--z-bg)' }}>
       <main className="w-full max-w-[430px] h-[100dvh] md:h-[932px] relative overflow-hidden md:rounded-[3rem] shadow-2xl flex flex-col items-center border-[10px] md:border-x-[12px] md:border-y-[24px] theme-transition"
         style={{
           backgroundColor: 'var(--z-surface)',
-          borderColor: isDark ? '#0a0a0a' : '#cbd5e1',
+          borderColor: 'var(--z-bg)',
           boxShadow: 'var(--z-shadow)',
         }}>
         
@@ -262,32 +262,25 @@ export default function Home() {
           
           {/* Demo mode banner */}
           {isDemo && (
-            <div className="rounded-xl px-3 py-2 mb-1 flex items-center gap-2 shrink-0"
-              style={{ background: 'rgba(255,184,0,0.12)', border: '1px solid rgba(255,184,0,0.35)' }}>
-              <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#ffb800' }}>
+            <div className="rounded-[16px] px-3 py-2.5 mb-1 flex items-center gap-2 shrink-0"
+              style={{ background: 'var(--z-card)', border: '0.5px solid var(--z-border)' }}>
+              <span className="text-[12px] font-medium" style={{ color: 'var(--color-system-orange)' }}>
                 ⚠️ Modo Demo — Sin señal GPS
               </span>
             </div>
           )}
 
           {/* Main App Header */}
-          <header className="flex justify-between items-center shrink-0">
+          <header className="flex justify-between items-center shrink-0 mb-2">
             <div className="flex items-center gap-2.5">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(0,240,255,0.22), rgba(0,240,255,0.05))',
-                  border: '1px solid rgba(0,240,255,0.4)',
-                  boxShadow: '0 0 14px rgba(0,240,255,0.18)',
-                }}
-              >
-                <PlaneTakeoff className="w-4.5 h-4.5" style={{ color: 'var(--z-cyan)' }} strokeWidth={2.5} />
+              <div className="flex items-center justify-center shrink-0">
+                <PlaneTakeoff className="w-8 h-8" style={{ color: 'var(--z-cyan)' }} strokeWidth={1.5} />
               </div>
-              <div className="flex flex-col leading-none">
-                <h1 className="text-xl font-black tracking-tighter font-heading" style={{ color: 'var(--z-text)', letterSpacing: '-0.03em' }}>
-                  ZEFYRIO
+              <div className="flex flex-col leading-tight">
+                <h1 className="text-[24px] font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>
+                  Zefyrio
                 </h1>
-                <span className="text-[8px] font-mono tracking-[0.25em] uppercase opacity-70 mt-0.5" style={{ color: 'var(--z-cyan)' }}>
+                <span className="text-[13px] font-medium" style={{ color: 'var(--z-text)' }}>
                   Aero HUD
                 </span>
               </div>
@@ -297,19 +290,19 @@ export default function Home() {
 
           {/* Location Bar — current coords OR airport badge */}
           {viewingAirport ? (
-            <div className="rounded-xl px-3 py-2.5 flex items-center gap-2 shrink-0"
-              style={{ background: 'rgba(255,184,0,0.10)', border: '1px solid rgba(255,184,0,0.4)' }}>
-              <Plane className="w-4 h-4 shrink-0" style={{ color: '#ffb800' }} />
+            <div className="rounded-[16px] px-3 py-2.5 flex items-center gap-2 shrink-0"
+              style={{ background: 'var(--z-card)', border: '0.5px solid var(--z-border)', boxShadow: 'var(--z-shadow)' }}>
+              <Plane className="w-4 h-4 shrink-0" style={{ color: 'var(--color-system-orange)' }} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-black tracking-wider" style={{ color: '#ffb800' }}>
+                  <span className="text-xs font-black tracking-wider" style={{ color: 'var(--color-system-orange)' }}>
                     {viewingAirport.icao}
                   </span>
                   <span className="text-[10px] truncate" style={{ color: 'var(--z-text)' }}>
                     {viewingAirport.name}
                   </span>
                 </div>
-                <span className="text-[9px] font-mono opacity-70" style={{ color: 'var(--z-text)' }}>
+                <span className="text-[9px] font-medium" style={{ color: 'var(--z-text)' }}>
                   {toAeronautical(viewingAirport.lat, true)}  {toAeronautical(viewingAirport.lon, false)}
                 </span>
               </div>
@@ -318,17 +311,17 @@ export default function Home() {
                 className="shrink-0 w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/10 transition"
                 title="Volver a mi ubicación"
               >
-                <X className="w-4 h-4" style={{ color: '#ffb800' }} />
+                <X className="w-4 h-4" style={{ color: 'var(--color-system-orange)' }} />
               </button>
             </div>
           ) : hasLocation ? (
-            <div className="rounded-xl px-3 py-2 flex items-center gap-2 shrink-0"
-              style={{ background: 'var(--z-glass-bg)', border: '1px solid var(--z-border)' }}>
+            <div className="rounded-[16px] px-3 py-2 flex items-center gap-2 shrink-0"
+              style={{ background: 'var(--z-glass-bg)', border: '1px solid var(--z-border)', boxShadow: 'var(--z-shadow)' }}>
               <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--z-cyan)' }} />
-              <span className="text-[10px] font-mono tracking-wider" style={{ color: 'var(--z-text)' }}>
+              <span className="text-[10px] font-medium tracking-wider" style={{ color: 'var(--z-text)' }}>
                 {toAeronautical(effectiveLat as number, true)}  {toAeronautical(effectiveLon as number, false)}
               </span>
-              <span className="ml-auto text-[8px] uppercase tracking-widest opacity-60" style={{ color: 'var(--z-cyan)' }}>
+              <span className="ml-auto text-[8px] tracking-tight" style={{ color: 'var(--z-cyan)' }}>
                 MI POSICIÓN
               </span>
             </div>
@@ -336,32 +329,33 @@ export default function Home() {
 
           {/* ICAO Airport Search */}
           <form onSubmit={handleIcaoSearch} className="shrink-0">
-            <div className="flex items-center gap-2 rounded-xl px-3 py-2 transition-all"
+            <div className="flex items-center gap-2 rounded-[16px] px-3 py-2 transition-all"
               style={{
                 background: 'var(--z-glass-bg)',
-                border: `1px solid ${icaoError ? '#ff0055' : 'var(--z-border)'}`,
+                border: `1px solid ${icaoError ? 'var(--color-system-red)' : 'var(--z-border)'}`,
+                boxShadow: 'var(--z-shadow)'
               }}>
-              <Search className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--z-muted)' }} />
+              <Search className="w-4 h-4 shrink-0" style={{ color: 'var(--z-muted)' }} />
               <input
                 type="text"
                 value={icaoInput}
                 onChange={(e) => { setIcaoInput(e.target.value.toUpperCase().slice(0, 4)); setIcaoError(''); }}
                 placeholder="Ver otro aeropuerto (ej: SKBO, KJFK, MMMX)"
                 maxLength={4}
-                className="flex-1 bg-transparent outline-none text-xs font-mono tracking-wider placeholder:opacity-50"
+                className="flex-1 bg-transparent outline-none text-[13px] font-medium tracking-wide placeholder:"
                 style={{ color: 'var(--z-text)' }}
               />
               <button
                 type="submit"
                 disabled={icaoLoading || icaoInput.length !== 4}
-                className="shrink-0 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest disabled:opacity-40 transition"
-                style={{ background: 'var(--z-cyan)', color: '#000' }}
+                className="shrink-0 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-wide transition-all"
+                style={{ background: 'var(--z-cyan)', color: '#ffffff' }}
               >
-                {icaoLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Buscar'}
+                {icaoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Buscar'}
               </button>
             </div>
             {icaoError && (
-              <p className="text-[10px] mt-1 px-1" style={{ color: '#ff0055' }}>{icaoError}</p>
+              <p className="text-[10px] mt-1 px-1" style={{ color: 'var(--color-system-red)' }}>{icaoError}</p>
             )}
           </form>
 
@@ -409,8 +403,8 @@ export default function Home() {
               {/* Section header */}
               <div className="flex items-center gap-2">
                 <div className="w-1 h-5 rounded-full" style={{ background: '#f97316' }} />
-                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--z-text)' }}>Pronósticos</h2>
-                <span className="text-[10px] font-mono" style={{ color: 'var(--z-muted)' }}>8 días</span>
+                <h2 className="text-sm font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>Pronósticos</h2>
+                <span className="text-[10px] font-medium" style={{ color: 'var(--z-muted)' }}>8 días</span>
               </div>
               {/* 8-day forecast — rendered inline, not over the map */}
               <div
@@ -421,9 +415,9 @@ export default function Home() {
               </div>
               {/* Hourly drone outlook — wind, UV, humidity, visibility */}
               <div className="flex items-center gap-2 mt-1">
-                <div className="w-1 h-5 rounded-full" style={{ background: '#00f0ff' }} />
-                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--z-text)' }}>Próximas 24h</h2>
-                <span className="text-[10px] font-mono" style={{ color: 'var(--z-muted)' }}>drone outlook</span>
+                <div className="w-1 h-5 rounded-full" style={{ background: 'var(--color-system-blue)' }} />
+                <h2 className="text-sm font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>Próximas 24h</h2>
+                <span className="text-[10px] font-medium" style={{ color: 'var(--z-muted)' }}>drone outlook</span>
               </div>
               <ForecastCards lat={effectiveLat as number} lon={effectiveLon as number} />
             </div>

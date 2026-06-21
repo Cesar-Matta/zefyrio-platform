@@ -88,7 +88,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-0 md:p-8 font-sans relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyber-cyan/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[var(--z-surface)]/5 rounded-full blur-[120px] pointer-events-none" />
 
       <main className="w-full max-w-[430px] h-[100dvh] md:h-auto bg-obsidian relative overflow-hidden md:rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center border-[10px] md:border-x-[12px] md:border-y-[24px] border-[#0a0a0a] z-10">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:24px_24px]" />
@@ -97,25 +97,25 @@ export default function LoginPage() {
 
           {/* Logo */}
           <div className="flex flex-col items-center justify-center mt-12 mb-10">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyber-cyan/20 to-transparent border border-cyber-cyan/30 flex items-center justify-center mb-6 relative shadow-[0_0_30px_rgba(0,240,255,0.15)]">
-              <PlaneTakeoff className="w-10 h-10 text-cyber-cyan relative z-10" />
-              <div className="absolute inset-0 rounded-full bg-cyber-cyan/10 animate-ping opacity-50 duration-3000" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyber-cyan/20 to-transparent border border-[var(--z-border)]/30 flex items-center justify-center mb-6 relative shadow-[0_0_30px_rgba(0,240,255,0.15)]">
+              <PlaneTakeoff className="w-10 h-10 text-[var(--z-muted)] relative z-10" />
+              <div className="absolute inset-0 rounded-full bg-[var(--z-surface)]/10 animate-ping duration-3000" />
             </div>
-            <h1 className="text-4xl font-black text-white tracking-tighter">ZEFYRIO</h1>
-            <p className="text-[10px] font-mono text-cyber-cyan tracking-[0.3em] uppercase mt-2 opacity-80">Aero HUD Protocol</p>
+            <h1 className="text-4xl font-black text-[var(--z-text)] tracking-tighter">ZEFYRIO</h1>
+            <p className="text-[10px] font-medium text-[var(--z-muted)] tracking-tight mt-2">Aero HUD Protocol</p>
           </div>
 
           <div className="flex flex-col gap-4 w-full">
 
             {/* Mode toggle */}
-            <div className="flex rounded-xl overflow-hidden border border-white/10 bg-black/30 p-1 gap-1">
+            <div className="flex rounded-xl overflow-hidden border border-[var(--z-border)] bg-[var(--z-card)] p-1 gap-1">
               <button
                 type="button"
                 onClick={() => { setMode('password'); setError(''); setSent(false); }}
-                className="flex-1 py-2.5 rounded-lg text-xs font-bold tracking-widest uppercase transition-all"
+                className="flex-1 py-2.5 rounded-lg text-xs font-bold tracking-tight transition-all"
                 style={{
                   background: mode === 'password' ? 'rgba(0,240,255,0.12)' : 'transparent',
-                  color: mode === 'password' ? '#00F0FF' : '#6b7280',
+                  color: mode === 'password' ? 'var(--color-system-blue)' : '#6b7280',
                   border: mode === 'password' ? '1px solid rgba(0,240,255,0.3)' : '1px solid transparent',
                 }}
               >
@@ -124,10 +124,10 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setMode('magic'); setError(''); setSent(false); }}
-                className="flex-1 py-2.5 rounded-lg text-xs font-bold tracking-widest uppercase transition-all"
+                className="flex-1 py-2.5 rounded-lg text-xs font-bold tracking-tight transition-all"
                 style={{
                   background: mode === 'magic' ? 'rgba(0,240,255,0.12)' : 'transparent',
-                  color: mode === 'magic' ? '#00F0FF' : '#6b7280',
+                  color: mode === 'magic' ? 'var(--color-system-blue)' : '#6b7280',
                   border: mode === 'magic' ? '1px solid rgba(0,240,255,0.3)' : '1px solid transparent',
                 }}
               >
@@ -137,14 +137,14 @@ export default function LoginPage() {
 
             {/* Password form */}
             {mode === 'password' && (
-              <form onSubmit={handlePassword} className="flex flex-col gap-3 p-5 rounded-2xl bg-[#111625]/60 border border-white/10 backdrop-blur-xl">
+              <form onSubmit={handlePassword} className="flex flex-col gap-3 p-5 rounded-2xl bg-[#111625]/60 border border-[var(--z-border)] backdrop-blur-xl">
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@correo.com"
-                  className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-cyber-cyan/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
+                  className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 text-[var(--z-text)] placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
                 />
                 <div className="relative">
                   <input
@@ -153,7 +153,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Contraseña"
-                    className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3.5 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-cyber-cyan/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
+                    className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 pr-12 text-[var(--z-text)] placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
                   />
                   <button
                     type="button"
@@ -165,7 +165,7 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                  <p className="text-xs px-1" style={{ color: error.includes('confirmar') ? '#00ff66' : '#ff0055' }}>
+                  <p className="text-xs px-1" style={{ color: error.includes('confirmar') ? 'var(--color-system-green)' : 'var(--color-system-red)' }}>
                     {error}
                   </p>
                 )}
@@ -173,7 +173,7 @@ export default function LoginPage() {
                 <button
                   disabled={loading}
                   type="submit"
-                  className="w-full bg-white text-obsidian font-black rounded-xl py-3.5 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50 text-sm"
+                  className="w-full bg-white text-obsidian font-black rounded-xl py-3.5 tracking-tight flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors disabled: text-sm"
                 >
                   {loading
                     ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -192,7 +192,7 @@ export default function LoginPage() {
 
             {/* Magic link form */}
             {mode === 'magic' && (
-              <form onSubmit={handleMagicLink} className="flex flex-col gap-3 p-5 rounded-2xl bg-[#111625]/60 border border-white/10 backdrop-blur-xl">
+              <form onSubmit={handleMagicLink} className="flex flex-col gap-3 p-5 rounded-2xl bg-[#111625]/60 border border-[var(--z-border)] backdrop-blur-xl">
                 {!sent ? (
                   <>
                     <p className="text-xs text-gray-400 leading-relaxed">
@@ -204,24 +204,24 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@correo.com"
-                      className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-cyber-cyan/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
+                      className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 text-[var(--z-text)] placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
                     />
-                    {error && <p className="text-xs text-[#ff0055] px-1">{error}</p>}
+                    {error && <p className="text-xs text-[var(--color-system-red)] px-1">{error}</p>}
                     <button
                       disabled={loading}
                       type="submit"
-                      className="w-full bg-white text-obsidian font-black rounded-xl py-3.5 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50 text-sm"
+                      className="w-full bg-white text-obsidian font-black rounded-xl py-3.5 tracking-tight flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors disabled: text-sm"
                     >
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Mail className="w-4 h-4" /> Enviar enlace</>}
                     </button>
                   </>
                 ) : (
                   <div className="text-center py-4 flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-[#00ff66]/10 border border-[#00ff66]/30 flex items-center justify-center">
-                      <Mail className="w-6 h-6 text-[#00ff66]" />
+                    <div className="w-12 h-12 rounded-full bg-[var(--color-system-green)]/10 border border-[var(--color-system-green)]/30 flex items-center justify-center">
+                      <Mail className="w-6 h-6 text-[var(--color-system-green)]" />
                     </div>
-                    <p className="text-white text-sm font-bold">Revisa tu correo</p>
-                    <p className="text-cyber-cyan font-mono text-xs">{email}</p>
+                    <p className="text-[var(--z-text)] text-sm font-bold">Revisa tu correo</p>
+                    <p className="text-[var(--z-muted)] font-medium text-xs">{email}</p>
                     <p className="text-gray-400 text-[11px] leading-relaxed">
                       Te mandamos un enlace de acceso. Expira en 15 minutos. Si no lo ves, revisa spam.
                     </p>
@@ -240,7 +240,7 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="flex items-center gap-4">
               <div className="flex-1 h-px bg-white/5" />
-              <span className="text-[10px] text-gray-600 font-mono">O</span>
+              <span className="text-[10px] text-gray-600 font-medium">O</span>
               <div className="flex-1 h-px bg-white/5" />
             </div>
 
@@ -248,7 +248,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleGoogle}
-              className="w-full bg-[#111625]/40 border border-white/5 text-white font-semibold rounded-xl py-3.5 flex items-center justify-center gap-3 hover:bg-white/5 transition-colors text-sm"
+              className="w-full bg-[var(--z-card)] border border-white/5 text-[var(--z-text)] font-semibold rounded-xl py-3.5 flex items-center justify-center gap-3 hover:bg-white/5 transition-colors text-sm"
             >
               <GoogleIcon />
               Continuar con Google
@@ -259,7 +259,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGuest}
               disabled={loading}
-              className="w-full text-cyber-cyan/80 hover:text-cyber-cyan font-mono text-[11px] uppercase tracking-[0.2em] py-2 transition-colors disabled:opacity-50"
+              className="w-full text-[var(--z-muted)]/80 hover:text-[var(--z-muted)] font-medium text-[11px] tracking-tight py-2 transition-colors disabled:"
             >
               Probar como invitado →
             </button>

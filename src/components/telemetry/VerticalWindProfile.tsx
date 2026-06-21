@@ -9,10 +9,10 @@ interface VerticalWindProfileProps {
 }
 
 const STATE_CONFIG = {
-  critical: { bar: '#ff0055', text: '#ff0055' },
-  warn:     { bar: '#ffb800', text: '#ffb800' },
+  critical: { bar: 'var(--color-system-red)', text: 'var(--color-system-red)' },
+  warn:     { bar: 'var(--color-system-orange)', text: 'var(--color-system-orange)' },
   ok:       { bar: '#00b4cc', text: '#00b4cc' },
-  calm:     { bar: '#00ff66', text: '#00ff66' },
+  calm:     { bar: 'var(--color-system-green)', text: 'var(--color-system-green)' },
 } as const;
 
 export default function VerticalWindProfile({ verticalProfile, className = "" }: VerticalWindProfileProps) {
@@ -26,7 +26,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
         style={{ borderBottom: '1px solid var(--z-border)' }}>
         <div className="flex items-center gap-2">
           <Wind className="w-3.5 h-3.5" style={{ color: 'var(--z-cyan)' }} />
-          <span className="text-[9px] uppercase tracking-[0.18em] font-semibold"
+          <span className="text-[9px] tracking-[0.18em] font-semibold"
             style={{ color: 'var(--z-muted)' }}>{t('telem_wind_profile')}</span>
         </div>
         <span className="text-[8px] font-data px-2 py-0.5 rounded-full"

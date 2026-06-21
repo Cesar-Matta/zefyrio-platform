@@ -8,9 +8,9 @@ import type { FlightStatus } from '@/store/useStore';
 import AlertDetailModal from '@/components/ui/AlertDetailModal';
 
 const STATUS_CONFIG = {
-  'GO':      { label: 'GOOD TO FLY',   icon: CheckCircle,   color: '#00ff66' },
-  'CAUTION': { label: 'CAUTION',       icon: AlertTriangle, color: '#ffb800' },
-  'NO-GO':   { label: 'NO-GO',         icon: XOctagon,      color: '#ff0055' },
+  'GO':      { label: 'GOOD TO FLY',   icon: CheckCircle,   color: 'var(--color-system-green)' },
+  'CAUTION': { label: 'CAUTION',       icon: AlertTriangle, color: 'var(--color-system-orange)' },
+  'NO-GO':   { label: 'NO-GO',         icon: XOctagon,      color: 'var(--color-system-red)' },
 } as const;
 
 interface CompactStatusBannerProps {
@@ -44,11 +44,11 @@ export default function CompactStatusBanner({ status, aiMessage, profileLabel }:
           <p className="text-[15px] font-black font-heading leading-tight" style={{ color: cfg.color }}>
             {cfg.label}
           </p>
-          <p className="text-[9px] uppercase tracking-widest opacity-60" style={{ color: 'var(--z-text)' }}>
+          <p className="text-[9px] tracking-tight" style={{ color: 'var(--z-text)' }}>
             {profileLabel} · tap para detalles
           </p>
         </div>
-        <ChevronRight className="w-4 h-4 opacity-50 shrink-0" style={{ color: cfg.color }} />
+        <ChevronRight className="w-4 h-4 shrink-0" style={{ color: cfg.color }} />
       </button>
 
       {open && (

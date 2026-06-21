@@ -76,9 +76,7 @@ export default function UserMenu() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
         ) : (
-          <span className="text-xs font-bold" style={{ color: 'var(--z-cyan)' }}>
-            {initials}
-          </span>
+          <User className="w-5 h-5" style={{ color: 'var(--z-cyan)' }} strokeWidth={2} />
         )}
       </button>
 
@@ -97,7 +95,7 @@ export default function UserMenu() {
             <p className="text-xs font-bold truncate" style={{ color: 'var(--z-text)' }}>
               {displayName}
             </p>
-            <p className="text-[10px] opacity-60 truncate" style={{ color: 'var(--z-text)' }}>
+            <p className="text-[10px] truncate" style={{ color: 'var(--z-text)' }}>
               {user?.email || '—'}
             </p>
           </div>
@@ -139,12 +137,12 @@ function MenuItem({ icon: Icon, label, onClick, disabled, danger }: {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs transition hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed"
-      style={{ color: danger ? '#ff0055' : 'var(--z-text)' }}
+      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs transition hover:bg-white/5 disabled: disabled:cursor-not-allowed"
+      style={{ color: danger ? 'var(--color-system-red)' : 'var(--z-text)' }}
     >
       <Icon className="w-3.5 h-3.5" />
       <span className="flex-1 text-left">{label}</span>
-      {disabled && <span className="text-[8px] opacity-50 uppercase">Pronto</span>}
+      {disabled && <span className="text-[8px]">Pronto</span>}
     </button>
   );
 }

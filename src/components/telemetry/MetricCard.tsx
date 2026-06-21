@@ -7,9 +7,9 @@ import type { LucideIcon } from 'lucide-react';
 type Tier = 'ok' | 'warn' | 'crit' | 'neutral';
 
 const TIER_COLOR: Record<Tier, string> = {
-  ok:      '#00ff66',
-  warn:    '#ffb800',
-  crit:    '#ff0055',
+  ok:      'var(--color-system-green)',
+  warn:    'var(--color-system-orange)',
+  crit:    'var(--color-system-red)',
   neutral: 'var(--z-text)',
 };
 
@@ -25,39 +25,34 @@ interface MetricCardProps {
 
 export default function MetricCard({ icon: Icon, label, value, unit, sub, tier = 'neutral', onClick }: MetricCardProps) {
   const valueColor = TIER_COLOR[tier];
-  const accent = tier === 'neutral' ? 'var(--z-muted)' : valueColor;
+  const accent = tier === 'neutral' ? 'var(--color-system-blue)' : valueColor;
 
   return (
     <div
       onClick={onClick}
       role={onClick ? 'button' : undefined}
-      className={`relative rounded-xl px-2.5 py-2 flex flex-col gap-0.5 overflow-hidden transition ${onClick ? 'cursor-pointer hover:brightness-110 active:scale-95' : ''}`}
+      className={`relative rounded-[16px] px-3 py-2.5 flex flex-col gap-1 overflow-hidden transition ${onClick ? 'cursor-pointer active:scale-95' : ''}`}
       style={{
         background: 'var(--z-card)',
-        border: '1px solid var(--z-border)',
+        border: '0.5px solid var(--z-border)',
         minHeight: '64px',
       }}
     >
-      {/* Top tier strip */}
-      {tier !== 'neutral' && (
-        <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ background: valueColor }} />
-      )}
-
       {/* Label row */}
-      <div className="flex items-center gap-1">
-        <Icon className="w-2.5 h-2.5 shrink-0" style={{ color: accent }} />
-        <span className="text-[8px] font-semibold uppercase tracking-widest truncate" style={{ color: 'var(--z-muted)' }}>
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: accent }} strokeWidth={2} />
+        <span className="text-[11px] font-medium truncate" style={{ color: 'var(--z-muted)' }}>
           {label}
         </span>
       </div>
 
       {/* Value */}
       <div className="flex items-baseline gap-0.5 leading-none">
-        <span className="text-[18px] font-black font-data" style={{ color: valueColor }}>
+        <span className="text-[20px] font-semibold tracking-tight" style={{ color: valueColor }}>
           {value}
         </span>
         {unit && (
-          <span className="text-[10px] font-semibold" style={{ color: 'var(--z-muted)' }}>
+          <span className="text-[11px] font-medium" style={{ color: 'var(--z-muted)' }}>
             {unit}
           </span>
         )}
@@ -65,7 +60,7 @@ export default function MetricCard({ icon: Icon, label, value, unit, sub, tier =
 
       {/* Sub-line */}
       {sub && (
-        <span className="text-[8px] font-mono truncate" style={{ color: 'var(--z-muted)' }}>
+        <span className="text-[10px] font-medium truncate mt-0.5" style={{ color: 'var(--z-muted)' }}>
           {sub}
         </span>
       )}

@@ -29,7 +29,7 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <Sunrise className="w-3 h-3" style={{ color: '#fbbf24' }} />
-          <span className="text-[9px] uppercase tracking-[0.16em] font-semibold"
+          <span className="text-[9px] tracking-[0.16em] font-semibold"
             style={{ color: 'var(--z-muted)' }}>
             {t('telem_flight_window')}
           </span>
@@ -37,10 +37,10 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
         <div className="flex items-center gap-1">
           <div
             className="w-1.5 h-1.5 rounded-full"
-            style={{ background: isDaytime ? '#00ff66' : '#6366f1' }}
+            style={{ background: isDaytime ? 'var(--color-system-green)' : '#6366f1' }}
           />
           <span className="text-[8px] font-data"
-            style={{ color: isDaytime ? '#00ff66' : '#6366f1' }}>
+            style={{ color: isDaytime ? 'var(--color-system-green)' : '#6366f1' }}>
             {isDaytime ? t('telem_daytime') : t('telem_nighttime')}
           </span>
         </div>

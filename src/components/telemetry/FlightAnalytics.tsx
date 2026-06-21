@@ -71,9 +71,9 @@ function DonutRing({ go, caution, nogo }: { go: number; caution: number; nogo: n
   const nogoArc   = (nogo / total) * C;
 
   const segments = [
-    { color: '#00ff66', dash: goArc,     offset: 0 },
-    { color: '#ffb800', dash: cautionArc, offset: goArc },
-    { color: '#ff0055', dash: nogoArc,   offset: goArc + cautionArc },
+    { color: 'var(--color-system-green)', dash: goArc,     offset: 0 },
+    { color: 'var(--color-system-orange)', dash: cautionArc, offset: goArc },
+    { color: 'var(--color-system-red)', dash: nogoArc,   offset: goArc + cautionArc },
   ];
 
   return (
@@ -105,7 +105,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
   return (
     <div className="rounded-2xl p-3 flex flex-col gap-0.5"
       style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
-      <span className="text-[8px] uppercase tracking-widest font-bold"
+      <span className="text-[8px] tracking-tight font-bold"
         style={{ color: 'var(--z-muted)' }}>{label}</span>
       <span className="text-[18px] font-black font-data leading-none"
         style={{ color }}>{value}</span>
@@ -166,7 +166,7 @@ export default function FlightAnalytics() {
       {/* Header */}
       <div className="flex items-center gap-2">
         <TrendingUp className="w-4 h-4" style={{ color: 'var(--z-cyan)' }} />
-        <span className="text-[11px] uppercase tracking-[0.16em] font-bold" style={{ color: 'var(--z-text)' }}>
+        <span className="text-[11px] tracking-[0.16em] font-bold" style={{ color: 'var(--z-text)' }}>
           {t('analytics_title')}
         </span>
       </div>
@@ -176,12 +176,12 @@ export default function FlightAnalytics() {
         style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
         <DonutRing go={stats.go} caution={stats.caution} nogo={stats.nogo} />
         <div className="flex flex-col gap-1.5 flex-1">
-          <span className="text-[9px] uppercase tracking-widest font-bold"
+          <span className="text-[9px] tracking-tight font-bold"
             style={{ color: 'var(--z-muted)' }}>{t('analytics_status_breakdown')}</span>
           {[
-            { label: 'GO', count: stats.go, color: '#00ff66' },
-            { label: 'CAUTION', count: stats.caution, color: '#ffb800' },
-            { label: 'NO-GO', count: stats.nogo, color: '#ff0055' },
+            { label: 'GO', count: stats.go, color: 'var(--color-system-green)' },
+            { label: 'CAUTION', count: stats.caution, color: 'var(--color-system-orange)' },
+            { label: 'NO-GO', count: stats.nogo, color: 'var(--color-system-red)' },
           ].map(s => (
             <div key={s.label} className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full flex-shrink-0"
@@ -205,7 +205,7 @@ export default function FlightAnalytics() {
       {/* Average Stats Grid */}
       <div className="grid grid-cols-3 gap-2">
         <StatCard label={t('weather_temp')} value={`${stats.avgTemp.toFixed(1)}°`} sub="avg" color="var(--z-cyan)" />
-        <StatCard label={t('wind_surface')} value={`${stats.avgWind.toFixed(0)}`} sub="kts avg" color="#ffb800" />
+        <StatCard label={t('wind_surface')} value={`${stats.avgWind.toFixed(0)}`} sub="kts avg" color="var(--color-system-orange)" />
         <StatCard label="Kp avg" value={stats.avgKp.toFixed(1)} sub="geomagnetic" color="#a78bfa" />
       </div>
 
@@ -215,7 +215,7 @@ export default function FlightAnalytics() {
           style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
           <div className="flex items-center gap-2 mb-3">
             <Thermometer className="w-3 h-3" style={{ color: 'var(--z-cyan)' }} />
-            <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'var(--z-muted)' }}>
+            <span className="text-[9px] tracking-tight font-bold" style={{ color: 'var(--z-muted)' }}>
               {t('analytics_temp_trend')}
             </span>
             <span className="ml-auto text-[9px] font-black font-data" style={{ color: 'var(--z-cyan)' }}>
@@ -231,15 +231,15 @@ export default function FlightAnalytics() {
         <div className="rounded-2xl p-4"
           style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
           <div className="flex items-center gap-2 mb-3">
-            <Wind className="w-3 h-3" style={{ color: '#ffb800' }} />
-            <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'var(--z-muted)' }}>
+            <Wind className="w-3 h-3" style={{ color: 'var(--color-system-orange)' }} />
+            <span className="text-[9px] tracking-tight font-bold" style={{ color: 'var(--z-muted)' }}>
               {t('analytics_wind_trend')}
             </span>
-            <span className="ml-auto text-[9px] font-black font-data" style={{ color: '#ffb800' }}>
+            <span className="ml-auto text-[9px] font-black font-data" style={{ color: 'var(--color-system-orange)' }}>
               {stats.last10[stats.last10.length - 1]?.conditions.wind ?? '—'} kts
             </span>
           </div>
-          <Sparkline values={stats.last10.map(s => parseFloat(s.conditions.wind ?? '0') || 0)} color="#ffb800" gradId="spark-wind" />
+          <Sparkline values={stats.last10.map(s => parseFloat(s.conditions.wind ?? '0') || 0)} color="var(--color-system-orange)" gradId="spark-wind" />
         </div>
       )}
 
@@ -249,7 +249,7 @@ export default function FlightAnalytics() {
           style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
           <div className="flex items-center gap-2 mb-3">
             <Zap className="w-3 h-3" style={{ color: '#a78bfa' }} />
-            <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'var(--z-muted)' }}>
+            <span className="text-[9px] tracking-tight font-bold" style={{ color: 'var(--z-muted)' }}>
               {t('analytics_kp_trend')}
             </span>
             <span className="ml-auto text-[9px] font-black font-data" style={{ color: '#a78bfa' }}>
@@ -265,7 +265,7 @@ export default function FlightAnalytics() {
         style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
         <div className="flex items-center gap-2 mb-3">
           <Activity className="w-3 h-3" style={{ color: 'var(--z-cyan)' }} />
-          <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'var(--z-muted)' }}>
+          <span className="text-[9px] tracking-tight font-bold" style={{ color: 'var(--z-muted)' }}>
             {t('analytics_profile_usage')}
           </span>
         </div>
