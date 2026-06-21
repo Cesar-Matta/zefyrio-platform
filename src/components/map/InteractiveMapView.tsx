@@ -310,18 +310,44 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
           />
         ))}
 
+        {layers.adsb && aircrafts.length === 0 && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] bg-black/70 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
+            <span className="text-[10px] font-mono text-[#FFB800]">SIN TRÁFICO ADS-B EN ESTA ZONA</span>
+          </div>
+        )}
+
         {layers.adsb && aircrafts.map((ac) => (
           <Marker key={ac.icao24} position={[ac.lat, ac.lon]} icon={createAircraftIcon(ac.trueTrack, String(ac.category))}>
             <Tooltip direction="right" offset={[10, 0]}>
-              <div className="p-1 min-w-[120px] font-mono text-[10px]">
+              <div className="p-1.5 min-w-[140px] font-mono text-[10px]">
                 <div className="flex justify-between items-center border-b border-white/20 pb-1 mb-1">
                   <span className="text-cyber-cyan font-bold">{ac.callsign}</span>
                   <span className="text-[9px] opacity-60">#{ac.icao24.toUpperCase()}</span>
                 </div>
+                {(ac.registration || ac.aircraftType) && (
+                  <div className="flex justify-between border-b border-white/10 pb-1 mb-1">
+                    {ac.registration && <span className="text-[#00FF66]">{ac.registration}</span>}
+                    {ac.aircraftType && <span className="opacity-70">{ac.aircraftType}</span>}
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="opacity-60">ALT</span>
                   <span>{Math.round((ac.baroAltitude ?? 0) * 3.28084)} FT</span>
                 </div>
+                {ac.velocity != null && ac.velocity > 0 && (
+                  <div className="flex justify-between">
+                    <span className="opacity-60">GS</span>
+                    <span>{Math.round(ac.velocity * 1.94384)} KT</span>
+                  </div>
+                )}
+                {ac.verticalRate != null && ac.verticalRate !== 0 && (
+                  <div className="flex justify-between">
+                    <span className="opacity-60">VS</span>
+                    <span style={{ color: ac.verticalRate > 0 ? '#00FF66' : '#FF6B00' }}>
+                      {ac.verticalRate > 0 ? '▲' : '▼'} {Math.abs(Math.round(ac.verticalRate * 196.85))} FPM
+                    </span>
+                  </div>
+                )}
               </div>
             </Tooltip>
           </Marker>

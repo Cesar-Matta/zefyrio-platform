@@ -60,6 +60,11 @@ export interface AircraftPosition {
   verticalRate?: number;
   category?: string | number;
   onGround?: boolean;
+  // Enriched fields (available from ADSB.lol)
+  registration?: string | null;
+  aircraftType?: string | null;
+  geoAltitude?: number | null;
+  originCountry?: string;
 }
 
 export interface MetarData {
