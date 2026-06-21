@@ -205,44 +205,44 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
 
       {/* METAR DETALLE */}
       {selectedMetar && (
-        <div className="glass-panel p-6 rounded-3xl relative bg-[#111625]/50 border-[var(--z-border)] overflow-hidden shadow-2xl shrink-0">
+        <div className="z-card rounded-[20px] p-6 relative overflow-hidden shrink-0 mt-4">
           <div className="flex justify-between items-start mb-4">
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-400 font-medium tracking-tight">
+              <span className="text-[10px] text-[var(--z-muted)] font-medium tracking-tight">
                 {t('metar_base_station')}
               </span>
               <span className="text-3xl font-black text-[var(--z-text)] tracking-tight">{selectedMetar.icaoId}</span>
-              <span className="text-[10px] text-[var(--z-muted)] font-medium mt-1 drop-shadow-md tracking-wider">
+              <span className="text-[10px] text-[var(--z-muted)] font-medium mt-1 tracking-wider">
                 {selectedMetar.name || t('metar_airport')}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-[var(--z-surface)]/10 flex items-center justify-center border border-[var(--z-border)]/30 shrink-0">
-              <Radio className={`w-5 h-5 text-[var(--z-muted)] ${loading ? 'animate-ping' : 'animate-pulse'}`} />
+            <div className="w-10 h-10 rounded-full bg-[var(--z-bg)] flex items-center justify-center border border-[var(--z-border)] shrink-0">
+              <Radio className={`w-5 h-5 text-[var(--z-cyan)] ${loading ? 'animate-ping' : ''}`} />
             </div>
           </div>
 
-          <div className="bg-[var(--z-card)] rounded-xl p-4 border border-white/5 font-medium text-sm text-gray-300 leading-relaxed tracking-tight shadow-inner break-words">
-            <span className="text-radium-go font-bold">{t('metar_raw')} </span>
+          <div className="bg-[var(--z-bg)] rounded-xl p-4 border border-[var(--z-border)] font-medium text-sm text-[var(--z-text)] leading-relaxed tracking-tight break-words">
+            <span className="text-[var(--z-cyan)] font-bold">{t('metar_raw')} </span>
             <br/>
-            <span className="leading-7">{selectedMetar.rawOb}</span>
+            <span className="leading-7 font-data">{selectedMetar.rawOb}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="flex items-center gap-3 bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition cursor-pointer">
-              <Plane className="w-6 h-6 text-indigo-400" />
+            <div className="flex items-center gap-3 bg-[var(--z-bg)] rounded-2xl p-3 border border-[var(--z-border)]">
+              <Plane className="w-6 h-6 text-[var(--z-cyan)]" />
               <div className="flex flex-col">
-                <span className="text-[9px] text-gray-500 tracking-tight">{t('metar_flight_cat')}</span>
-                <span className={`font-black ${selectedMetar.fltcat === 'VFR' ? 'text-radium-go drop-shadow-[0_0_5px_var(--color-system-green)]' : selectedMetar.fltcat === 'IFR' || selectedMetar.fltcat === 'LIFR' ? 'text-crimson-nogo drop-shadow-[0_0_5px_var(--color-system-red)]' : 'text-plasma-warn drop-shadow-[0_0_5px_var(--color-system-orange)]'}`}>
+                <span className="text-[9px] text-[var(--z-muted)] tracking-tight">{t('metar_flight_cat')}</span>
+                <span className={`font-black ${selectedMetar.fltcat === 'VFR' ? 'text-green-600' : selectedMetar.fltcat === 'IFR' || selectedMetar.fltcat === 'LIFR' ? 'text-red-500' : 'text-orange-500'}`}>
                   {selectedMetar.fltcat || 'VFR'}
                 </span>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 bg-white/5 rounded-2xl p-3 border border-white/5 hover:bg-white/10 transition cursor-pointer">
-              <Wind className="w-6 h-6 text-gray-400" />
+            <div className="flex items-center gap-3 bg-[var(--z-bg)] rounded-2xl p-3 border border-[var(--z-border)]">
+              <Wind className="w-6 h-6 text-[var(--z-muted)]" />
               <div className="flex flex-col">
-                <span className="text-[9px] text-gray-500 tracking-tight">{t('metar_cloud_ceiling')}</span>
-                <span className="font-black text-[var(--z-text)] text-xs">
+                <span className="text-[9px] text-[var(--z-muted)] tracking-tight">{t('metar_cloud_ceiling')}</span>
+                <span className="font-black text-[var(--z-text)] text-[11px]">
                   {selectedMetar.clouds?.[0]?.base ? `${selectedMetar.clouds[0].base}00 ft` : t('metar_ceiling_clear')}
                 </span>
               </div>
