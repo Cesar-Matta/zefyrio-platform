@@ -135,6 +135,8 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   const [notams, setNotams] = useState<Array<{ icaoId: string; id?: string; content?: string }>>([]);
   const [rainPath, setRainPath] = useState<string | null>(null);
   const [airspaces, setAirspaces] = useState<AirspaceFeature[]>([]);
+  // Colombia local airport info (from co_airports.geojson)
+  const [coAirports, setCoAirports] = useState<Record<string, any>>({});
   
   const [mapState, setMapState] = useState({
     lat: initialLat, lon: initialLon, zoom: 9,
@@ -153,9 +155,21 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
       })
       .catch(err => {
         console.error("RainViewer TS Error:", err);
-        // Fallback: usar un path aproximado o vacío, o el de e780b0ed03f4
         setRainPath('/v2/radar/e780b0ed03f4');
       });
+
+    // Load Colombia local airport info for enriched popups
+    fetch('/data/co_airports.geojson')
+      .then(r => r.json())
+      .then((d: { features: Array<{ properties: any }> }) => {
+        const map: Record<string, any> = {};
+        d.features.forEach(f => {
+          const icao = f.properties.icaoCode;
+          if (icao) map[icao.toUpperCase()] = f.properties;
+        });
+        setCoAirports(map);
+      })
+      .catch(() => {});
   }, []);
 
   const handleMapMove = useCallback((lat: number, lon: number, zoom: number, bbox: string) => {
@@ -306,9 +320,10 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
               key={m.icaoId} 
               metar={m} 
               taf={tafs.find(t => t.icaoId === m.icaoId)}
-            notams={notams.filter(n => n.icaoId === m.icaoId)}
-          />
-        ))}
+              notams={notams.filter(n => n.icaoId === m.icaoId)}
+              airportInfo={coAirports[m.icaoId.toUpperCase()]}
+            />
+          ))}
 
         {layers.adsb && aircrafts.length === 0 && (
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] bg-[var(--z-card)] backdrop-blur-md px-4 py-2 rounded-xl border border-[var(--z-border)]">
