@@ -60,8 +60,8 @@
   --z-card:         #ffffff;
   --z-cyan:         #007aff;
   --z-text:         #1c1c1e;
-  --z-muted:        #6b6b72; /* Darker Apple secondary gray for better contrast */
-  --z-border:       rgba(0, 0, 0, 0.12); /* Slightly stronger border to define cards */
+  --z-muted:        #52525b; /* High contrast gray (Tailwind zinc-600) */
+  --z-border:       rgba(0, 0, 0, 0.20); /* High visibility card borders */
   --z-glass-bg:     rgba(255, 255, 255, 0.85);
   --z-glass-blur:   blur(40px) saturate(200%);
   --z-nav-bg:       rgba(249, 249, 249, 0.95);
