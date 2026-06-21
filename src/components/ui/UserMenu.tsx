@@ -65,10 +65,10 @@ export default function UserMenu() {
       {/* Avatar button */}
       <button
         onClick={() => setOpen(!open)}
-        className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center transition shrink-0 cursor-pointer hover:brightness-110"
+        className="w-[38px] h-[38px] rounded-full overflow-hidden flex items-center justify-center transition shrink-0 cursor-pointer hover:brightness-105 shadow-sm"
         style={{
-          backgroundColor: 'var(--z-glass-bg)',
-          border: '1px solid var(--z-border)',
+          background: avatarUrl ? 'transparent' : 'linear-gradient(180deg, #E5E5EA 0%, #D1D1D6 100%)',
+          border: '0.5px solid rgba(0,0,0,0.15)',
         }}
         aria-label="Menú de usuario"
       >
@@ -76,7 +76,9 @@ export default function UserMenu() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
         ) : (
-          <User className="w-5 h-5" style={{ color: 'var(--z-cyan)' }} strokeWidth={2} />
+          <div className="w-full h-full flex items-center justify-center translate-y-[4px]">
+            <User className="w-7 h-7" style={{ color: '#ffffff' }} fill="#ffffff" strokeWidth={1} />
+          </div>
         )}
       </button>
 
