@@ -55,17 +55,17 @@
 }
 
 [data-theme="light"] {
-  --z-bg:           #eef2f6; /* Cool blue-gray background from screenshot */
+  --z-bg:           #e2e8f0; /* Perfect cool gray-blue tint from screenshot */
   --z-surface:      #ffffff;
   --z-card:         #ffffff;
-  --z-cyan:         var(--color-system-blue);
-  --z-text:         #1a1f2e; /* Deep rich dark blue-black instead of flat black */
-  --z-muted:        #8a95a5; /* Soft elegant gray-blue for secondary text */
+  --z-cyan:         #007aff;
+  --z-text:         #1c1c1e;
+  --z-muted:        #8e8e93; /* Classic Apple secondary gray */
   --z-border:       rgba(0, 0, 0, 0.05); /* Ultra delicate border */
   --z-glass-bg:     rgba(255, 255, 255, 0.85);
   --z-glass-blur:   blur(40px) saturate(200%);
   --z-nav-bg:       rgba(249, 249, 249, 0.95);
-  --z-shadow:       0 4px 20px rgba(0, 0, 0, 0.04); /* Gentle, elegant shadow */
+  --z-shadow:       0 8px 24px rgba(0, 0, 0, 0.06); /* Clean Apple Widget shadow */
 }
 
 /* ═══════════════════════════════════════════════════════════════════

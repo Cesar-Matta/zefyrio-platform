@@ -24,15 +24,15 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none px-6">
+    <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none px-4">
       <nav 
-        className="pointer-events-auto rounded-[32px] w-full max-w-[360px] transition-all"
+        className="pointer-events-auto rounded-[32px] w-[95%] max-w-[420px] transition-all"
         style={{ 
           background: 'var(--z-glass-bg)', 
           backdropFilter: 'var(--z-glass-blur)',
           WebkitBackdropFilter: 'var(--z-glass-blur)',
-          border: '0.5px solid var(--z-border)',
-          boxShadow: '0 12px 36px rgba(0,0,0,0.08)'
+          border: '1px solid rgba(255,255,255,0.4)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.06)'
         }}
       >
         <div className="flex items-center justify-between px-6 py-4">
@@ -47,7 +47,7 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
                 style={{ width: '56px' }}
               >
                 <Icon
-                  className="w-[22px] h-[22px] mb-1.5"
+                  className="w-[24px] h-[24px] mb-1.5"
                   style={{
                     color: isActive ? 'var(--z-cyan)' : 'var(--z-muted)',
                   }}

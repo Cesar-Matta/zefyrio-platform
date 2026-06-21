@@ -32,14 +32,17 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
           </span>
         </div>
 
-        <div className="flex items-baseline gap-1 mt-2">
-          <span className="text-[28px] font-semibold tracking-tight leading-none" style={{ color: 'var(--z-text)' }}>
-            {temperature}°
+        <div className="flex items-baseline gap-0.5 mt-2">
+          <span className="text-[40px] font-semibold tracking-tighter leading-none" style={{ color: 'var(--z-text)' }}>
+            {temperature.toFixed(1)}
+          </span>
+          <span className="text-[18px] font-medium" style={{ color: 'var(--z-text)' }}>
+            °C
           </span>
         </div>
 
-        <span className="text-[12px] font-medium mt-1" style={{ color: 'var(--z-muted)' }}>
-          {t('weather_feels')}: {feelsLike}°
+        <span className="text-[12px] font-medium mt-1 uppercase tracking-wider" style={{ color: 'var(--z-muted)' }}>
+          SENS: {feelsLike}°
         </span>
       </div>
 
@@ -48,16 +51,19 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
         className={`z-card flex flex-col justify-between p-4 overflow-hidden theme-transition ${className}`}
         style={{ minHeight: '130px' }}
       >
-        <div className="flex items-center gap-1.5">
-          <Droplets className="w-4 h-4" style={{ color: 'var(--z-muted)' }} />
-          <span className="text-[11px] font-medium" style={{ color: 'var(--z-muted)' }}>
-            {t('weather_rain')}
+        <div className="flex items-center gap-1.5 mb-1">
+          <Droplets className="w-3.5 h-3.5" style={{ color: 'var(--z-muted)' }} />
+          <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: 'var(--z-muted)' }}>
+            LLUVIA
           </span>
         </div>
 
-        <div className="flex items-baseline gap-1 mt-2">
-          <span className="text-[28px] font-semibold tracking-tight leading-none" style={{ color: 'var(--z-muted)' }}>
-            {rainChance}%
+        <div className="flex items-baseline gap-0.5 mt-1">
+          <span className="text-[44px] font-semibold tracking-tighter leading-none" style={{ color: rainColor }}>
+            {rainChance}
+          </span>
+          <span className="text-[22px] font-medium" style={{ color: 'var(--z-muted)' }}>
+            %
           </span>
         </div>
 
