@@ -161,31 +161,27 @@ async function fetchFromAdsbLol(centerLat: number, centerLon: number, radiusNm: 
   } catch { return null; }
 }
 
-// ─── Source 2: TheAirTraffic.com ───────────────────────────────────
+// ─── Source 2: Airplanes.live (better LatAm coverage than ADSB.lol) ──
 
-async function fetchFromTheAirTraffic(minLat: number, minLon: number, maxLat: number, maxLon: number): Promise<NormalizedAircraft[] | null> {
+async function fetchFromAirplanesLive(centerLat: number, centerLon: number, radiusNm: number): Promise<NormalizedAircraft[] | null> {
   const now = Date.now();
   if (now < airTrafficBackoffUntil) return null;
   try {
-    const url = `https://api.theairtraffic.com/api/aclist?south=${minLat}&west=${minLon}&north=${maxLat}&east=${maxLon}`;
+    const url = `https://api.airplanes.live/v2/point/${centerLat.toFixed(4)}/${centerLon.toFixed(4)}/${radiusNm}`;
     const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(8_000) });
     if (response.status === 429) { airTrafficBackoffUntil = now + BACKOFF_TTL_MS; return null; }
     if (!response.ok) return null;
-    const raw = await response.json() as any[];
-    if (!Array.isArray(raw)) return null;
-    return raw
-      .filter(a => a.lat != null && a.lng != null && !a.onGround)
+    const raw = await response.json() as { ac?: AdsbLolAircraft[] };
+    return (raw.ac ?? [])
+      .filter(a => a.lat != null && a.lon != null && a.alt_baro !== 'ground')
       .map(a => ({
-        icao24: (a.icao ?? a.hex ?? '').toLowerCase(),
-        callsign: (a.callsign ?? a.flight ?? '').trim() || a.icao,
-        originCountry: a.country ?? '',
-        lat: a.lat, lon: a.lng,
-        baroAltitude: a.altitude != null ? a.altitude * 0.3048 : null,
-        geoAltitude: null, onGround: false,
-        velocity: a.speed != null ? a.speed * 0.514444 : null,
-        trueTrack: a.heading ?? null, verticalRate: null,
-        squawk: a.squawk ?? null, category: null,
-        registration: a.registration ?? null, aircraftType: a.type ?? null,
+        icao24: a.hex, callsign: (a.flight ?? '').trim() || a.hex, originCountry: '',
+        lat: a.lat!, lon: a.lon!,
+        baroAltitude: typeof a.alt_baro === 'number' ? a.alt_baro * 0.3048 : null,
+        geoAltitude: a.alt_geom != null ? a.alt_geom * 0.3048 : null,
+        onGround: false, velocity: a.gs != null ? a.gs * 0.514444 : null,
+        trueTrack: a.track ?? null, verticalRate: a.baro_rate != null ? a.baro_rate * 0.00508 : null,
+        squawk: a.squawk ?? null, category: a.category ?? null, registration: a.r ?? null, aircraftType: a.t ?? null,
       }));
   } catch { return null; }
 }
@@ -312,15 +308,15 @@ export async function GET(req: NextRequest) {
   // AviationStack solo se consulta si el usuario está en LatAm (donde las otras fuentes son débiles)
   const inLatam = isLatam(minLat, minLon, maxLat, maxLon);
 
-  const [adsbLolResult, airTrafficResult, aviationStackResult, openSkyResult] = await Promise.all([
+  const [adsbLolResult, airplanesLiveResult, aviationStackResult, openSkyResult] = await Promise.all([
     fetchFromAdsbLol(centerLat, centerLon, radiusNm),
-    fetchFromTheAirTraffic(minLat, minLon, maxLat, maxLon),
+    fetchFromAirplanesLive(centerLat, centerLon, radiusNm),
     inLatam ? fetchFromAviationStack(minLat, minLon, maxLat, maxLon) : Promise.resolve(null),
     fetchFromOpenSky(minLat, minLon, maxLat, maxLon),
   ]);
 
   // ─── Merge results ───────────────────────────────────────────────
-  const { aircraft, sourceNames } = mergeAircraft([adsbLolResult, airTrafficResult, aviationStackResult, openSkyResult]);
+  const { aircraft, sourceNames } = mergeAircraft([adsbLolResult, airplanesLiveResult, aviationStackResult, openSkyResult]);
 
   if (aircraft.length === 0 && sourceNames.length === 0) {
     if (cached) {
