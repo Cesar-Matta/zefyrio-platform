@@ -56,6 +56,11 @@ let openSkyBackoffUntil    = 0;
 let airTrafficBackoffUntil = 0;
 let aviationStackBackoffUntil = 0;
 
+// AviationStack has only 100 req/month on free plan.
+// Cache globally for 4 hours — called at most ~3x/day = ~90 req/month.
+const AVIATIONSTACK_CACHE_MS = 4 * 60 * 60 * 1000; // 4 hours
+let aviationStackCache: { aircraft: NormalizedAircraft[]; fetchedAt: number } | null = null;
+
 // ─── Helpers ───────────────────────────────────────────────────────
 
 function pruneCache() {
@@ -183,34 +188,37 @@ async function fetchFromAviationStack(minLat: number, minLon: number, maxLat: nu
   const now = Date.now();
   if (now < aviationStackBackoffUntil) return null;
   const apiKey = process.env.AVIATIONSTACK_API_KEY;
-  if (!apiKey) return null; // Skip if no key configured
+  if (!apiKey) return null;
+
+  // Return cached global data filtered to bbox — avoids burning quota on every map move
+  if (aviationStackCache && (now - aviationStackCache.fetchedAt) < AVIATIONSTACK_CACHE_MS) {
+    return aviationStackCache.aircraft.filter(a =>
+      a.lat >= minLat && a.lat <= maxLat && a.lon >= minLon && a.lon <= maxLon
+    );
+  }
 
   try {
-    // AviationStack real-time flights endpoint
-    const centerLat = ((minLat + maxLat) / 2).toFixed(4);
-    const centerLon = ((minLon + maxLon) / 2).toFixed(4);
-    const url = `http://api.aviationstack.com/v1/flights?access_key=${apiKey}&limit=100`;
+    console.log('[ADS-B] AviationStack — making API call (cached 4h)');
+    // Free plan only supports HTTP and returns up to 100 global flights
+    const url = `http://api.aviationstack.com/v1/flights?access_key=${apiKey}&limit=100&flight_status=active`;
     const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(10_000) });
     if (response.status === 429) { aviationStackBackoffUntil = now + BACKOFF_TTL_MS; return null; }
-    if (!response.ok) return null;
+    if (!response.ok) { console.warn(`[ADS-B] AviationStack ${response.status}`); return null; }
 
     const raw = await response.json() as { data?: any[] };
     const flights = raw.data ?? [];
 
-    // Filter to bbox
-    return flights
-      .filter(f => {
+    const allAircraft: NormalizedAircraft[] = flights
+      .filter((f: any) => {
         const live = f.live;
-        if (!live || live.latitude == null || live.longitude == null || live.is_ground) return false;
-        const lat = live.latitude, lon = live.longitude;
-        return lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon;
+        return live && live.latitude != null && live.longitude != null && !live.is_ground;
       })
-      .map(f => ({
+      .map((f: any) => ({
         icao24: (f.aircraft?.icao24 ?? f.flight?.icao ?? '').toLowerCase(),
         callsign: f.flight?.icao ?? f.flight?.iata ?? '',
         originCountry: f.airline?.country_name ?? '',
         lat: f.live.latitude, lon: f.live.longitude,
-        baroAltitude: f.live.altitude != null ? f.live.altitude : null,
+        baroAltitude: f.live.altitude ?? null,
         geoAltitude: null, onGround: false,
         velocity: f.live.speed_horizontal != null ? f.live.speed_horizontal / 3.6 : null,
         trueTrack: f.live.direction ?? null, verticalRate: f.live.speed_vertical ?? null,
@@ -218,8 +226,18 @@ async function fetchFromAviationStack(minLat: number, minLon: number, maxLat: nu
         registration: f.aircraft?.registration ?? null,
         aircraftType: f.aircraft?.iata ?? null,
       }))
-      .filter(a => a.icao24); // Remove entries without icao
-  } catch { return null; }
+      .filter((a: NormalizedAircraft) => a.icao24);
+
+    // Store globally with timestamp
+    aviationStackCache = { aircraft: allAircraft, fetchedAt: now };
+
+    return allAircraft.filter(a =>
+      a.lat >= minLat && a.lat <= maxLat && a.lon >= minLon && a.lon <= maxLon
+    );
+  } catch (err) {
+    console.error('[ADS-B] AviationStack error:', err);
+    return null;
+  }
 }
 
 // ─── Source 4: OpenSky ─────────────────────────────────────────────
