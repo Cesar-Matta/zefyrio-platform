@@ -56,12 +56,20 @@ let openSkyBackoffUntil    = 0;
 let airTrafficBackoffUntil = 0;
 let aviationStackBackoffUntil = 0;
 
-// AviationStack has only 100 req/month on free plan.
-// Cache globally for 4 hours — called at most ~3x/day = ~90 req/month.
-const AVIATIONSTACK_CACHE_MS = 4 * 60 * 60 * 1000; // 4 hours
+// AviationStack free plan: 100 req/month.
+// Only call for LatAm where other sources have poor coverage.
+// Cache 2h globally — ≤12 calls/day only when user is in LatAm = well within quota.
+const AVIATIONSTACK_CACHE_MS = 2 * 60 * 60 * 1000; // 2 hours
 let aviationStackCache: { aircraft: NormalizedAircraft[]; fetchedAt: number } | null = null;
 
 // ─── Helpers ───────────────────────────────────────────────────────
+
+/** Returns true if the bbox center is within Latin America */
+function isLatam(minLat: number, minLon: number, maxLat: number, maxLon: number): boolean {
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLon = (minLon + maxLon) / 2;
+  return centerLat >= -60 && centerLat <= 35 && centerLon >= -120 && centerLon <= -30;
+}
 
 function pruneCache() {
   if (bboxCache.size <= MAX_CACHE_ENTRIES) return;
@@ -301,10 +309,13 @@ export async function GET(req: NextRequest) {
   // ─── Fetch ALL sources in parallel ───────────────────────────────
   const { centerLat, centerLon, radiusNm } = bboxToCenterRadius(minLat, minLon, maxLat, maxLon);
 
+  // AviationStack solo se consulta si el usuario está en LatAm (donde las otras fuentes son débiles)
+  const inLatam = isLatam(minLat, minLon, maxLat, maxLon);
+
   const [adsbLolResult, airTrafficResult, aviationStackResult, openSkyResult] = await Promise.all([
     fetchFromAdsbLol(centerLat, centerLon, radiusNm),
     fetchFromTheAirTraffic(minLat, minLon, maxLat, maxLon),
-    fetchFromAviationStack(minLat, minLon, maxLat, maxLon),
+    inLatam ? fetchFromAviationStack(minLat, minLon, maxLat, maxLon) : Promise.resolve(null),
     fetchFromOpenSky(minLat, minLon, maxLat, maxLon),
   ]);
 
