@@ -55,13 +55,13 @@
 }
 
 [data-theme="light"] {
-  --z-bg:           #f2f2f7; /* Grouped Background */
+  --z-bg:           #eef2f6; /* Cool blue-gray background from screenshot */
   --z-surface:      #ffffff;
   --z-card:         #ffffff;
   --z-cyan:         var(--color-system-blue);
-  --z-text:         #000000;
-  --z-muted:        #6b7280; /* Solid readable gray (Tailwind gray-500) */
-  --z-border:       rgba(0, 0, 0, 0.1); /* Slightly stronger border */
+  --z-text:         #1a1f2e; /* Deep rich dark blue-black instead of flat black */
+  --z-muted:        #8a95a5; /* Soft elegant gray-blue for secondary text */
+  --z-border:       rgba(0, 0, 0, 0.06); /* Ultra delicate border */
   --z-glass-bg:     rgba(255, 255, 255, 0.85);
   --z-glass-blur:   blur(40px) saturate(200%);
   --z-nav-bg:       rgba(249, 249, 249, 0.95);

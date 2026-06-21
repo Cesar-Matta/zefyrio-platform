@@ -24,35 +24,46 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
   const { t } = useTranslation();
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-20 z-nav pb-safe pointer-events-auto">
-      <div className="flex items-center justify-between px-6 pt-3 pb-6 max-w-md mx-auto">
-        {TABS.map(({ id, Icon, labelKey }) => {
-          const isActive = activeTab === id;
-          return (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              aria-label={t(labelKey)}
-              className="relative flex flex-col items-center justify-center cursor-pointer transition-colors duration-200"
-              style={{ width: '60px' }}
-            >
-              <Icon
-                className="w-6 h-6 mb-1"
-                style={{
-                  color: isActive ? 'var(--z-cyan)' : 'var(--color-system-gray)',
-                }}
-                strokeWidth={isActive ? 2.5 : 2}
-              />
-              <span
-                className="text-[10px] font-medium tracking-tight"
-                style={{ color: isActive ? 'var(--z-cyan)' : 'var(--color-system-gray)' }}
+    <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none px-6">
+      <nav 
+        className="pointer-events-auto rounded-[32px] w-full max-w-[360px] transition-all"
+        style={{ 
+          background: 'var(--z-glass-bg)', 
+          backdropFilter: 'var(--z-glass-blur)',
+          WebkitBackdropFilter: 'var(--z-glass-blur)',
+          border: '0.5px solid var(--z-border)',
+          boxShadow: '0 12px 36px rgba(0,0,0,0.08)'
+        }}
+      >
+        <div className="flex items-center justify-between px-6 py-4">
+          {TABS.map(({ id, Icon, labelKey }) => {
+            const isActive = activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                aria-label={t(labelKey)}
+                className="relative flex flex-col items-center justify-center cursor-pointer transition-transform duration-200 active:scale-95"
+                style={{ width: '56px' }}
               >
-                {t(labelKey)}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
+                <Icon
+                  className="w-[22px] h-[22px] mb-1.5"
+                  style={{
+                    color: isActive ? 'var(--z-cyan)' : 'var(--z-muted)',
+                  }}
+                  strokeWidth={isActive ? 2.5 : 1.5}
+                />
+                <span
+                  className="text-[9px] font-bold tracking-widest uppercase"
+                  style={{ color: isActive ? 'var(--z-cyan)' : 'var(--z-muted)' }}
+                >
+                  {t(labelKey)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
   );
 }
