@@ -124,19 +124,19 @@ export default function RadarMap({
     : "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
 
   return (
-    <div className="w-full h-[220px] rounded-2xl overflow-hidden relative z-0 shrink-0">
+    <div className="w-full h-[360px] rounded-2xl overflow-hidden relative z-0 shrink-0">
       {/* Crosshair Militar */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 pointer-events-none z-[400] flex items-center justify-center">
-        <div className="absolute w-full h-[1px] bg-white"></div>
-        <div className="absolute w-[1px] h-full bg-white"></div>
-        <div className="absolute w-full h-full border border-white rounded-full"></div>
+        <div className="absolute w-full h-[1px] bg-white mix-blend-difference"></div>
+        <div className="absolute w-[1px] h-full bg-white mix-blend-difference"></div>
+        <div className="absolute w-full h-full border border-white mix-blend-difference rounded-full"></div>
       </div>
 
       {/* Contador ADS-B live */}
       {showAircraft && aircraftList.length > 0 && (
-        <div className="absolute top-2 right-2 z-[500] bg-[var(--z-card)] border border-[var(--color-system-green)]/40 rounded-xl px-2 py-1 flex items-center gap-1 pointer-events-none">
-          <div className="w-2 h-2 rounded-full bg-[var(--color-system-green)] animate-pulse"></div>
-          <span className="text-[9px] font-medium text-[var(--color-system-green)] tracking-tight">{aircraftList.length} AERONAVES</span>
+        <div className="absolute top-2 right-2 z-[500] bg-[var(--z-card)] border border-green-600/40 rounded-xl px-2 py-1 flex items-center gap-1 pointer-events-none shadow-sm">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+          <span className="text-[9px] font-medium text-green-600 tracking-tight">{aircraftList.length} AERONAVES</span>
         </div>
       )}
 
@@ -144,7 +144,7 @@ export default function RadarMap({
         key={mapSessionKey}
         center={[initialLat, initialLon]} 
         zoom={9} 
-        style={{ height: '100%', width: '100%', background: '#0a0a0a' }}
+        style={{ height: '100%', width: '100%', background: 'var(--z-bg)' }}
         zoomControl={false}
         attributionControl={false}
       >
@@ -172,18 +172,20 @@ export default function RadarMap({
               <Tooltip 
                 direction="top" 
                 offset={[0, -12]} 
-                opacity={0.9}
+                opacity={1}
                 permanent={false}
                 className="adsb-tooltip"
               >
                 <span style={{ 
-                  fontFamily: 'monospace', 
-                  fontSize: '10px', 
-                  color: 'var(--color-system-blue)',
-                  background: 'rgba(0,0,0,0.8)',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  border: '1px solid rgba(0,240,255,0.3)'
+                  fontFamily: 'system-ui, sans-serif', 
+                  fontSize: '11px', 
+                  fontWeight: 'bold',
+                  color: 'var(--z-text)',
+                  background: 'var(--z-card)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--z-border)',
+                  boxShadow: 'var(--z-shadow)'
                 }}>
                   {m.icaoId}
                 </span>
@@ -202,27 +204,28 @@ export default function RadarMap({
             <Tooltip 
               direction="top" 
               offset={[0, -10]} 
-              opacity={0.92}
+              opacity={1}
               permanent={false}
             >
               <div style={{ 
-                fontFamily: 'monospace', 
+                fontFamily: 'system-ui, sans-serif', 
                 fontSize: '10px', 
-                background: 'rgba(0,0,0,0.9)',
-                color: '#fff',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                border: '1px solid rgba(0,255,102,0.4)',
-                minWidth: '100px'
+                background: 'var(--z-card)',
+                color: 'var(--z-text)',
+                padding: '6px 10px',
+                borderRadius: '8px',
+                border: '1px solid var(--z-border)',
+                minWidth: '110px',
+                boxShadow: 'var(--z-shadow)'
               }}>
-                <div style={{ color: 'var(--color-system-green)', fontWeight: 'bold' }}>{aircraft.callsign}</div>
-                <div style={{ color: '#aaa', marginTop: '2px' }}>
-                  ALT: {aircraft.baroAltitude ? `${Math.round(aircraft.baroAltitude * 3.28084).toLocaleString()} ft` : 'N/A'}
+                <div style={{ color: 'var(--z-cyan)', fontWeight: 'bold', fontSize: '11px' }}>{aircraft.callsign}</div>
+                <div style={{ color: 'var(--z-muted)', marginTop: '3px' }}>
+                  ALT: {aircraft.baroAltitude ? <strong style={{color: 'var(--z-text)'}}>{Math.round(aircraft.baroAltitude * 3.28084).toLocaleString()} ft</strong> : 'N/A'}
                 </div>
-                <div style={{ color: '#aaa' }}>
-                  GS: {aircraft.velocity ? `${Math.round(aircraft.velocity * 1.944)} kts` : 'N/A'}
+                <div style={{ color: 'var(--z-muted)' }}>
+                  GS: {aircraft.velocity ? <strong style={{color: 'var(--z-text)'}}>{Math.round(aircraft.velocity * 1.944)} nudos</strong> : 'N/A'}
                 </div>
-                <div style={{ color: '#888', fontSize: '9px', marginTop: '2px' }}>
+                <div style={{ color: 'var(--z-muted)', fontSize: '8px', marginTop: '4px', textTransform: 'uppercase' }}>
                   {aircraft.originCountry} · {aircraft.positionSource === 0 ? 'ADS-B' : aircraft.positionSource === 2 ? 'MLAT' : 'ASTERIX'}
                 </div>
               </div>
