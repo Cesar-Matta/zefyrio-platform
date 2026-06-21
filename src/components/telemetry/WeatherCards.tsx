@@ -33,7 +33,7 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
         </div>
 
         <div className="flex items-baseline gap-1 mt-2">
-          <span className="text-[36px] font-semibold tracking-tight leading-none" style={{ color: 'var(--z-text)' }}>
+          <span className="text-[28px] font-semibold tracking-tight leading-none" style={{ color: 'var(--z-text)' }}>
             {temperature}°
           </span>
         </div>
@@ -56,7 +56,7 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
         </div>
 
         <div className="flex items-baseline gap-1 mt-2">
-          <span className="text-[36px] font-semibold tracking-tight leading-none" style={{ color: 'var(--z-muted)' }}>
+          <span className="text-[28px] font-semibold tracking-tight leading-none" style={{ color: 'var(--z-muted)' }}>
             {rainChance}%
           </span>
         </div>

@@ -386,8 +386,12 @@ export default function Home() {
                 <section className="grid grid-cols-2 gap-4 shrink-0">
                   <GpsSatelliteStatus satellites={telemetryData.satellites} kpIndex={telemetryData.kpIndex} />
                   <WindCompass surfaceWind={telemetryData.surfaceWind} maxGusts={telemetryData.maxGusts} />
-                  <WeatherCards temperature={telemetryData.temperature} feelsLike={telemetryData.feelsLike} rainChance={telemetryData.rainChance} clouds={telemetryData.clouds} />
-                  <FlightWindow sun={telemetryData.sun} />
+                  <div className="col-span-2">
+                    <WeatherCards temperature={telemetryData.temperature} feelsLike={telemetryData.feelsLike} rainChance={telemetryData.rainChance} clouds={telemetryData.clouds} />
+                  </div>
+                  <div className="col-span-2">
+                    <FlightWindow sun={telemetryData.sun} />
+                  </div>
                 </section>
              </div>
           )}
