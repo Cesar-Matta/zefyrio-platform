@@ -13,6 +13,11 @@ async function getLocalFallback(south: string, west: string, north: string, east
     const s = parseFloat(south); const w = parseFloat(west);
     const n = parseFloat(north); const e = parseFloat(east);
     const PAD = 0.5;
+    
+    const typeMap: Record<number, string> = { 1: 'R', 2: 'D', 3: 'P', 4: 'CTR', 5: 'TMA' };
+    const classMap: Record<number, string> = { 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G' };
+    const actMap: Record<number, string> = { 1: 'PAR', 2: 'GLD', 3: 'HG', 4: 'MIL' };
+
     const features = geojson.features.filter((f) => {
       if (!f.geometry) return false;
       const ring: number[][] =
@@ -22,9 +27,22 @@ async function getLocalFallback(south: string, west: string, north: string, east
         lat >= s - PAD && lat <= n + PAD &&
         lon >= w - PAD && lon <= e + PAD
       );
+    }).map(f => {
+      // Map OpenAIP integer codes to our frontend string codes
+      const p = f.properties;
+      return {
+        ...f,
+        properties: {
+          ...p,
+          type: typeof p.type === 'number' ? typeMap[p.type] || p.type : p.type,
+          icaoClass: typeof p.icaoClass === 'number' ? classMap[p.icaoClass] || p.icaoClass : p.icaoClass,
+          activity: typeof p.activity === 'number' ? actMap[p.activity] || p.activity : p.activity
+        }
+      };
     });
     return { type: "FeatureCollection", features, total: features.length };
-  } catch {
+  } catch (err) {
+    console.error(err);
     return { type: "FeatureCollection", features: [], error: "Local fallback failed." };
   }
 }
