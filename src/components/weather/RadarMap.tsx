@@ -124,8 +124,7 @@ export default function RadarMap({
     : "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
 
   return (
-    <div className="w-full h-[220px] rounded-3xl overflow-hidden border border-[var(--z-border)] shadow-[0_0_30px_rgba(0,0,0,0.5)] relative z-0 shrink-0">
-      
+    <div className="w-full h-[220px] rounded-2xl overflow-hidden relative z-0 shrink-0">
       {/* Crosshair Militar */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 pointer-events-none z-[400] flex items-center justify-center">
         <div className="absolute w-full h-[1px] bg-white"></div>

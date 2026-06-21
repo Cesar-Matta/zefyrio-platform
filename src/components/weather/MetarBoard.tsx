@@ -147,48 +147,51 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
   return (
     <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10 w-full">
       
-      {/* Controles del Radar */}
-      <div className="flex items-center justify-between px-1">
-        <span className="text-[9px] font-medium text-gray-500 tracking-tight">
-          {t('metar_tactical_radar')}
-        </span>
-        <button
-          onClick={toggleAircraft}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[9px] font-medium tracking-tight transition-all ${
-            showAircraft 
-              ? 'border-[var(--color-system-green)]/50 bg-[var(--color-system-green)]/10 text-[var(--color-system-green)]' 
-              : 'border-[var(--z-border)] bg-white/5 text-gray-500'
-          }`}
-        >
-          <Radar className="w-3 h-3" />
-          ADS-B {showAircraft ? 'ON' : 'OFF'}
-          {showAircraft && aircraftList.length > 0 && (
-            <span className="ml-1 bg-[var(--color-system-green)]/20 text-[var(--color-system-green)] px-1.5 py-0.5 rounded-full text-[8px]">
-              {aircraftList.length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Mapa Táctico Interactivo */}
-      <RadarMap 
-        initialLat={initialLat}
-        initialLon={initialLon}
-        metarList={metarList}
-        selectedIcao={selectedMetar?.icaoId || null}
-        onSelect={setSelectedMetar}
-        onMapMove={handleMapMove}
-        aircraftList={aircraftList}
-        showAircraft={showAircraft}
-      />
-
-      {/* Indicador de error ADS-B (no intrusivo) */}
-      {adsbError && showAircraft && (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--color-system-orange)]/10 border border-[var(--color-system-orange)]/20">
-          <Radar className="w-3 h-3 text-[var(--color-system-orange)] shrink-0" />
-          <span className="text-[9px] font-medium text-[var(--color-system-orange)]">{t('metar_adsb_limit')}</span>
+      {/* Tarjeta del Mapa Táctico */}
+      <div className="z-card rounded-[20px] p-4 flex flex-col gap-3 shrink-0">
+        {/* Controles del Radar */}
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[10px] font-medium text-[var(--z-muted)] tracking-tight uppercase">
+            {t('metar_tactical_radar')}
+          </span>
+          <button
+            onClick={toggleAircraft}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[9px] font-medium tracking-tight transition-all ${
+              showAircraft 
+                ? 'border-green-600/50 bg-green-600/10 text-green-600' 
+                : 'border-[var(--z-border)] bg-[var(--z-bg)] text-[var(--z-muted)]'
+            }`}
+          >
+            <Radar className="w-3 h-3" />
+            ADS-B {showAircraft ? 'ON' : 'OFF'}
+            {showAircraft && aircraftList.length > 0 && (
+              <span className="ml-1 bg-green-600/20 text-green-600 px-1.5 py-0.5 rounded-full text-[8px]">
+                {aircraftList.length}
+              </span>
+            )}
+          </button>
         </div>
-      )}
+
+        {/* Mapa Táctico Interactivo */}
+        <RadarMap 
+          initialLat={initialLat}
+          initialLon={initialLon}
+          metarList={metarList}
+          selectedIcao={selectedMetar?.icaoId || null}
+          onSelect={setSelectedMetar}
+          onMapMove={handleMapMove}
+          aircraftList={aircraftList}
+          showAircraft={showAircraft}
+        />
+
+        {/* Indicador de error ADS-B (no intrusivo) */}
+        {adsbError && showAircraft && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/20 mt-1">
+            <Radar className="w-3 h-3 text-orange-500 shrink-0" />
+            <span className="text-[9px] font-medium text-orange-500">{t('metar_adsb_limit')}</span>
+          </div>
+        )}
+      </div>
 
       {loading && metarList.length === 0 && (
         <div className="p-8 text-center text-[var(--z-muted)] font-medium text-xs animate-pulse">
