@@ -21,9 +21,10 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
   const progressColor = pct > 80 ? '#f97316' : pct > 60 ? '#fbbf24' : pct > 20 ? '#facc15' : '#f97316';
 
   return (
-    <div
-      className={`rounded-2xl p-4 col-span-2 overflow-hidden theme-transition ${className}`}
-      style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}
+    <section 
+      className={`z-card rounded-[20px] p-4 col-span-2 overflow-hidden theme-transition ${className}`}
+      style={{
+ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">

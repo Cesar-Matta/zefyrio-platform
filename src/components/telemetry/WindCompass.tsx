@@ -16,7 +16,7 @@ export default function WindCompass({ surfaceWind, maxGusts, className = "" }: W
 
   return (
     <div
-      className={`rounded-2xl flex flex-col items-center justify-between p-4 relative overflow-hidden theme-transition ${className}`}
+      className={`z-card rounded-[20px] flex flex-col items-center justify-between p-4 relative overflow-hidden theme-transition ${className}`}
       style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)', minHeight: '160px' }}
     >
       {/* Label */}

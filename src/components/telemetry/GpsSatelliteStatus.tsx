@@ -23,9 +23,10 @@ export default function GpsSatelliteStatus({ satellites, kpIndex, className = ""
   const kpLabel = kpIndex >= 6 ? t('kp_storm') : kpIndex >= 4 ? t('kp_active') : t('kp_calm');
 
   return (
-    <div
-      className={`rounded-2xl flex flex-col items-center justify-between p-4 relative overflow-hidden theme-transition ${className}`}
-      style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)', minHeight: '160px' }}
+    <div 
+      className={`z-card rounded-[20px] flex flex-col items-center justify-between p-4 relative overflow-hidden theme-transition ${className}`}
+      style={{
+ background: 'var(--z-card)', border: '1px solid var(--z-border)', minHeight: '160px' }}
     >
       {/* Label */}
       <div className="w-full flex items-center justify-between">

@@ -20,7 +20,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
   const maxSpeed = Math.max(...verticalProfile.map(l => l.speed), 1);
 
   return (
-    <section className={`rounded-2xl overflow-hidden shrink-0 theme-transition ${className}`}
+    <section className={`z-card rounded-[20px] overflow-hidden shrink-0 theme-transition ${className}`}
       style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
       <div className="flex items-center justify-between px-5 pt-4 pb-3"
         style={{ borderBottom: '1px solid var(--z-border)' }}>

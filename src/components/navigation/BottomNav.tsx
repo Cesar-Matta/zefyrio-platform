@@ -31,8 +31,8 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
           background: 'var(--z-glass-bg)', 
           backdropFilter: 'var(--z-glass-blur)',
           WebkitBackdropFilter: 'var(--z-glass-blur)',
-          border: '1px solid rgba(255,255,255,0.4)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.06)'
+          border: '0.5px solid rgba(0,0,0,0.15)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.04)'
         }}
       >
         <div className="flex items-center justify-between px-6 py-4">
