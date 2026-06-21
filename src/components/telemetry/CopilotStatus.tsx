@@ -58,7 +58,7 @@ export default function CopilotStatus({ status, aiMessage, profileLabel, data }:
         </p>
         <div className="mt-4 flex">
           <span className="inline-flex items-center gap-1 text-[11px] font-bold tracking-wide uppercase px-4 py-1.5 rounded-full" style={{ background: text, color: '#ffffff' }}>
-            Ver Detalles de Autorización <ChevronRight className="w-3.5 h-3.5" />
+            Más Información <ChevronRight className="w-3.5 h-3.5" />
           </span>
         </div>
       </button>
