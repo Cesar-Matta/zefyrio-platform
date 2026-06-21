@@ -18,7 +18,7 @@ const getWeatherIcon = (code: number) => {
   return <Wind className="w-5 h-5 text-slate-400" />;
 };
 
-export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number }) {
+export default function ForecastBar8Day({ lat, lon, locationName }: { lat: number, lon: number, locationName?: string }) {
   const [forecast, setForecast] = useState<DayForecast[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,7 +55,9 @@ export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number
   return (
     <div className="w-full flex flex-col gap-2 relative">
       <div className="flex justify-between items-center px-1">
-        <span className="text-[10px] font-bold tracking-tight text-slate-400">Próximos Días</span>
+        <span className="text-[10px] font-bold tracking-tight text-[var(--z-text)] uppercase opacity-80">
+          Pronóstico {locationName ? `· ${locationName}` : '· 8 Días'}
+        </span>
         <button 
           onClick={fetchForecast} 
           disabled={isLoading}
