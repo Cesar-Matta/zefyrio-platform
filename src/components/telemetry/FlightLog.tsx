@@ -212,10 +212,10 @@ export default function FlightLog() {
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {[
                     { label: 'TEMP', value: session.conditions.temp != null ? `${session.conditions.temp}°C` : '–' },
-                    { label: 'WIND', value: session.conditions.wind ? `${session.conditions.wind} kts` : '–' },
-                    { label: 'GUSTS', value: session.conditions.gusts ? `${session.conditions.gusts} kts` : '–' },
-                    { label: 'RAIN', value: session.conditions.rain != null ? `${session.conditions.rain}%` : '–' },
-                    { label: 'CLOUDS', value: session.conditions.clouds != null ? `${session.conditions.clouds}%` : '–' },
+                    { label: 'VIENTO', value: session.conditions.wind ? `${session.conditions.wind} nudos` : '–' },
+                    { label: 'RÁFAGAS', value: session.conditions.gusts ? `${session.conditions.gusts} nudos` : '–' },
+                    { label: 'LLUVIA', value: session.conditions.rain != null ? `${session.conditions.rain}%` : '–' },
+                    { label: 'NUBES', value: session.conditions.clouds != null ? `${session.conditions.clouds}%` : '–' },
                     { label: 'Kp', value: session.conditions.kp != null ? session.conditions.kp.toFixed(1) : '–' },
                   ].map((item) => (
                     <div key={item.label} className="rounded-xl p-2 text-center" style={{ background: 'var(--z-surface)' }}>

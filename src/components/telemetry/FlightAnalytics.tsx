@@ -228,15 +228,13 @@ export default function FlightAnalytics() {
 
       {/* Sparkline — Wind Trend */}
       {stats.last10.length >= 2 && (
-        <div className="rounded-2xl p-4"
-          style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Wind className="w-3 h-3" style={{ color: 'var(--color-system-orange)' }} />
-            <span className="text-[9px] tracking-tight font-bold" style={{ color: 'var(--z-muted)' }}>
-              {t('analytics_wind_trend')}
-            </span>
-            <span className="ml-auto text-[9px] font-black font-data" style={{ color: 'var(--color-system-orange)' }}>
-              {stats.last10[stats.last10.length - 1]?.conditions.wind ?? '—'} kts
+        <div className="rounded-2xl p-4 border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center"
+          style={{ background: 'var(--z-card)' }}>
+          <Wind className="w-6 h-6 mb-2" style={{ color: 'var(--color-system-orange)' }} />
+          <span className="text-[11px] font-bold tracking-widest uppercase text-zinc-500 mb-1">{t('analytics_wind_trend')}</span>
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-[28px] font-semibold tracking-tighter leading-none" style={{ color: 'var(--z-text)' }}>
+              {stats.last10[stats.last10.length - 1]?.conditions.wind ?? '—'} <span className="text-[14px]">nudos</span>
             </span>
           </div>
           <Sparkline values={stats.last10.map(s => parseFloat(s.conditions.wind ?? '0') || 0)} color="var(--color-system-orange)" gradId="spark-wind" />

@@ -80,7 +80,7 @@ export default function WindCompass({ surfaceWind, maxGusts, className = "" }: W
       <div className="w-full flex items-center justify-between px-1">
         <span className="text-[8px] font-data" style={{ color: 'var(--z-muted)' }}>{t('wind_gusts')}</span>
         <span className="text-[11px] font-black font-data" style={{ color: 'var(--color-system-orange)' }}>
-          {maxGusts} kts
+          {maxGusts} nudos
         </span>
       </div>
     </div>

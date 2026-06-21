@@ -30,7 +30,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
             style={{ color: 'var(--z-muted)' }}>{t('telem_wind_profile')}</span>
         </div>
         <span className="text-[8px] font-data px-2 py-0.5 rounded-full"
-          style={{ background: 'var(--z-surface)', color: 'var(--z-muted)', border: '1px solid var(--z-border)' }}>kts</span>
+          style={{ background: 'var(--z-surface)', color: 'var(--z-muted)', border: '1px solid var(--z-border)' }}>nudos</span>
       </div>
       <div className="px-5 py-4 flex flex-col gap-3.5">
         {verticalProfile.map((layer, i) => {

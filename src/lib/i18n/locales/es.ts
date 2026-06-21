@@ -15,9 +15,9 @@ const es = {
   profile_parachute: 'Paracaidismo',
 
   // Status
-  status_go: 'GO — DESPEGUE AUTORIZADO',
-  status_caution: 'CAUTION — PRECAUCIÓN',
-  status_nogo: 'NO-GO — VUELO CANCELADO',
+  status_go: 'DESPEGUE AUTORIZADO',
+  status_caution: 'PRECAUCIÓN',
+  status_nogo: 'VUELO CANCELADO',
   status_analysis: 'Análisis',
 
   // GPS
@@ -25,10 +25,10 @@ const es = {
   gps_searching: 'Buscando satélites limpios...',
   gps_syncing: 'Sincronizando modelos Doppler (Open-Meteo)',
   gps_failed: 'FALLO GPS:',
-  gps_denied_fallback: 'GPS Denegado/Timeout — Triangulando por IP...',
+  gps_denied_fallback: 'GPS Denegado/Tiempo Excedido — Triangulando por IP...',
   gps_no_signal: 'Señal Pérdida. Sin Telemetría.',
   gps_no_support: 'GPS No Soportado',
-  gps_sync: 'SYNC',
+  gps_sync: 'SINC',
   gps_sat: 'SAT',
 
   // Telemetry
@@ -41,7 +41,7 @@ const es = {
   telem_flight_window: 'Ventana de Vuelo Solar',
   telem_daytime: 'DIURNO',
   telem_nighttime: 'NOCTURNO',
-  telem_tap_details: 'TAP PARA DETALLES',
+  telem_tap_details: 'TOCA PARA DETALLES',
 
   // Weather Cards
   weather_temp: 'TEMP',
@@ -56,15 +56,15 @@ const es = {
   kp_calm: 'CALMO',
 
   // Wind
-  wind_surface: 'VIENTO SFC',
+  wind_surface: 'VIENTO SUP',
   wind_gusts: 'RÁFAGAS',
 
   // Navigation
-  nav_hud: 'HUD',
+  nav_hud: 'PANEL',
   nav_radar: 'RADAR',
   nav_forecast: 'PREV',
-  nav_map: 'MAP',
-  nav_log: 'LOG',
+  nav_map: 'MAPA',
+  nav_log: 'BITÁCORA',
 
   // Map
   map_initializing: 'INICIALIZANDO RADAR...',
@@ -75,7 +75,7 @@ const es = {
   map_layer_adsb: 'Tráfico ADS-B',
   map_layer_airports: 'Aeropuertos OACI',
   map_layer_notams: 'Zonas WAR (NOTAM)',
-  map_layer_nofly: 'Zonas No-Fly',
+  map_layer_nofly: 'Zonas Prohibidas',
 
   // METAR
   metar_title: 'Panel METAR',
@@ -114,7 +114,7 @@ const es = {
   metar_no_stations: 'Sin terminales aéreas en esta cuadrícula. Desplaza el radar.',
   metar_base_station: 'Estación Base Fix',
   metar_airport: 'AEROPUERTO',
-  metar_raw: 'RAW METAR:',
+  metar_raw: 'METAR ORIGINAL:',
   metar_flight_cat: 'Cat. Vuelo',
   metar_cloud_ceiling: 'Techo Nubes',
   metar_ceiling_clear: 'Despejado',
