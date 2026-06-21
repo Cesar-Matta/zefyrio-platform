@@ -92,6 +92,6 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
           </span>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
