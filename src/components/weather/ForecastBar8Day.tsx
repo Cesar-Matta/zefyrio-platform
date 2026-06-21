@@ -66,22 +66,22 @@ export default function ForecastBar8Day({ lat, lon }: { lat: number, lon: number
         </button>
       </div>
 
-      <div className="w-full overflow-x-auto no-scrollbar">
-        <div className="flex gap-2 min-w-max">
+      <div className="w-full">
+        <div className="flex justify-between w-full gap-0.5">
           {forecast.map((day, i) => {
             const date = new Date(day.date + 'T12:00:00Z'); // force midday to avoid timezone shifts
             const isToday = i === 0;
             return (
-              <div key={day.date} className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${isToday ? 'bg-white/5 border border-[var(--z-border)]/30' : ''}`}>
-                <span className="text-[10px] font-bold tracking-tighter">
+              <div key={day.date} className={`flex flex-col items-center justify-center gap-1 py-2 px-0.5 rounded-xl transition-all flex-1 ${isToday ? 'bg-[var(--z-bg)] border border-[var(--z-border)] shadow-sm' : ''}`}>
+                <span className="text-[9px] font-bold tracking-tighter capitalize text-[var(--z-text)]">
                   {isToday ? 'Hoy' : date.toLocaleDateString('es-ES', { weekday: 'short' })}
                 </span>
-                <div className="p-1">
+                <div className="py-0.5 flex items-center justify-center">
                   {getWeatherIcon(day.code)}
                 </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-xs font-bold">{Math.round(day.max)}°</span>
-                  <span className="text-[9px] font-medium">{Math.round(day.min)}°</span>
+                <div className="flex flex-col items-center leading-tight">
+                  <span className="text-[11px] font-black text-[var(--z-text)]">{Math.round(day.max)}°</span>
+                  <span className="text-[9px] font-medium text-[var(--z-muted)]">{Math.round(day.min)}°</span>
                 </div>
               </div>
             );
