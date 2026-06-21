@@ -1,22 +1,19 @@
 // ═══════════════════════════════════════════════════════════════════
-// ZEFYRIO — ADS-B Proxy v3.0 (Dual Source: ADSB.lol + OpenSky)
+// ZEFYRIO — ADS-B Proxy v4.0 (Quad Source)
 //
-// Primary:  ADSB.lol   — better global coverage, richer data, free
-// Fallback: OpenSky    — well-known, good EU/US coverage
+// Sources (queried in parallel, results merged):
+//   1. ADSB.lol         — global community, richer data, free
+//   2. TheAirTraffic.com— good Latam/global coverage, free
+//   3. AviationStack    — commercial, good Colombia, free tier
+//   4. OpenSky Network  — classic fallback, EU/US focus
 //
-// Improvements over v2:
-//   • Dual-source with automatic fallback
-//   • Richer aircraft data (registration, aircraft type, ground speed)
-//   • ADSB.lol uses radial queries — bbox converted to center + radius
-//   • Per-bbox cache with stale-while-revalidate
-//   • Backoff on 429 (per-source)
-//   • On-ground filtering
+// All non-null sources are merged and deduplicated by ICAO24.
 // ═══════════════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from 'next/server';
 
 // ─── Cache config ──────────────────────────────────────────────────
-const CACHE_TTL_MS      = 15_000;  // 15s
-const BACKOFF_TTL_MS    = 60_000;  // 60s freeze on 429
+const CACHE_TTL_MS      = 15_000;
+const BACKOFF_TTL_MS    = 60_000;
 const MAX_CACHE_ENTRIES = 50;
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -34,7 +31,6 @@ interface NormalizedAircraft {
   verticalRate: number | null;
   squawk: string | null;
   category: string | number | null;
-  // Enriched fields from ADSB.lol
   registration: string | null;
   aircraftType: string | null;
 }
@@ -44,7 +40,7 @@ interface AdsbPayload {
   count: number;
   time: number;
   bbox: { minLat: number; minLon: number; maxLat: number; maxLon: number };
-  source: 'adsb.lol' | 'opensky' | 'merged' | 'cache';
+  source: string;
   stale?: boolean;
   rateLimited?: boolean;
 }
@@ -55,8 +51,10 @@ interface CacheEntry {
 }
 
 const bboxCache = new Map<string, CacheEntry>();
-let adsbLolBackoffUntil = 0;
-let openSkyBackoffUntil = 0;
+let adsbLolBackoffUntil    = 0;
+let openSkyBackoffUntil    = 0;
+let airTrafficBackoffUntil = 0;
+let aviationStackBackoffUntil = 0;
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -72,97 +70,159 @@ function normalizeBbox(raw: string): string {
   return raw.split(',').map(v => parseFloat(v).toFixed(1)).join(',');
 }
 
-/** Convert bbox to center lat/lon and radius in nautical miles (max 250nm for ADSB.lol) */
 function bboxToCenterRadius(minLat: number, minLon: number, maxLat: number, maxLon: number) {
   const centerLat = (minLat + maxLat) / 2;
   const centerLon = (minLon + maxLon) / 2;
-
-  // Haversine-approximate distance from center to corner in NM
   const dLat = (maxLat - minLat) / 2;
   const dLon = (maxLon - minLon) / 2;
   const a = Math.sin((dLat * Math.PI / 180) / 2) ** 2
           + Math.cos(centerLat * Math.PI / 180) * Math.cos(maxLat * Math.PI / 180)
           * Math.sin((dLon * Math.PI / 180) / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distNm = 3440.065 * c; // Earth radius in NM
-
+  const distNm = 3440.065 * c;
   return { centerLat, centerLon, radiusNm: Math.min(Math.ceil(distNm), 250) };
 }
 
-// ─── ADSB.lol Fetcher ──────────────────────────────────────────────
+/** Merge multiple source results, deduplicate by icao24, prefer richer data */
+function mergeAircraft(sources: (NormalizedAircraft[] | null)[]): { aircraft: NormalizedAircraft[]; sourceNames: string[] } {
+  const map = new Map<string, NormalizedAircraft>();
+  const sourceNames: string[] = [];
+
+  sources.forEach((list, idx) => {
+    if (!list || list.length === 0) return;
+    const names = ['adsb.lol', 'theairtraffic', 'aviationstack', 'opensky'];
+    sourceNames.push(names[idx] ?? `source${idx}`);
+    list.forEach(ac => {
+      const key = ac.icao24.toLowerCase();
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, ac);
+      } else {
+        // Merge: prefer non-null / richer values
+        map.set(key, {
+          ...existing,
+          registration:  ac.registration  ?? existing.registration,
+          aircraftType:  ac.aircraftType   ?? existing.aircraftType,
+          callsign:      ac.callsign !== ac.icao24 ? ac.callsign : existing.callsign,
+          originCountry: ac.originCountry || existing.originCountry,
+          velocity:      ac.velocity       ?? existing.velocity,
+          trueTrack:     ac.trueTrack      ?? existing.trueTrack,
+          baroAltitude:  ac.baroAltitude   ?? existing.baroAltitude,
+          squawk:        ac.squawk         ?? existing.squawk,
+        });
+      }
+    });
+  });
+
+  return { aircraft: [...map.values()], sourceNames };
+}
+
+// ─── Source 1: ADSB.lol ────────────────────────────────────────────
 
 interface AdsbLolAircraft {
-  hex: string;
-  flight?: string;
-  r?: string;           // registration
-  t?: string;           // aircraft ICAO type
-  lat?: number;
-  lon?: number;
-  alt_baro?: number | string;
-  alt_geom?: number;
-  gs?: number;          // ground speed (knots)
-  track?: number;
-  baro_rate?: number;
-  geom_rate?: number;
-  squawk?: string;
-  category?: string;
-  emergency?: string;
-  dbFlags?: number;
+  hex: string; flight?: string; r?: string; t?: string;
+  lat?: number; lon?: number; alt_baro?: number | string; alt_geom?: number;
+  gs?: number; track?: number; baro_rate?: number; squawk?: string; category?: string;
 }
 
-async function fetchFromAdsbLol(
-  centerLat: number, centerLon: number, radiusNm: number
-): Promise<NormalizedAircraft[] | null> {
+async function fetchFromAdsbLol(centerLat: number, centerLon: number, radiusNm: number): Promise<NormalizedAircraft[] | null> {
   const now = Date.now();
   if (now < adsbLolBackoffUntil) return null;
-
   try {
     const url = `https://api.adsb.lol/v2/lat/${centerLat.toFixed(4)}/lon/${centerLon.toFixed(4)}/dist/${radiusNm}`;
-    const response = await fetch(url, {
-      headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(8_000),
-    });
-
-    if (response.status === 429) {
-      adsbLolBackoffUntil = now + BACKOFF_TTL_MS;
-      console.warn('[ADS-B] ADSB.lol 429 — backoff 60s');
-      return null;
-    }
-
-    if (!response.ok) {
-      console.warn(`[ADS-B] ADSB.lol returned ${response.status}`);
-      return null;
-    }
-
-    const raw = await response.json() as { ac?: AdsbLolAircraft[]; total?: number };
-    const acList = raw.ac ?? [];
-
-    return acList
-      .filter((a) => a.lat != null && a.lon != null && a.alt_baro !== 'ground')
-      .map((a) => ({
-        icao24:         a.hex,
-        callsign:       (a.flight ?? '').trim() || a.hex,
-        originCountry:  '', // ADSB.lol doesn't provide country
-        lat:            a.lat!,
-        lon:            a.lon!,
-        baroAltitude:   typeof a.alt_baro === 'number' ? a.alt_baro * 0.3048 : null, // ft → m
-        geoAltitude:    a.alt_geom != null ? a.alt_geom * 0.3048 : null,
-        onGround:       a.alt_baro === 'ground',
-        velocity:       a.gs != null ? a.gs * 0.514444 : null, // knots → m/s
-        trueTrack:      a.track ?? null,
-        verticalRate:   a.baro_rate != null ? a.baro_rate * 0.00508 : null, // fpm → m/s
-        squawk:         a.squawk ?? null,
-        category:       a.category ?? null,
-        registration:   a.r ?? null,
-        aircraftType:   a.t ?? null,
+    const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(8_000) });
+    if (response.status === 429) { adsbLolBackoffUntil = now + BACKOFF_TTL_MS; return null; }
+    if (!response.ok) return null;
+    const raw = await response.json() as { ac?: AdsbLolAircraft[] };
+    return (raw.ac ?? [])
+      .filter(a => a.lat != null && a.lon != null && a.alt_baro !== 'ground')
+      .map(a => ({
+        icao24: a.hex, callsign: (a.flight ?? '').trim() || a.hex, originCountry: '',
+        lat: a.lat!, lon: a.lon!,
+        baroAltitude: typeof a.alt_baro === 'number' ? a.alt_baro * 0.3048 : null,
+        geoAltitude:  a.alt_geom != null ? a.alt_geom * 0.3048 : null,
+        onGround: false, velocity: a.gs != null ? a.gs * 0.514444 : null,
+        trueTrack: a.track ?? null, verticalRate: a.baro_rate != null ? a.baro_rate * 0.00508 : null,
+        squawk: a.squawk ?? null, category: a.category ?? null, registration: a.r ?? null, aircraftType: a.t ?? null,
       }));
-  } catch (err) {
-    console.error('[ADS-B] ADSB.lol error:', err instanceof Error ? err.message : err);
-    return null;
-  }
+  } catch { return null; }
 }
 
-// ─── OpenSky Fetcher (Fallback) ────────────────────────────────────
+// ─── Source 2: TheAirTraffic.com ───────────────────────────────────
+
+async function fetchFromTheAirTraffic(minLat: number, minLon: number, maxLat: number, maxLon: number): Promise<NormalizedAircraft[] | null> {
+  const now = Date.now();
+  if (now < airTrafficBackoffUntil) return null;
+  try {
+    const url = `https://api.theairtraffic.com/api/aclist?south=${minLat}&west=${minLon}&north=${maxLat}&east=${maxLon}`;
+    const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(8_000) });
+    if (response.status === 429) { airTrafficBackoffUntil = now + BACKOFF_TTL_MS; return null; }
+    if (!response.ok) return null;
+    const raw = await response.json() as any[];
+    if (!Array.isArray(raw)) return null;
+    return raw
+      .filter(a => a.lat != null && a.lng != null && !a.onGround)
+      .map(a => ({
+        icao24: (a.icao ?? a.hex ?? '').toLowerCase(),
+        callsign: (a.callsign ?? a.flight ?? '').trim() || a.icao,
+        originCountry: a.country ?? '',
+        lat: a.lat, lon: a.lng,
+        baroAltitude: a.altitude != null ? a.altitude * 0.3048 : null,
+        geoAltitude: null, onGround: false,
+        velocity: a.speed != null ? a.speed * 0.514444 : null,
+        trueTrack: a.heading ?? null, verticalRate: null,
+        squawk: a.squawk ?? null, category: null,
+        registration: a.registration ?? null, aircraftType: a.type ?? null,
+      }));
+  } catch { return null; }
+}
+
+// ─── Source 3: AviationStack ───────────────────────────────────────
+
+async function fetchFromAviationStack(minLat: number, minLon: number, maxLat: number, maxLon: number): Promise<NormalizedAircraft[] | null> {
+  const now = Date.now();
+  if (now < aviationStackBackoffUntil) return null;
+  const apiKey = process.env.AVIATIONSTACK_API_KEY;
+  if (!apiKey) return null; // Skip if no key configured
+
+  try {
+    // AviationStack real-time flights endpoint
+    const centerLat = ((minLat + maxLat) / 2).toFixed(4);
+    const centerLon = ((minLon + maxLon) / 2).toFixed(4);
+    const url = `http://api.aviationstack.com/v1/flights?access_key=${apiKey}&limit=100`;
+    const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(10_000) });
+    if (response.status === 429) { aviationStackBackoffUntil = now + BACKOFF_TTL_MS; return null; }
+    if (!response.ok) return null;
+
+    const raw = await response.json() as { data?: any[] };
+    const flights = raw.data ?? [];
+
+    // Filter to bbox
+    return flights
+      .filter(f => {
+        const live = f.live;
+        if (!live || live.latitude == null || live.longitude == null || live.is_ground) return false;
+        const lat = live.latitude, lon = live.longitude;
+        return lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon;
+      })
+      .map(f => ({
+        icao24: (f.aircraft?.icao24 ?? f.flight?.icao ?? '').toLowerCase(),
+        callsign: f.flight?.icao ?? f.flight?.iata ?? '',
+        originCountry: f.airline?.country_name ?? '',
+        lat: f.live.latitude, lon: f.live.longitude,
+        baroAltitude: f.live.altitude != null ? f.live.altitude : null,
+        geoAltitude: null, onGround: false,
+        velocity: f.live.speed_horizontal != null ? f.live.speed_horizontal / 3.6 : null,
+        trueTrack: f.live.direction ?? null, verticalRate: f.live.speed_vertical ?? null,
+        squawk: null, category: null,
+        registration: f.aircraft?.registration ?? null,
+        aircraftType: f.aircraft?.iata ?? null,
+      }))
+      .filter(a => a.icao24); // Remove entries without icao
+  } catch { return null; }
+}
+
+// ─── Source 4: OpenSky ─────────────────────────────────────────────
 
 type OpenSkyState = [
   string, string | null, string, string | null, number,
@@ -171,56 +231,26 @@ type OpenSkyState = [
   number | null, string | null, boolean, number, number,
 ];
 
-async function fetchFromOpenSky(
-  minLat: number, minLon: number, maxLat: number, maxLon: number
-): Promise<NormalizedAircraft[] | null> {
+async function fetchFromOpenSky(minLat: number, minLon: number, maxLat: number, maxLon: number): Promise<NormalizedAircraft[] | null> {
   const now = Date.now();
   if (now < openSkyBackoffUntil) return null;
-
   try {
     const url = `https://opensky-network.org/api/states/all?lamin=${minLat}&lomin=${minLon}&lamax=${maxLat}&lomax=${maxLon}`;
-    const response = await fetch(url, {
-      headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (response.status === 429) {
-      openSkyBackoffUntil = now + BACKOFF_TTL_MS;
-      console.warn('[ADS-B] OpenSky 429 — backoff 60s');
-      return null;
-    }
-
-    if (!response.ok) {
-      console.warn(`[ADS-B] OpenSky returned ${response.status}`);
-      return null;
-    }
-
+    const response = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: AbortSignal.timeout(10_000) });
+    if (response.status === 429) { openSkyBackoffUntil = now + BACKOFF_TTL_MS; return null; }
+    if (!response.ok) return null;
     const raw = await response.json();
     const states: OpenSkyState[] = raw.states ?? [];
-
     return states
-      .filter((s) => s[5] != null && s[6] != null && !s[8]) // has position, not on ground
-      .map((s) => ({
-        icao24:         s[0],
-        callsign:       (s[1] ?? '').trim() || s[0],
-        originCountry:  s[2],
-        lat:            s[6] as number,
-        lon:            s[5] as number,
-        baroAltitude:   s[7],
-        geoAltitude:    s[13],
-        onGround:       s[8],
-        velocity:       s[9],
-        trueTrack:      s[10],
-        verticalRate:   s[11],
-        squawk:         s[14],
-        category:       s[17],
-        registration:   null,
-        aircraftType:   null,
+      .filter(s => s[5] != null && s[6] != null && !s[8])
+      .map(s => ({
+        icao24: s[0], callsign: (s[1] ?? '').trim() || s[0], originCountry: s[2],
+        lat: s[6] as number, lon: s[5] as number,
+        baroAltitude: s[7], geoAltitude: s[13], onGround: s[8],
+        velocity: s[9], trueTrack: s[10], verticalRate: s[11], squawk: s[14],
+        category: s[17], registration: null, aircraftType: null,
       }));
-  } catch (err) {
-    console.error('[ADS-B] OpenSky error:', err instanceof Error ? err.message : err);
-    return null;
-  }
+  } catch { return null; }
 }
 
 // ─── Main Handler ──────────────────────────────────────────────────
@@ -230,10 +260,7 @@ export async function GET(req: NextRequest) {
   const rawBbox = searchParams.get('bbox');
 
   if (!rawBbox) {
-    return NextResponse.json(
-      { error: 'bbox required. Format: minLat,minLon,maxLat,maxLon' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'bbox required. Format: minLat,minLon,maxLat,maxLon' }, { status: 400 });
   }
 
   const parts = rawBbox.split(',').map(Number);
@@ -245,62 +272,40 @@ export async function GET(req: NextRequest) {
   const cacheKey = normalizeBbox(rawBbox);
   const now = Date.now();
 
-  // ─── Check cache ─────────────────────────────────────────────────
+  // ─── Cache check ─────────────────────────────────────────────────
   const cached = bboxCache.get(cacheKey);
   if (cached && now - cached.timestamp < CACHE_TTL_MS) {
-    return NextResponse.json({ ...cached.data, source: 'cache' as const }, {
-      headers: {
-        'X-Cache': 'HIT',
-        'X-Cache-Age': `${Math.floor((now - cached.timestamp) / 1000)}s`,
-        'Cache-Control': 'public, max-age=15',
-      },
+    return NextResponse.json({ ...cached.data, source: 'cache' }, {
+      headers: { 'X-Cache': 'HIT', 'X-Cache-Age': `${Math.floor((now - cached.timestamp) / 1000)}s`, 'Cache-Control': 'public, max-age=15' },
     });
   }
 
-  // ─── Fetch from sources ──────────────────────────────────────────
+  // ─── Fetch ALL sources in parallel ───────────────────────────────
   const { centerLat, centerLon, radiusNm } = bboxToCenterRadius(minLat, minLon, maxLat, maxLon);
 
-  // Try ADSB.lol first (primary), then OpenSky as fallback
-  let aircraft: NormalizedAircraft[] | null = null;
-  let source: 'adsb.lol' | 'opensky' | 'merged' = 'adsb.lol';
+  const [adsbLolResult, airTrafficResult, aviationStackResult, openSkyResult] = await Promise.all([
+    fetchFromAdsbLol(centerLat, centerLon, radiusNm),
+    fetchFromTheAirTraffic(minLat, minLon, maxLat, maxLon),
+    fetchFromAviationStack(minLat, minLon, maxLat, maxLon),
+    fetchFromOpenSky(minLat, minLon, maxLat, maxLon),
+  ]);
 
-  const adsbLolResult = await fetchFromAdsbLol(centerLat, centerLon, radiusNm);
+  // ─── Merge results ───────────────────────────────────────────────
+  const { aircraft, sourceNames } = mergeAircraft([adsbLolResult, airTrafficResult, aviationStackResult, openSkyResult]);
 
-  if (adsbLolResult && adsbLolResult.length > 0) {
-    aircraft = adsbLolResult;
-    source = 'adsb.lol';
-  } else {
-    // Fallback to OpenSky
-    const openSkyResult = await fetchFromOpenSky(minLat, minLon, maxLat, maxLon);
-    if (openSkyResult && openSkyResult.length > 0) {
-      aircraft = openSkyResult;
-      source = 'opensky';
-    } else if (adsbLolResult) {
-      // ADSB.lol returned empty but didn't error — genuinely no traffic
-      aircraft = adsbLolResult;
-      source = 'adsb.lol';
-    } else if (openSkyResult) {
-      aircraft = openSkyResult;
-      source = 'opensky';
-    }
-  }
-
-  // If both sources failed, return stale cache or error
-  if (aircraft === null) {
+  if (aircraft.length === 0 && sourceNames.length === 0) {
     if (cached) {
       return NextResponse.json({ ...cached.data, stale: true, rateLimited: true }, {
         headers: { 'X-Cache': 'STALE', 'Retry-After': '60' },
       });
     }
     return NextResponse.json({
-      error: 'Both ADS-B sources unavailable. Retrying shortly.',
-      aircraft: [],
-      count: 0,
-      source: 'none',
-      rateLimited: true,
+      error: 'Todas las fuentes ADS-B no disponibles. Reintentando pronto.',
+      aircraft: [], count: 0, source: 'none', rateLimited: true,
     }, { status: 503 });
   }
 
+  const source = sourceNames.join('+') || 'empty';
   const payload: AdsbPayload = {
     aircraft,
     count: aircraft.length,
@@ -313,10 +318,6 @@ export async function GET(req: NextRequest) {
   pruneCache();
 
   return NextResponse.json(payload, {
-    headers: {
-      'X-Cache': 'MISS',
-      'X-Source': source,
-      'Cache-Control': 'public, max-age=15',
-    },
+    headers: { 'X-Cache': 'MISS', 'X-Source': source, 'Cache-Control': 'public, max-age=15' },
   });
 }
