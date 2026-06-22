@@ -73,7 +73,7 @@ const LAYER_INITIAL: Record<string, boolean> = {
   classE: false, classF: false, classG: false,
   restricted: true, danger: true, prohibited: true, ctr: true, tma: false, special: false,
   military: false, gliding: false, hanggliding: false, rc: false, parachuting: false,
-  adsb: true, radar: false, clouds: true, cloudsVis: false, satellite: false, airports: true,
+  adsb: false, radar: false, clouds: false, cloudsVis: false, satellite: false, airports: true,
 };
 
 const GROUP_META: Record<string, { label: string; icon: LucideIcon; accent: string }> = {
