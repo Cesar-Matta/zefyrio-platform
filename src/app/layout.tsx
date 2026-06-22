@@ -4,7 +4,7 @@ import "./globals.css";
 import PwaRegistry from "@/components/PwaRegistry";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
-// ── Typography (Stitch Design System: Zefyrio Avionics / Zefyrio Horizon) ──
+// ── Typography (Stitch Design System: Cfyro Avionics / Cfyro Horizon) ──
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
@@ -41,13 +41,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Zefyrio",
+  title: "Cfyro",
   description: "Aero HUD Protocol — Aviation Weather & Drone Safety",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Zefyrio",
+    title: "Cfyro",
   },
 };
 

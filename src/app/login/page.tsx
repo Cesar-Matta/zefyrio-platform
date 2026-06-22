@@ -101,7 +101,7 @@ export default function LoginPage() {
               <PlaneTakeoff className="w-10 h-10 text-[var(--z-muted)] relative z-10" />
               <div className="absolute inset-0 rounded-full bg-[var(--z-surface)]/10 animate-ping duration-3000" />
             </div>
-            <h1 className="text-4xl font-black text-[var(--z-text)] tracking-tighter">ZEFYRIO</h1>
+            <h1 className="text-4xl font-black text-[var(--z-text)] tracking-tighter">CFYRO</h1>
             <p className="text-[10px] font-medium text-[var(--z-muted)] tracking-tight mt-2">Aero HUD Protocol</p>
           </div>
 
@@ -267,7 +267,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-gray-600 text-[10px] mt-8 leading-relaxed">
-            Al acceder aceptas los Términos de Servicio de Zefyrio.
+            Al acceder aceptas los Términos de Servicio de Cfyro.
           </p>
         </div>
       </main>

@@ -4,7 +4,7 @@
 
 const en = {
   // App
-  app_name: 'ZEFYRIO',
+  app_name: 'CFYRO',
   app_tagline: 'Aero HUD Protocol',
 
   // Profiles
