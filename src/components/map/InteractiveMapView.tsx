@@ -127,7 +127,7 @@ interface InteractiveMapViewProps {
 export default function InteractiveMapView({ initialLat, initialLon, onSyncLocation }: InteractiveMapViewProps) {
   const { isDark } = useTheme();
   const [layers, setLayers] = useState<Record<string, boolean>>(LAYER_INITIAL);
-  const [showControls, setShowControls] = useState(true);
+  const [showControls, setShowControls] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [aircrafts, setAircrafts] = useState<AircraftPosition[]>([]);
   const [metars, setMetars] = useState<MetarData[]>([]);
