@@ -85,7 +85,7 @@ export default function LoginPage() {
               <div className="absolute inset-0 rounded-full bg-[var(--z-surface)]/10 animate-ping duration-3000" />
             </div>
             <h1 className="text-4xl font-black text-white tracking-tighter">CFYRO</h1>
-            <p className="text-[10px] font-medium text-gray-400 tracking-tight mt-2 uppercase tracking-widest">Inteligencia Meteorológica para Drones</p>
+            <p className="text-[10px] font-medium text-gray-400 tracking-tight mt-2 uppercase tracking-widest">Meteo HUD Táctico</p>
           </div>
 
           <div className="flex flex-col gap-4 w-full">
