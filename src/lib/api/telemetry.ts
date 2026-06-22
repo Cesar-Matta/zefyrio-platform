@@ -24,7 +24,7 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
   try {
     // 1. Fetch Open-Meteo (SFC, Temp, Ráfagas, Lluvia, Vientos Altura)
     // Usamos hourly array para wind_speed a diferentes alturas: 10m(~sfc), 80m(~250ft), 120m(~400ft), 180m(~600ft)
-    const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,dew_point_2m,precipitation,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m&daily=sunrise,sunset&timezone=auto`;
+    const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,dew_point_2m,precipitation,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,wind_direction_10m,wind_gusts_10m&daily=sunrise,sunset&timezone=auto`;
     const meteoReq = await fetchWithTimeout(meteoUrl, {}, 6000);
     if (!meteoReq.ok) throw new Error(`Open-Meteo HTTP ${meteoReq.status}`);
     const meteoData = await meteoReq.json();
@@ -139,8 +139,22 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
     const windForecast = (meteoData.hourly.time as string[]).map((tStr, i) => ({
       time: tStr,
       speed10m: num(meteoData.hourly.wind_speed_10m?.[i]),
-      speed120m: num(meteoData.hourly.wind_speed_120m?.[i])
+      speed120m: num(meteoData.hourly.wind_speed_120m?.[i]),
+      direction: num(meteoData.hourly.wind_direction_10m?.[i]),
+      gusts: num(meteoData.hourly.wind_gusts_10m?.[i])
     }));
+
+    // Reverse Geocoding
+    let locationName = "Ubicación Desconocida";
+    try {
+      const geoReq = await fetchWithTimeout(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=es`, {}, 3000);
+      if (geoReq.ok) {
+        const geoData = await geoReq.json();
+        locationName = geoData.locality || geoData.city || geoData.principalSubdivision || "Ubicación Actual";
+      }
+    } catch (e) {
+      console.warn("Geocoding failed", e);
+    }
 
     return {
       timestamp: new Date().toISOString(),
@@ -174,6 +188,7 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
         { alt: 'SFC', speed: Math.round(wind10m), state: wind10m > 15 ? 'warn' : 'calm' },
       ],
       windForecast,
+      locationName,
     };
 
   } catch (error) {

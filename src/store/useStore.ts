@@ -33,6 +33,8 @@ export interface WindForecastHour {
   time: string;
   speed10m: number;
   speed120m: number;
+  direction: number;
+  gusts: number;
 }
 
 export interface TelemetryData {
@@ -53,6 +55,7 @@ export interface TelemetryData {
   sun: SunData;
   verticalProfile: WindLayer[];
   windForecast?: WindForecastHour[];
+  locationName?: string;
   gps?: GpsCoords;
 }
 
