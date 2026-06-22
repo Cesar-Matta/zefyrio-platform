@@ -4,10 +4,10 @@
 // renders a sparkline + drone-tuned colour coding.
 
 import { useEffect, useMemo, useState } from "react";
-import { Wind, Sun, Droplets, Eye, type LucideIcon } from "lucide-react";
+import { Wind, Sun, Droplets, Eye, CloudRain, Thermometer, type LucideIcon } from "lucide-react";
 import type { ForecastResponse, HourlyForecast } from "@/app/api/forecast/route";
 
-export type ForecastMetric = "wind" | "uv" | "humidity" | "visibility";
+export type ForecastMetric = "wind" | "precipitation" | "visibility" | "uv" | "humidity" | "temperature";
 
 interface MetricConfig {
   label: string;
@@ -44,6 +44,36 @@ const METRIC: Record<ForecastMetric, MetricConfig> = {
         : v >= 15
         ? "Viento marginal — pilotos expertos"
         : "Viento nominal para drones",
+    format: (v) => v.toFixed(0),
+  },
+  precipitation: {
+    label: "Probabilidad de Lluvia",
+    unit: "mm",
+    Icon: CloudRain,
+    accent: "var(--color-system-blue)",
+    pick: (h) => h.precipitation,
+    tier: (v) => (v > 2 ? "crit" : v > 0 ? "warn" : "ok"),
+    tip: (v) =>
+      v > 2
+        ? "Lluvia fuerte — vuelo prohibido"
+        : v > 0
+        ? "Llovizna — riesgo eléctrico"
+        : "Despejado — seguro para volar",
+    format: (v) => v.toFixed(1),
+  },
+  temperature: {
+    label: "Temperatura",
+    unit: "°C",
+    Icon: Thermometer,
+    accent: "#f97316", // Orange
+    pick: (h) => h.temperature,
+    tier: (v) => (v > 35 || v < 0 ? "crit" : v > 30 || v < 5 ? "warn" : "ok"),
+    tip: (v) =>
+      v > 35
+        ? "Riesgo sobrecalentamiento batería"
+        : v < 0
+        ? "Batería pierde voltaje rápido"
+        : "Rango térmico óptimo",
     format: (v) => v.toFixed(0),
   },
   uv: {
@@ -276,7 +306,7 @@ export default function ForecastCards({ lat, lon }: { lat: number; lon: number }
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {(["wind", "uv", "humidity", "visibility"] as ForecastMetric[]).map((m) => (
+      {(["wind", "precipitation", "visibility", "uv", "humidity", "temperature"] as ForecastMetric[]).map((m) => (
         <ForecastCard key={m} metric={m} hourly={hourly} loading={loading} />
       ))}
     </div>

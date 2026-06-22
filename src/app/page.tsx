@@ -432,7 +432,11 @@ export default function Home() {
                 className="rounded-2xl border overflow-hidden p-4"
                 style={{ background: 'var(--z-card)', borderColor: 'var(--z-border)' }}
               >
-                <ForecastBar8Day lat={effectiveLat as number} lon={effectiveLon as number} locationName={viewingAirport ? viewingAirport.icao : 'Mi Ubicación'} />
+                <ForecastBar8Day 
+                  lat={effectiveLat as number} 
+                  lon={effectiveLon as number} 
+                  locationName={viewingAirport ? viewingAirport.name : (telemetryData?.locationName || 'Mi Ubicación')} 
+                />
               </div>
               {/* Hourly drone outlook — wind, UV, humidity, visibility */}
               <div className="flex items-center gap-2 mt-1">
