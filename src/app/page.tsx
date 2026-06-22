@@ -212,7 +212,7 @@ export default function Home() {
     try {
       const res = await fetch(`/api/airport?icao=${code}`);
       if (res.status === 404) {
-        setIcaoError(`Aeropuerto ${code} no encontrado`);
+        setIcaoError(`Aeródromo ${code} no encontrado en la base de datos.`);
         setIcaoLoading(false);
         return;
       }
