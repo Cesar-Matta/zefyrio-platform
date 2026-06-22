@@ -293,7 +293,7 @@ export default function Home() {
           <header className="flex justify-between items-center shrink-0 mb-2">
             <div className="flex items-center">
               <div className="flex items-center justify-center shrink-0">
-                <img src="/logo.svg" alt="Zefyrio Logo" className="h-12 w-auto object-contain" />
+                <img src="/logo.svg" alt="Zefyrio Logo" className="h-6 w-auto scale-[2.5] origin-left object-contain" />
               </div>
             </div>
             <UserMenu />
