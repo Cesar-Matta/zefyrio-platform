@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
   url.searchParams.set('longitude', String(lon));
   url.searchParams.set('hourly', hourlyParams);
   url.searchParams.set('daily', 'uv_index_max');
-  url.searchParams.set('current', 'time');
+  url.searchParams.set('current', 'temperature_2m');
   url.searchParams.set('timezone', 'auto');
   url.searchParams.set('forecast_days', '2');
 
