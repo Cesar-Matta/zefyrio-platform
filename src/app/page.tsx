@@ -379,23 +379,13 @@ export default function Home() {
                   <NotamAlert lat={effectiveLat as number} lon={effectiveLon as number} />
                 )}
 
-                <section className="flex flex-col gap-4 shrink-0">
-                  <GpsSatelliteStatus satellites={telemetryData.satellites} kpIndex={telemetryData.kpIndex} />
-                </section>
-             </div>
-          )}
-
-          {/* WEATHER/METAR TAB */}
-          {activeTab === 'weather' && hasLocation && (
-             <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-8 duration-500 pb-10">
                 <VerticalWindProfile
                   verticalProfile={telemetryData.verticalProfile} 
                 />
       
                 <section className="grid grid-cols-2 gap-4 shrink-0">
-                  <div className="col-span-2">
-                    <WindCompass surfaceWind={telemetryData.surfaceWind} maxGusts={telemetryData.maxGusts} />
-                  </div>
+                  <GpsSatelliteStatus satellites={telemetryData.satellites} kpIndex={telemetryData.kpIndex} />
+                  <WindCompass surfaceWind={telemetryData.surfaceWind} maxGusts={telemetryData.maxGusts} />
                   <div className="col-span-2">
                     <WeatherCards temperature={telemetryData.temperature} feelsLike={telemetryData.feelsLike} rainChance={telemetryData.rainChance} clouds={telemetryData.clouds} />
                   </div>
@@ -403,9 +393,12 @@ export default function Home() {
                     <FlightWindow sun={telemetryData.sun} />
                   </div>
                 </section>
-
-                <MetarBoard lat={effectiveLat as number} lon={effectiveLon as number} />
              </div>
+          )}
+
+          {/* WEATHER/METAR TAB */}
+          {activeTab === 'weather' && hasLocation && (
+             <MetarBoard lat={effectiveLat as number} lon={effectiveLon as number} />
           )}
 
           {/* FORECAST TAB */}
