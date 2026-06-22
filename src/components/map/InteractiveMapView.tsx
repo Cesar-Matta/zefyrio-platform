@@ -78,7 +78,7 @@ const LAYER_INITIAL: Record<string, boolean> = {
 };
 
 const GROUP_META: Record<string, { label: string; icon: LucideIcon; accent: string }> = {
-  weather:     { label: 'RADAR Y NUBES', icon: CloudRain,    accent: '#00BFFF' },
+  weather:     { label: 'RADAR',         icon: CloudRain,    accent: '#00BFFF' },
   navigation:  { label: 'NAVEGACIÓN',    icon: MapIcon,      accent: 'var(--color-system-red)' },
   traffic:     { label: 'TRÁFICO VIVO',  icon: Plane,        accent: 'var(--color-system-green)' },
   airports:    { label: 'AERÓDROMOS',    icon: RadioTower,   accent: 'var(--color-system-blue)' },
