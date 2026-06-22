@@ -13,11 +13,9 @@ const GoogleIcon = () => (
 );
 import { createClient } from '@/lib/supabase/client';
 
-type Mode = 'password' | 'magic';
 type PasswordAction = 'login' | 'signup';
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<Mode>('password');
   const [action, setAction] = useState<PasswordAction>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,21 +67,6 @@ export default function LoginPage() {
     window.location.href = '/';
   };
 
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    });
-
-    if (error) setError('No se pudo enviar el enlace. Intenta de nuevo.');
-    else setSent(true);
-
-    setLoading(false);
-  };
 
 
   return (
@@ -107,37 +90,8 @@ export default function LoginPage() {
 
           <div className="flex flex-col gap-4 w-full">
 
-            {/* Mode toggle */}
-            <div className="flex rounded-xl overflow-hidden border border-[var(--z-border)] bg-[var(--z-card)] p-1 gap-1">
-              <button
-                type="button"
-                onClick={() => { setMode('password'); setError(''); setSent(false); }}
-                className="flex-1 py-2.5 rounded-lg text-xs font-bold tracking-tight transition-all"
-                style={{
-                  background: mode === 'password' ? 'rgba(0,240,255,0.12)' : 'transparent',
-                  color: mode === 'password' ? 'var(--color-system-blue)' : '#6b7280',
-                  border: mode === 'password' ? '1px solid rgba(0,240,255,0.3)' : '1px solid transparent',
-                }}
-              >
-                Contraseña
-              </button>
-              <button
-                type="button"
-                onClick={() => { setMode('magic'); setError(''); setSent(false); }}
-                className="flex-1 py-2.5 rounded-lg text-xs font-bold tracking-tight transition-all"
-                style={{
-                  background: mode === 'magic' ? 'rgba(0,240,255,0.12)' : 'transparent',
-                  color: mode === 'magic' ? 'var(--color-system-blue)' : '#6b7280',
-                  border: mode === 'magic' ? '1px solid rgba(0,240,255,0.3)' : '1px solid transparent',
-                }}
-              >
-                Link por email
-              </button>
-            </div>
-
             {/* Password form */}
-            {mode === 'password' && (
-              <form onSubmit={handlePassword} className="flex flex-col gap-3 p-5 rounded-2xl bg-[#111625]/60 border border-[var(--z-border)] backdrop-blur-xl">
+            <form onSubmit={handlePassword} className="flex flex-col gap-3 p-5 rounded-2xl bg-[#111625]/60 border border-[var(--z-border)] backdrop-blur-xl">
                 <input
                   type="email"
                   required
@@ -188,29 +142,6 @@ export default function LoginPage() {
                   {action === 'login' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
                 </button>
               </form>
-            )}
-
-            {/* Magic link form */}
-            {mode === 'magic' && (
-              <form onSubmit={handleMagicLink} className="flex flex-col gap-3 p-5 rounded-2xl bg-[#111625]/60 border border-[var(--z-border)] backdrop-blur-xl">
-                {!sent ? (
-                  <>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      Te enviamos un enlace a tu correo. Haz click en él y entras directo — sin contraseña.
-                    </p>
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="tu@correo.com"
-                      className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 text-[var(--z-text)] placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
-                    />
-                    {error && <p className="text-xs text-[var(--color-system-red)] px-1">{error}</p>}
-                    <button
-                      disabled={loading}
-                      type="submit"
-                      className="w-full bg-white text-obsidian font-black rounded-xl py-3.5 tracking-tight flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors disabled: text-sm"
                     >
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Mail className="w-4 h-4" /> Enviar enlace</>}
                     </button>
