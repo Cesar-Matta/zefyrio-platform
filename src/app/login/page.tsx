@@ -84,8 +84,8 @@ export default function LoginPage() {
               <img src="/logo-dark.png" alt="Cfyro Logo" className="w-12 h-12 relative z-10 object-contain" />
               <div className="absolute inset-0 rounded-full bg-[var(--z-surface)]/10 animate-ping duration-3000" />
             </div>
-            <h1 className="text-4xl font-black text-[var(--z-text)] tracking-tighter">CFYRO</h1>
-            <p className="text-[10px] font-medium text-[var(--z-muted)] tracking-tight mt-2">Aero HUD Protocol</p>
+            <h1 className="text-4xl font-black text-white tracking-tighter">CFYRO</h1>
+            <p className="text-[10px] font-medium text-gray-400 tracking-tight mt-2">Aero HUD Protocol</p>
           </div>
 
           <div className="flex flex-col gap-4 w-full">
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@correo.com"
-                  className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 text-[var(--z-text)] placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
+                  className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
                 />
                 <div className="relative">
                   <input
@@ -107,7 +107,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Contraseña"
-                    className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 pr-12 text-[var(--z-text)] placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
+                    className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
                   />
                   <button
                     type="button"
@@ -142,31 +142,6 @@ export default function LoginPage() {
                   {action === 'login' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
                 </button>
               </form>
-                    >
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Mail className="w-4 h-4" /> Enviar enlace</>}
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-center py-4 flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-[var(--color-system-green)]/10 border border-[var(--color-system-green)]/30 flex items-center justify-center">
-                      <Mail className="w-6 h-6 text-[var(--color-system-green)]" />
-                    </div>
-                    <p className="text-[var(--z-text)] text-sm font-bold">Revisa tu correo</p>
-                    <p className="text-[var(--z-muted)] font-medium text-xs">{email}</p>
-                    <p className="text-gray-400 text-[11px] leading-relaxed">
-                      Te mandamos un enlace de acceso. Expira en 15 minutos. Si no lo ves, revisa spam.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => { setSent(false); setEmail(''); }}
-                      className="text-xs text-gray-500 hover:text-gray-300 transition-colors mt-1"
-                    >
-                      Usar otro correo
-                    </button>
-                  </div>
-                )}
-              </form>
-            )}
 
             {/* Divider */}
             <div className="flex items-center gap-4">
@@ -179,7 +154,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleGoogle}
-              className="w-full bg-[var(--z-card)] border border-white/5 text-[var(--z-text)] font-semibold rounded-xl py-3.5 flex items-center justify-center gap-3 hover:bg-white/5 transition-colors text-sm"
+              className="w-full bg-[var(--z-card)] border border-white/5 text-white font-semibold rounded-xl py-3.5 flex items-center justify-center gap-3 hover:bg-white/5 transition-colors text-sm"
             >
               <GoogleIcon />
               Continuar con Google
@@ -190,7 +165,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGuest}
               disabled={loading}
-              className="w-full text-[var(--z-muted)]/80 hover:text-[var(--z-muted)] font-medium text-[11px] tracking-tight py-2 transition-colors disabled:"
+              className="w-full text-gray-400 hover:text-white font-medium text-[11px] tracking-tight py-2 transition-colors disabled:opacity-50"
             >
               Probar como invitado →
             </button>
