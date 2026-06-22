@@ -124,7 +124,6 @@ export default function RadarMap({
   const [showCloudsIr, setShowCloudsIr] = useState(false);
   const [showCloudsVis, setShowCloudsVis] = useState(false);
   const [rainPath, setRainPath] = useState<string | null>(null);
-  const [satellitePath, setSatellitePath] = useState<string | null>(null);
   const [showWeatherMenu, setShowWeatherMenu] = useState(false);
 
   useEffect(() => {
@@ -134,13 +133,9 @@ export default function RadarMap({
         if (data.radar?.past?.length > 0) {
           setRainPath(data.radar.past[data.radar.past.length - 1].path); 
         } 
-        if (data.satellite?.infrared?.length > 0) {
-          setSatellitePath(data.satellite.infrared[data.satellite.infrared.length - 1].path);
-        }
       })
       .catch(() => {
         setRainPath('/v2/radar/e780b0ed03f4');
-        setSatellitePath('/v2/satellite/e780b0ed03f4');
       });
   }, []);
 
@@ -266,10 +261,18 @@ export default function RadarMap({
             eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
           />
         )}
-        {showCloudsIr && satellitePath && (
+        {showCloudsIr && (
           <TileLayer
-            url={`https://tilecache.rainviewer.com${satellitePath}/256/{z}/{x}/{y}/2/0_0.png`}
-            opacity={0.4} maxNativeZoom={10} maxZoom={18}
+            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch13/{z}/{x}/{y}.png"
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
+          />
+        )}
+        
+        {showCloudsVis && (
+          <TileLayer
+            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch02/{z}/{x}/{y}.png"
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
             eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
           />
         )}
