@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Satellite, Map } from 'lucide-react';
+import { Satellite, Map, CloudRain, Cloud, Sun } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Tooltip, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -124,6 +124,7 @@ export default function RadarMap({
   const [showCloudsIr, setShowCloudsIr] = useState(false);
   const [showCloudsVis, setShowCloudsVis] = useState(false);
   const [rainPath, setRainPath] = useState<string | null>(null);
+  const [satellitePath, setSatellitePath] = useState<string | null>(null);
   const [showWeatherMenu, setShowWeatherMenu] = useState(false);
 
   useEffect(() => {
@@ -133,8 +134,14 @@ export default function RadarMap({
         if (data.radar?.past?.length > 0) {
           setRainPath(data.radar.past[data.radar.past.length - 1].path); 
         } 
+        if (data.satellite?.infrared?.length > 0) {
+          setSatellitePath(data.satellite.infrared[data.satellite.infrared.length - 1].path);
+        }
       })
-      .catch(() => setRainPath('/v2/radar/e780b0ed03f4'));
+      .catch(() => {
+        setRainPath('/v2/radar/e780b0ed03f4');
+        setSatellitePath('/v2/satellite/e780b0ed03f4');
+      });
   }, []);
 
   const tileUrl = isSatellite
@@ -259,10 +266,10 @@ export default function RadarMap({
             eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
           />
         )}
-        {showCloudsIr && (
+        {showCloudsIr && satellitePath && (
           <TileLayer
-            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch13/{z}/{x}/{y}.png"
-            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            url={`https://tilecache.rainviewer.com${satellitePath}/256/{z}/{x}/{y}/2/0_0.png`}
+            opacity={0.4} maxNativeZoom={10} maxZoom={18}
             eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
           />
         )}
@@ -297,15 +304,20 @@ export default function RadarMap({
       <div className="absolute bottom-2 right-2 z-[500] flex flex-col items-end gap-2">
         {showWeatherMenu && (
           <div className="bg-[var(--z-card)]/90 backdrop-blur-md border border-[var(--z-border)] p-2 rounded-xl flex flex-col gap-2 animate-in slide-in-from-bottom-2">
-            <button onClick={() => setShowRadar(!showRadar)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showRadar ? 'bg-[#00BFFF]/20 border-[#00BFFF] text-[#00BFFF]' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>Radar de Lluvia</button>
-            <button onClick={() => setShowCloudsIr(!showCloudsIr)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showCloudsIr ? 'bg-white/20 border-white text-white' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>Nubes Infrarrojas</button>
-            <button onClick={() => setShowCloudsVis(!showCloudsVis)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showCloudsVis ? 'bg-[#FFFFAA]/20 border-[#FFFFAA] text-[#FFFFAA]' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>Nubes Visibles</button>
+            <button onClick={() => setShowRadar(!showRadar)} className={`flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showRadar ? 'bg-[#00BFFF]/20 border-[#00BFFF] text-[#00BFFF]' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>
+              <CloudRain size={12} /> Radar de Lluvia
+            </button>
+            <button onClick={() => setShowCloudsIr(!showCloudsIr)} className={`flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showCloudsIr ? 'bg-white/20 border-white text-white' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>
+              <Cloud size={12} /> Nubes Infrarrojas
+            </button>
+            <button onClick={() => setShowCloudsVis(!showCloudsVis)} className={`flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showCloudsVis ? 'bg-[#FFFFAA]/20 border-[#FFFFAA] text-[#FFFFAA]' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>
+              <Sun size={12} /> Nubes Visibles
+            </button>
           </div>
         )}
         <button
           onClick={() => setShowWeatherMenu(!showWeatherMenu)}
-          className="w-8 h-8 rounded-full flex items-center justify-center border transition-all"
-          style={{ background: 'var(--z-card)', borderColor: 'var(--z-border)', color: 'var(--z-text)' }}
+          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${showWeatherMenu ? 'bg-white text-black' : 'bg-[var(--z-card)] text-[var(--z-text)] border-[var(--z-border)]'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
         </button>
