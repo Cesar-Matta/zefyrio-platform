@@ -32,10 +32,10 @@ const SEVERITY: Record<number, { tone: string; label: string; priority: number }
 };
 
 const TONE_STYLES: Record<string, { border: string; bg: string; text: string; dot: string }> = {
-  red:    { border: 'border-[var(--color-system-red)]/20',    bg: 'bg-[var(--color-system-red)]/10',    text: 'text-red-300',    dot: 'bg-[var(--color-system-red)]' },
-  orange: { border: 'border-orange-500/40', bg: 'bg-orange-500/10', text: 'text-orange-300', dot: 'bg-orange-500' },
-  amber:  { border: 'border-amber-500/40',  bg: 'bg-[var(--color-system-orange)]/10',  text: 'text-amber-300',  dot: 'bg-[var(--color-system-orange)]' },
-  yellow: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/10', text: 'text-yellow-300', dot: 'bg-yellow-500' },
+  red:    { border: 'border-[var(--color-system-red)]/20',    bg: 'bg-[var(--color-system-red)]/10',    text: 'text-[var(--color-system-red)]',    dot: 'bg-[var(--color-system-red)]' },
+  orange: { border: 'border-[var(--color-system-orange)]/40', bg: 'bg-[var(--color-system-orange)]/10', text: 'text-[var(--color-system-orange)]', dot: 'bg-[var(--color-system-orange)]' },
+  amber:  { border: 'border-amber-500/40',  bg: 'bg-[var(--color-system-orange)]/10',  text: 'text-amber-600 dark:text-amber-400',  dot: 'bg-[var(--color-system-orange)]' },
+  yellow: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/10', text: 'text-yellow-600 dark:text-yellow-400', dot: 'bg-yellow-500' },
 };
 
 export default function NoFlyZones({ lat, lon }: { lat: number, lon: number }) {

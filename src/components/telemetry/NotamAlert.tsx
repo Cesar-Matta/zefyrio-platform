@@ -78,7 +78,7 @@ export default function NotamAlert({ lat, lon }: { lat: number, lon: number }) {
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-bold text-amber-200">
+                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">
                   {notam.properties.notamNumber}
                 </span>
                 <div className="flex items-center gap-1 text-[9px] text-[var(--z-muted)]">

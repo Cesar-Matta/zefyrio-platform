@@ -57,8 +57,9 @@ const LAYER_DEFS: LayerDef[] = [
   { id: 'tma',        label: 'TMA',              icon: Navigation, color: '#00CCFF', group: 'navigation',  filter: p => p.type === T.TMA },
   { id: 'special',    label: 'Uso Especial',     icon: Flag,       color: '#C0392B', group: 'navigation',  filter: p => p.type === T.SPECIAL },
   { id: 'military',   label: 'Área Militar',     icon: Shield,     color: '#808000', group: 'navigation',  filter: p => p.activity === ACT.MILITARY },
-  { id: 'gliding',    label: 'Sectores Planeo',  icon: Wind,       color: 'var(--color-system-green)', group: 'navigation',  filter: p => p.activity === ACT.GLIDING },
-  { id: 'hanggliding',label: 'Ala Delta',        icon: Wind,       color: '#FFA500', group: 'navigation',  filter: p => p.activity === ACT.HANGGLIDING },
+  { id: 'navaids',    label: 'Radioayudas',      icon: RadioTower, color: '#3498DB', group: 'navigation' },
+  { id: 'hanggliding',label: 'Sectores Parapente',icon: Wind,      color: '#E67E22', group: 'navigation' },
+  { id: 'obstacles',  label: 'Obstáculos',       icon: AlertTriangle, color: '#E74C3C', group: 'navigation' },
   { id: 'rc',         label: 'RC Airfields',     icon: RadioTower, color: '#00CED1', group: 'navigation',  filter: p => p.activity === ACT.RC },
   { id: 'parachuting',label: 'Paracaidismo',     icon: Crosshair,  color: '#FFD700', group: 'navigation',  filter: p => p.activity === ACT.PARACHUTING },
   { id: 'adsb',       label: 'Tráfico ADS-B en Vivo', icon: Plane, color: 'var(--color-system-green)', group: 'traffic' },
@@ -72,7 +73,7 @@ const LAYER_DEFS: LayerDef[] = [
 const LAYER_INITIAL: Record<string, boolean> = {
   classE: false, classF: false, classG: false,
   restricted: true, danger: true, prohibited: true, ctr: true, tma: false, special: false,
-  military: false, gliding: false, hanggliding: false, rc: false, parachuting: false,
+  military: false, gliding: false, hanggliding: false, obstacles: false, navaids: false, rc: false, parachuting: false,
   adsb: false, radar: false, clouds: false, cloudsVis: false, satellite: false, airports: true,
 };
 
@@ -135,6 +136,9 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   const [notams, setNotams] = useState<Array<{ icaoId: string; id?: string; content?: string }>>([]);
   const [rainPath, setRainPath] = useState<string | null>(null);
   const [airspaces, setAirspaces] = useState<AirspaceFeature[]>([]);
+  const [navaidsData, setNavaidsData] = useState<any>(null);
+  const [hangGlidingData, setHangGlidingData] = useState<any>(null);
+  const [obstaclesData, setObstaclesData] = useState<any>(null);
   // Colombia local airport info (from co_airports.geojson)
   const [coAirports, setCoAirports] = useState<Record<string, any>>({});
   const lastAeroFetch = React.useRef<{lat: number, lon: number}>({ lat: -999, lon: -999 });
@@ -177,6 +181,11 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
         setCoAirports(map);
       })
       .catch(() => {});
+
+    // Load extra geospatial layers
+    fetch('/data/navaids.geojson').then(r => r.json()).then(d => setNavaidsData(d)).catch(() => {});
+    fetch('/data/hang_gliding.geojson').then(r => r.json()).then(d => setHangGlidingData(d)).catch(() => {});
+    fetch('/data/obstaculos.geojson').then(r => r.json()).then(d => setObstaclesData(d)).catch(() => {});
   }, []);
 
   const handleMapMove = useCallback((lat: number, lon: number, zoom: number, bbox: string) => {
@@ -299,6 +308,63 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
             url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch02/{z}/{x}/{y}.png"
             opacity={0.65} maxNativeZoom={6} maxZoom={20}
             eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
+          />
+        )}
+
+        {/* Navaids Layer */}
+        {layers.navaids && navaidsData && (
+          <GeoJSON 
+            key="layer-navaids"
+            data={navaidsData} 
+            pointToLayer={(f, latlng) => {
+              const icon = L.divIcon({
+                className: 'custom-icon',
+                html: `<div style="width: 14px; height: 14px; background: #3498DB; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 4px #3498DB;"></div>`,
+                iconSize: [14, 14]
+              });
+              return L.marker(latlng, { icon }).bindTooltip(
+                `<div style="font-size: 10px; font-weight: bold;">${f.properties.name || f.properties.identifier}<br/><span style="color: #3498DB;">Radioayuda ${f.properties.type || ''}</span></div>`,
+                { direction: 'top', offset: [0, -7], className: 'custom-tooltip' }
+              );
+            }} 
+          />
+        )}
+
+        {/* Hang Gliding Layer */}
+        {layers.hanggliding && hangGlidingData && (
+          <GeoJSON 
+            key="layer-hanggliding"
+            data={hangGlidingData} 
+            pointToLayer={(f, latlng) => {
+              const icon = L.divIcon({
+                className: 'custom-icon',
+                html: `<div style="width: 16px; height: 16px; background: #E67E22; border: 2px solid white; border-radius: 4px; box-shadow: 0 0 4px #E67E22; display: flex; align-items: center; justify-content: center;"><span style="color: white; font-size: 10px;">🪁</span></div>`,
+                iconSize: [16, 16]
+              });
+              return L.marker(latlng, { icon }).bindTooltip(
+                `<div style="font-size: 10px; font-weight: bold;">${f.properties.name}<br/><span style="color: #E67E22;">Zona de Parapente</span></div>`,
+                { direction: 'top', offset: [0, -8], className: 'custom-tooltip' }
+              );
+            }} 
+          />
+        )}
+
+        {/* Obstacles Layer */}
+        {layers.obstacles && obstaclesData && (
+          <GeoJSON 
+            key="layer-obstacles"
+            data={obstaclesData} 
+            pointToLayer={(f, latlng) => {
+              const icon = L.divIcon({
+                className: 'custom-icon',
+                html: `<div style="width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 14px solid #E74C3C; filter: drop-shadow(0 0 2px #E74C3C);"></div>`,
+                iconSize: [14, 14]
+              });
+              return L.marker(latlng, { icon }).bindTooltip(
+                `<div style="font-size: 10px; font-weight: bold;">${f.properties.name || 'Obstáculo'}<br/><span style="color: #E74C3C;">Elevación: ${f.properties.elevation?.value || '?'}m</span></div>`,
+                { direction: 'top', offset: [0, -7], className: 'custom-tooltip' }
+              );
+            }} 
           />
         )}
 
