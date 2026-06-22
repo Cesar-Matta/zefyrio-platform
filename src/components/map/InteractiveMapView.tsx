@@ -64,9 +64,6 @@ const LAYER_DEFS: LayerDef[] = [
   { id: 'parachuting',label: 'Paracaidismo',     icon: Crosshair,  color: '#FFD700', group: 'navigation',  filter: p => p.activity === ACT.PARACHUTING },
   { id: 'adsb',       label: 'Tráfico ADS-B en Vivo', icon: Plane, color: 'var(--color-system-green)', group: 'traffic' },
   { id: 'airports',   label: 'Aeropuertos y METAR', icon: RadioTower, color: 'var(--color-system-blue)', group: 'airports' },
-  { id: 'radar',      label: 'Radar de Lluvia',  icon: CloudRain,  color: '#00BFFF', group: 'weather' },
-  { id: 'clouds',     label: 'Nubes (IR Satélite)', icon: Cloud,   color: '#FFFFFF', group: 'weather' },
-  { id: 'cloudsVis',  label: 'Nubes (Visible)',  icon: Sun,        color: '#FFFFAA', group: 'weather' },
   { id: 'satellite',  label: 'Satélite Visual',  icon: Eye,        color: '#94A3B8', group: 'base' },
 ];
 
@@ -74,11 +71,10 @@ const LAYER_INITIAL: Record<string, boolean> = {
   classE: false, classF: false, classG: false,
   restricted: true, danger: true, prohibited: true, ctr: true, tma: false, special: false,
   military: false, gliding: false, hanggliding: false, obstacles: false, navaids: false, rc: false, parachuting: false,
-  adsb: false, radar: false, clouds: false, cloudsVis: false, satellite: false, airports: true,
+  adsb: false, satellite: false, airports: true,
 };
 
 const GROUP_META: Record<string, { label: string; icon: LucideIcon; accent: string }> = {
-  weather:     { label: 'METEOROLOGÍA',  icon: CloudRain,    accent: '#00BFFF' },
   navigation:  { label: 'NAVEGACIÓN',    icon: MapIcon,      accent: 'var(--color-system-red)' },
   traffic:     { label: 'TRÁFICO VIVO',  icon: Plane,        accent: 'var(--color-system-green)' },
   airports:    { label: 'AERÓDROMOS',    icon: RadioTower,   accent: 'var(--color-system-blue)' },
@@ -149,20 +145,6 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   });
 
   useEffect(() => {
-    fetchWithTimeout('https://api.rainviewer.com/public/weather-maps.json', {}, 5000)
-      .then(res => res.json())
-      .then(data => { 
-        if (data.radar?.past?.length > 0) {
-          const pathVal = data.radar.past[data.radar.past.length - 1].path;
-          console.log("RainViewer latest past path loaded:", pathVal);
-          setRainPath(pathVal); 
-        } 
-      })
-      .catch(err => {
-        console.error("RainViewer TS Error:", err);
-        setRainPath('/v2/radar/e780b0ed03f4');
-      });
-
     // Load Colombia local airport info for enriched popups
     fetch('/data/co_airports.geojson')
       .then(r => r.json())
@@ -287,30 +269,6 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
         <MapEventsHandler onMoveEnd={handleMapMove} onDoubleClick={onSyncLocation} />
         <TileLayer url={activeBaseUrl} subdomains={['0','1','2','3']} maxZoom={18} maxNativeZoom={17} />
         
-        {layers.radar && rainPath && (
-          <TileLayer
-            url={`https://tilecache.rainviewer.com${rainPath}/256/{z}/{x}/{y}/2/1_1.png`}
-            opacity={0.65} maxNativeZoom={6} maxZoom={20}
-            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
-          />
-        )}
-
-        {layers.clouds && (
-          <TileLayer
-            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch13/{z}/{x}/{y}.png"
-            opacity={0.65} maxNativeZoom={6} maxZoom={20}
-            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
-          />
-        )}
-
-        {layers.cloudsVis && (
-          <TileLayer
-            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch02/{z}/{x}/{y}.png"
-            opacity={0.65} maxNativeZoom={6} maxZoom={20}
-            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
-          />
-        )}
-
         {/* Navaids Layer */}
         {layers.navaids && navaidsData && (
           <GeoJSON 

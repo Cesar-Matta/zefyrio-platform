@@ -118,6 +118,24 @@ export default function RadarMap({
 }: RadarMapProps) {
   const [mapSessionKey] = useState(() => Math.random().toString(36).substring(7));
   const [isSatellite, setIsSatellite] = useState(false);
+  
+  // Weather Layers State
+  const [showRadar, setShowRadar] = useState(false);
+  const [showCloudsIr, setShowCloudsIr] = useState(false);
+  const [showCloudsVis, setShowCloudsVis] = useState(false);
+  const [rainPath, setRainPath] = useState<string | null>(null);
+  const [showWeatherMenu, setShowWeatherMenu] = useState(false);
+
+  useEffect(() => {
+    fetch('https://api.rainviewer.com/public/weather-maps.json')
+      .then(res => res.json())
+      .then(data => { 
+        if (data.radar?.past?.length > 0) {
+          setRainPath(data.radar.past[data.radar.past.length - 1].path); 
+        } 
+      })
+      .catch(() => setRainPath('/v2/radar/e780b0ed03f4'));
+  }, []);
 
   const tileUrl = isSatellite
     ? "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
@@ -232,6 +250,30 @@ export default function RadarMap({
             </Tooltip>
           </Marker>
         ))}
+
+        {/* Weather Tile Layers */}
+        {showRadar && rainPath && (
+          <TileLayer
+            url={`https://tilecache.rainviewer.com${rainPath}/256/{z}/{x}/{y}/2/1_1.png`}
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
+          />
+        )}
+        {showCloudsIr && (
+          <TileLayer
+            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch13/{z}/{x}/{y}.png"
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
+          />
+        )}
+        {showCloudsVis && (
+          <TileLayer
+            url="https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/goes_east_fulldisk_ch02/{z}/{x}/{y}.png"
+            opacity={0.65} maxNativeZoom={6} maxZoom={20}
+            eventHandlers={{ tileerror: (e) => { (e.tile as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; } }}
+          />
+        )}
+
       </MapContainer>
       
       {/* SAT / MAP toggle button */}
@@ -250,6 +292,24 @@ export default function RadarMap({
           : <><Map size={10} /><span>MAP</span></>
         }
       </button>
+
+      {/* Weather Layers Toggle */}
+      <div className="absolute bottom-2 right-2 z-[500] flex flex-col items-end gap-2">
+        {showWeatherMenu && (
+          <div className="bg-[var(--z-card)]/90 backdrop-blur-md border border-[var(--z-border)] p-2 rounded-xl flex flex-col gap-2 animate-in slide-in-from-bottom-2">
+            <button onClick={() => setShowRadar(!showRadar)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showRadar ? 'bg-[#00BFFF]/20 border-[#00BFFF] text-[#00BFFF]' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>Radar de Lluvia</button>
+            <button onClick={() => setShowCloudsIr(!showCloudsIr)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showCloudsIr ? 'bg-white/20 border-white text-white' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>Nubes Infrarrojas</button>
+            <button onClick={() => setShowCloudsVis(!showCloudsVis)} className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showCloudsVis ? 'bg-[#FFFFAA]/20 border-[#FFFFAA] text-[#FFFFAA]' : 'border-[var(--z-border)] text-[var(--z-muted)]'}`}>Nubes Visibles</button>
+          </div>
+        )}
+        <button
+          onClick={() => setShowWeatherMenu(!showWeatherMenu)}
+          className="w-8 h-8 rounded-full flex items-center justify-center border transition-all"
+          style={{ background: 'var(--z-card)', borderColor: 'var(--z-border)', color: 'var(--z-text)' }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+        </button>
+      </div>
 
       {/* Radar Sweep Animation Overlay */}
       <div className="absolute inset-0 pointer-events-none z-[400] opacity-20">
