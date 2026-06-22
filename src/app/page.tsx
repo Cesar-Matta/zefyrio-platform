@@ -202,25 +202,44 @@ export default function Home() {
 
   const handleIcaoSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const code = icaoInput.toUpperCase().trim();
-    if (code.length !== 4) {
-      setIcaoError('ICAO debe tener 4 letras (ej: SKBO, KJFK)');
+    const query = icaoInput.trim();
+    if (query.length < 2) {
+      setIcaoError('Ingresa al menos 2 letras');
       return;
     }
     setIcaoLoading(true);
     setIcaoError('');
     try {
-      const res = await fetch(`/api/airport?icao=${code}`);
-      if (res.status === 404) {
-        setIcaoError(`Aeródromo ${code} no encontrado en la base de datos.`);
-        setIcaoLoading(false);
-        return;
+      // 1. Si son 4 letras, intentar primero como Aeropuerto (OACI)
+      if (query.length === 4) {
+        const code = query.toUpperCase();
+        const res = await fetch(`/api/airport?icao=${code}`);
+        if (res.ok) {
+          const airport = await res.json() as { icao: string; name: string; lat: number; lon: number };
+          setViewingAirport({ icao: airport.icao, name: airport.name, lat: airport.lat, lon: airport.lon });
+          setIcaoInput('');
+          await handleSyncLocation(airport.lat, airport.lon);
+          setIcaoLoading(false);
+          return;
+        }
       }
-      if (!res.ok) throw new Error('upstream');
-      const airport = await res.json() as { icao: string; name: string; lat: number; lon: number };
-      setViewingAirport({ icao: airport.icao, name: airport.name, lat: airport.lat, lon: airport.lon });
-      setIcaoInput('');
-      await handleSyncLocation(airport.lat, airport.lon);
+
+      // 2. Búsqueda de Población / Ciudad usando Open-Meteo Geocoding
+      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=es&format=json`);
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        if (geoData.results && geoData.results.length > 0) {
+          const city = geoData.results[0];
+          const name = `${city.name}, ${city.country || city.admin1 || ''}`.replace(/, $/, '');
+          setViewingAirport({ icao: 'MAPA', name: name, lat: city.latitude, lon: city.longitude });
+          setIcaoInput('');
+          await handleSyncLocation(city.latitude, city.longitude);
+          setIcaoLoading(false);
+          return;
+        }
+      }
+
+      setIcaoError(`No se encontró aeropuerto o población: ${query}`);
     } catch {
       setIcaoError('Error de red. Intenta de nuevo.');
     }
@@ -339,16 +358,15 @@ export default function Home() {
               <input
                 type="text"
                 value={icaoInput}
-                onChange={(e) => { setIcaoInput(e.target.value.toUpperCase().slice(0, 4)); setIcaoError(''); }}
-                placeholder="Ver otro aeropuerto (ej: SKBO, KJFK, MMMX)"
-                maxLength={4}
-                className="flex-1 bg-transparent outline-none text-[13px] font-medium tracking-wide placeholder:"
+                onChange={(e) => { setIcaoInput(e.target.value); setIcaoError(''); }}
+                placeholder="Aeropuerto (SKBO) o Población (Guatapé)"
+                className="flex-1 bg-transparent outline-none text-[13px] font-medium tracking-wide placeholder:text-gray-500"
                 style={{ color: 'var(--z-text)' }}
               />
               <button
                 type="submit"
-                disabled={icaoLoading || icaoInput.length !== 4}
-                className="shrink-0 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-wide transition-all"
+                disabled={icaoLoading || icaoInput.trim().length < 2}
+                className="shrink-0 px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-wide transition-all disabled:opacity-50"
                 style={{ background: 'var(--z-cyan)', color: '#ffffff' }}
               >
                 {icaoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Buscar'}
