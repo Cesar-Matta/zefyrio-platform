@@ -23,6 +23,7 @@ import WeatherCards from "@/components/telemetry/WeatherCards";
 import FlightWindow from "@/components/telemetry/FlightWindow";
 import FlightLog from "@/components/telemetry/FlightLog";
 import FlightAnalytics from "@/components/telemetry/FlightAnalytics";
+import AtmosphereCards from "@/components/telemetry/AtmosphereCards";
 import PushNotificationManager from "@/components/ui/PushNotificationManager";
 import BottomNav from "@/components/navigation/BottomNav";
 import MetarBoard from "@/components/weather/MetarBoard";
@@ -388,6 +389,9 @@ export default function Home() {
                   <WindCompass surfaceWind={telemetryData.surfaceWind} maxGusts={telemetryData.maxGusts} />
                   <div className="col-span-2">
                     <WeatherCards temperature={telemetryData.temperature} feelsLike={telemetryData.feelsLike} rainChance={telemetryData.rainChance} clouds={telemetryData.clouds} />
+                  </div>
+                  <div className="col-span-2">
+                    <AtmosphereCards visibility={telemetryData.visibility} cloudBase={telemetryData.cloudBase} />
                   </div>
                   <div className="col-span-2">
                     <FlightWindow sun={telemetryData.sun} />
