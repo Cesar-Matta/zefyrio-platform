@@ -293,7 +293,11 @@ export default function Home() {
           <header className="flex justify-between items-center shrink-0 mb-2">
             <div className="flex items-center">
               <div className="flex items-center justify-center shrink-0">
-                <img src={isDark ? "/logo-dark.png" : "/logo-light.png"} alt="Zefyrio Logo" className="h-6 w-auto scale-[1.5] origin-left object-contain" />
+                <img 
+                  src={isDark ? "/logo-dark.png" : "/logo-light.png"} 
+                  alt="Zefyrio Logo" 
+                  className={`h-6 w-auto origin-left object-contain ${isDark ? 'scale-[2.5]' : 'scale-[1.5]'}`} 
+                />
               </div>
             </div>
             <UserMenu />
