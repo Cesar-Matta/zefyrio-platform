@@ -162,11 +162,17 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
     // Load Colombia local airport info for enriched popups
     fetch('/data/co_airports.geojson')
       .then(r => r.json())
-      .then((d: { features: Array<{ properties: any }> }) => {
+      .then((d: { features: Array<{ properties: any, geometry: any }> }) => {
         const map: Record<string, any> = {};
         d.features.forEach(f => {
           const icao = f.properties.icaoCode;
-          if (icao) map[icao.toUpperCase()] = f.properties;
+          if (icao && f.geometry?.coordinates) {
+            map[icao.toUpperCase()] = { 
+              ...f.properties, 
+              lat: f.geometry.coordinates[1], 
+              lon: f.geometry.coordinates[0] 
+            };
+          }
         });
         setCoAirports(map);
       })
