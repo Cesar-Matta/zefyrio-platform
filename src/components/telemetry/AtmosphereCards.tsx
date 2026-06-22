@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, CloudFog } from "lucide-react";
+import { Eye, Cloud } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface AtmosphereCardsProps {
@@ -48,7 +48,7 @@ export default function AtmosphereCards({ visibility, cloudBase }: AtmosphereCar
       {/* Cloud Base Card */}
       <div className="z-card flex flex-col justify-between p-4 overflow-hidden theme-transition" style={{ minHeight: '130px' }}>
         <div className="flex items-center gap-1.5 mb-1">
-          <CloudFog className="w-4 h-4" style={{ color: 'var(--z-muted)' }} />
+          <Cloud className="w-4 h-4" style={{ color: 'var(--z-muted)' }} />
           <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--z-muted)' }}>
             TECHO NUBES
           </span>
