@@ -85,7 +85,7 @@ export default function LoginPage() {
               <div className="absolute inset-0 rounded-full bg-[var(--z-surface)]/10 animate-ping duration-3000" />
             </div>
             <h1 className="text-4xl font-black text-white tracking-tighter">CFYRO</h1>
-            <p className="text-[10px] font-medium text-gray-400 tracking-tight mt-2">Aero HUD Protocol</p>
+            <p className="text-[10px] font-medium text-gray-400 tracking-tight mt-2 uppercase tracking-widest">Inteligencia Meteorológica para Drones</p>
           </div>
 
           <div className="flex flex-col gap-4 w-full">
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@correo.com"
-                  className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
+                  className="w-full bg-[#111625]/80 border border-white/5 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
                 />
                 <div className="relative">
                   <input
@@ -107,7 +107,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Contraseña"
-                    className="w-full bg-[var(--z-card)] border border-white/5 rounded-xl px-4 py-3.5 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
+                    className="w-full bg-[#111625]/80 border border-white/5 rounded-xl px-4 py-3.5 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-[var(--z-border)]/50 focus:ring-1 focus:ring-cyber-cyan/20 transition-all text-sm"
                   />
                   <button
                     type="button"
@@ -154,21 +154,13 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleGoogle}
-              className="w-full bg-[var(--z-card)] border border-white/5 text-white font-semibold rounded-xl py-3.5 flex items-center justify-center gap-3 hover:bg-white/5 transition-colors text-sm"
+              className="w-full bg-[#1a1f2e] border border-white/5 text-white font-semibold rounded-xl py-3.5 flex items-center justify-center gap-3 hover:bg-[#252a3a] transition-colors text-sm"
             >
               <GoogleIcon />
               Continuar con Google
             </button>
 
-            {/* Guest demo — try without registering */}
-            <button
-              type="button"
-              onClick={handleGuest}
-              disabled={loading}
-              className="w-full text-gray-400 hover:text-white font-medium text-[11px] tracking-tight py-2 transition-colors disabled:opacity-50"
-            >
-              Probar como invitado →
-            </button>
+
 
           </div>
 
