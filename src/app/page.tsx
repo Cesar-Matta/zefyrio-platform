@@ -296,7 +296,7 @@ export default function Home() {
                 <img 
                   src={isDark ? "/logo-dark.png" : "/logo-light.png"} 
                   alt="Zefyrio Logo" 
-                  className={`h-6 w-auto origin-left object-contain ${isDark ? 'scale-[2.5]' : 'scale-[1.5]'}`} 
+                  className="h-6 w-auto scale-[1.5] origin-left object-contain" 
                 />
               </div>
             </div>
