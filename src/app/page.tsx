@@ -16,6 +16,7 @@ import NotamAlert from "@/components/telemetry/NotamAlert";
 // SigmetAlert removed from drone HUD — SIGMETs cover FL100-FL450 (10k-45k ft),
 // not relevant for drone ops (<400 ft). Keep for future fixed-wing fork.
 // import SigmetAlert from "@/components/telemetry/SigmetAlert";
+import VerticalWindProfile from "@/components/telemetry/VerticalWindProfile";
 import GpsSatelliteStatus from "@/components/telemetry/GpsSatelliteStatus";
 import WindCompass from "@/components/telemetry/WindCompass";
 import WeatherCards from "@/components/telemetry/WeatherCards";
@@ -378,6 +379,10 @@ export default function Home() {
                 {hasLocation && (
                   <NotamAlert lat={effectiveLat as number} lon={effectiveLon as number} />
                 )}
+
+                <VerticalWindProfile
+                  verticalProfile={telemetryData.verticalProfile} 
+                />
       
                 <section className="grid grid-cols-2 gap-4 shrink-0">
                   <GpsSatelliteStatus satellites={telemetryData.satellites} kpIndex={telemetryData.kpIndex} />

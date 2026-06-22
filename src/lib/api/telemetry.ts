@@ -135,13 +135,6 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
     // Max 30 sats, decreasing as accuracy gets worse.
     const sats = Math.max(0, Math.floor(30 - (accuracy / 5)));
 
-    // Parse 7-day wind forecast
-    const windForecast = (meteoData.hourly.time as string[]).map((tStr, i) => ({
-      time: tStr,
-      speed10m: num(meteoData.hourly.wind_speed_10m?.[i]),
-      speed120m: num(meteoData.hourly.wind_speed_120m?.[i])
-    }));
-
     return {
       timestamp: new Date().toISOString(),
       gps: { lat, lon },
@@ -173,7 +166,6 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
         { alt: '200ft', speed: Math.round(wind80m), state: wind80m > 20 ? 'warn' : 'ok' },
         { alt: 'SFC', speed: Math.round(wind10m), state: wind10m > 15 ? 'warn' : 'calm' },
       ],
-      windForecast,
     };
 
   } catch (error) {
