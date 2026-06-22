@@ -7,6 +7,8 @@ import { Shield, Wind, Plane, Map as MapIcon, X, CloudRain, Navigation, RadioTow
 import { useTheme } from '@/components/providers/ThemeProvider';
 import SmartAirportMarker from './SmartAirportMarker';
 import ForecastBar8Day from '../weather/ForecastBar8Day';
+import VerticalWindProfile from '../telemetry/VerticalWindProfile';
+import { useStore } from '@/store/useStore';
 import type { MetarData, AircraftPosition } from '@/lib/types/api';
 import { fetchWithTimeout } from '@/lib/api/fetchWithTimeout';
 
@@ -123,6 +125,7 @@ interface InteractiveMapViewProps {
 
 export default function InteractiveMapView({ initialLat, initialLon, onSyncLocation }: InteractiveMapViewProps) {
   const { isDark } = useTheme();
+  const { telemetryData } = useStore();
   const [layers, setLayers] = useState<Record<string, boolean>>(LAYER_INITIAL);
   const [showControls, setShowControls] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -445,6 +448,13 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
       </MapContainer>
 
       <ForecastBar8Day lat={mapState.lat} lon={mapState.lon} />
+
+      {/* Overlay Wind Profile */}
+      {telemetryData && telemetryData.verticalProfile && (
+        <div className="absolute top-4 right-4 z-[500] w-64 opacity-90 hover:opacity-100 transition-opacity">
+          <VerticalWindProfile verticalProfile={telemetryData.verticalProfile} />
+        </div>
+      )}
 
       {/* Crosshair Overlay */}
       <div className="absolute inset-0 pointer-events-none z-[400] flex items-center justify-center opacity-5">
