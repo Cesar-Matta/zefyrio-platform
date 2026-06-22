@@ -43,7 +43,11 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
               <div className="flex-1 h-3 rounded-full overflow-hidden relative"
                 style={{ background: 'var(--z-surface)' }}>
                 <div className="h-full rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${cfg.bar}99, ${cfg.bar})`, boxShadow: `0 0 8px ${cfg.bar}50` }} />
+                  style={{ 
+                    width: `${pct}%`, 
+                    background: `linear-gradient(90deg, color-mix(in srgb, ${cfg.bar} 40%, transparent), ${cfg.bar})`, 
+                    boxShadow: `0 0 8px color-mix(in srgb, ${cfg.bar} 50%, transparent)` 
+                  }} />
               </div>
               <span className="w-7 text-right text-[15px] font-black font-data flex-shrink-0"
                 style={{ color: cfg.text }}>{layer.speed}</span>

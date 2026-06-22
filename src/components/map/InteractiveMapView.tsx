@@ -137,6 +137,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   const [airspaces, setAirspaces] = useState<AirspaceFeature[]>([]);
   // Colombia local airport info (from co_airports.geojson)
   const [coAirports, setCoAirports] = useState<Record<string, any>>({});
+  const lastAeroFetch = React.useRef<{lat: number, lon: number}>({ lat: -999, lon: -999 });
   
   const [mapState, setMapState] = useState({
     lat: initialLat, lon: initialLon, zoom: 9,
@@ -191,7 +192,14 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   }, [layers.adsb, mapState.bbox]);
 
   useEffect(() => {
-    // Re-fetch aeronautical data when map center changes
+    // Prevent refetching (which unmounts popups) on micro-movements like Leaflet popup auto-pan
+    if (Math.abs(mapState.lat - lastAeroFetch.current.lat) < 0.5 && 
+        Math.abs(mapState.lon - lastAeroFetch.current.lon) < 0.5) {
+      return;
+    }
+    lastAeroFetch.current = { lat: mapState.lat, lon: mapState.lon };
+
+    // Re-fetch aeronautical data when map center changes significantly
     fetch(`/api/aero?lat=${mapState.lat}&lon=${mapState.lon}`)
       .then(r => r.json())
       .then(d => { 
