@@ -4,6 +4,8 @@ import { Plane, Radio, Wind, AlertTriangle, Radar } from "lucide-react";
 import dynamic from 'next/dynamic';
 import type { AircraftState } from './RadarMap';
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { useStore } from "@/store/useStore";
+import VerticalWindProfile from "../telemetry/VerticalWindProfile";
 
 interface MetarStation {
   icaoId: string;
@@ -28,6 +30,7 @@ interface MetarBoardProps {
 
 export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBoardProps) {
   const { t } = useTranslation();
+  const { telemetryData } = useStore();
   const [metarList, setMetarList] = useState<MetarStation[]>([]);
   const [selectedMetar, setSelectedMetar] = useState<MetarStation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -204,6 +207,14 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
           <AlertTriangle className="w-8 h-8 text-plasma-warn mb-3" />
           <span className="text-sm text-gray-400 font-medium">{t('metar_no_stations')}</span>
         </div>
+      )}
+
+      {/* WIND PROFILE & 7-DAY FORECAST */}
+      {telemetryData && telemetryData.verticalProfile && (
+        <VerticalWindProfile 
+          verticalProfile={telemetryData.verticalProfile} 
+          className="mt-2"
+        />
       )}
 
       {/* METAR DETALLE */}

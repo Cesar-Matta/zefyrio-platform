@@ -29,6 +29,12 @@ export interface GpsCoords {
   lon: number;
 }
 
+export interface WindForecastHour {
+  time: string;
+  speed10m: number;
+  speed120m: number;
+}
+
 export interface TelemetryData {
   timestamp: string;
   status: FlightStatus;
@@ -46,6 +52,7 @@ export interface TelemetryData {
   clouds: number;
   sun: SunData;
   verticalProfile: WindLayer[];
+  windForecast?: WindForecastHour[];
   gps?: GpsCoords;
 }
 
