@@ -294,7 +294,7 @@ export default function Home() {
             <div className="flex items-center">
               <div className="flex items-center justify-center shrink-0">
                 <img 
-                  src="/logo.svg" 
+                  src={isDark ? "/logo-dark.png" : "/logo-light.png"}
                   alt="Zefyrio Logo" 
                   className="h-6 w-auto scale-[1.5] origin-left object-contain" 
                 />
