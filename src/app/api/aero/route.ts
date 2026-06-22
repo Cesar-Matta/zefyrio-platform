@@ -12,7 +12,12 @@ export async function GET(request: Request) {
 
   let finalBbox = bboxParam;
 
-  if (!finalBbox) {
+  if (bboxParam) {
+    // Leaflet sends standard GIS [minLon, minLat, maxLon, maxLat]
+    // AviationWeather.gov requires [minLat, minLon, maxLat, maxLon]
+    const [minLon, minLat, maxLon, maxLat] = bboxParam.split(',');
+    finalBbox = `${minLat},${minLon},${maxLat},${maxLon}`;
+  } else {
     // AWC (Aviation Weather Center) actualizó sus endpoints. En vez de "radialdistance", pide un "Bounding Box" (BBOX).
     // Generaremos un BBox de barrido espacial GIGANTE de ~220km (Radio de 2.0 grados) alrededor del Piloto.
     const latNum = parseFloat(lat!);
@@ -24,7 +29,6 @@ export async function GET(request: Request) {
     const maxLat = (latNum + 0.5).toFixed(2);
     
     // ¡CUIDADO! AviationWeather.gov usa [minLat, minLon, maxLat, maxLon] a diferencia del estándar GIS (Lon,Lat).
-    // Reducido a 0.5 de nuevo para captar aeropuertos locales precisos sin saturar.
     finalBbox = `${minLat},${minLon},${maxLat},${maxLon}`;
   }
 
