@@ -151,9 +151,21 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
       if (geoReq.ok) {
         const geoData = await geoReq.json();
         locationName = geoData.locality || geoData.city || geoData.principalSubdivision || "Ubicación Actual";
+      } else {
+        throw new Error("BigDataCloud returned non-OK");
       }
     } catch (e) {
-      console.warn("Geocoding failed", e);
+      console.warn("Geocoding fallback to Nominatim", e);
+      try {
+        const nomReq = await fetchWithTimeout(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {}, 3000);
+        if (nomReq.ok) {
+          const nomData = await nomReq.json();
+          const addr = nomData.address || {};
+          locationName = addr.city || addr.town || addr.village || addr.municipality || addr.state || "Ubicación Actual";
+        }
+      } catch (e2) {
+        console.warn("Nominatim fallback failed", e2);
+      }
     }
 
     return {

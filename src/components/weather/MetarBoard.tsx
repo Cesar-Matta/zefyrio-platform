@@ -35,9 +35,8 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
   const [selectedMetar, setSelectedMetar] = useState<MetarStation | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ─── ADS-B State ──────────────────────────────────────────────────────────
   const [aircraftList, setAircraftList] = useState<AircraftState[]>([]);
-  const [showAircraft, setShowAircraft] = useState(true);
+  const [showAircraft, setShowAircraft] = useState(false);
   const [adsbError, setAdsbError] = useState(false);
   const currentBboxRef = useRef<string | null>(null);
   const adsbIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
