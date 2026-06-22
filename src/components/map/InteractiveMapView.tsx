@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Tooltip, GeoJSON, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -126,6 +126,20 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   const [layers, setLayers] = useState<Record<string, boolean>>(LAYER_INITIAL);
   const [showControls, setShowControls] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowControls(false);
+      }
+    }
+    if (showControls) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showControls]);
   const [aircrafts, setAircrafts] = useState<AircraftPosition[]>([]);
   const [metars, setMetars] = useState<MetarData[]>([]);
   const [tafs, setTafs] = useState<Array<{ icaoId: string; rawTAF?: string }>>([]);
@@ -227,7 +241,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
 
   return (
     <div className="w-full h-full relative z-0">
-      <div className="absolute right-4 top-4 z-[1000] flex flex-col items-end">
+      <div className="absolute right-4 top-4 z-[1000] flex flex-col items-end" ref={menuRef}>
         <button 
           onClick={() => setShowControls(!showControls)}
           className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg border theme-transition"

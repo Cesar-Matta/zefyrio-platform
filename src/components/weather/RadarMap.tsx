@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Satellite, Map, CloudRain, Cloud, Sun } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Tooltip, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -125,6 +125,20 @@ export default function RadarMap({
   const [showCloudsVis, setShowCloudsVis] = useState(false);
   const [rainPath, setRainPath] = useState<string | null>(null);
   const [showWeatherMenu, setShowWeatherMenu] = useState(false);
+
+  const weatherMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (weatherMenuRef.current && !weatherMenuRef.current.contains(event.target as Node)) {
+        setShowWeatherMenu(false);
+      }
+    }
+    if (showWeatherMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showWeatherMenu]);
 
   useEffect(() => {
     fetch('https://api.rainviewer.com/public/weather-maps.json')
@@ -304,7 +318,7 @@ export default function RadarMap({
       </button>
 
       {/* Weather Layers Toggle */}
-      <div className="absolute bottom-2 right-2 z-[500] flex flex-col items-end gap-2">
+      <div className="absolute bottom-2 right-2 z-[500] flex flex-col items-end gap-2" ref={weatherMenuRef}>
         {showWeatherMenu && (
           <div className="bg-black/90 backdrop-blur-md border border-white/20 p-2 rounded-xl flex flex-col gap-2 animate-in slide-in-from-bottom-2">
             <button onClick={() => setShowRadar(!showRadar)} className={`flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${showRadar ? 'bg-[#00BFFF]/20 border-[#00BFFF] text-[#00BFFF]' : 'border-white/10 text-white/70 hover:bg-white/5 hover:text-white'}`}>
