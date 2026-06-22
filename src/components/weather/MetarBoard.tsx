@@ -209,9 +209,12 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
       )}
 
       {!loading && metarList.length === 0 && (
-        <div className="glass-panel p-6 rounded-3xl bg-[#111625]/50 border-[var(--z-border)] flex flex-col items-center text-center">
-          <AlertTriangle className="w-8 h-8 text-plasma-warn mb-3" />
-          <span className="text-sm text-gray-400 font-medium">{t('metar_no_stations')}</span>
+        <div className="z-card p-6 rounded-[24px] border-[var(--z-border)] flex flex-col items-center text-center mt-2">
+          <Wind className="w-8 h-8 text-[var(--z-cyan)] mb-3" />
+          <span className="text-sm text-[var(--z-text)] font-bold mb-1">Modo GPS Exacto</span>
+          <span className="text-xs text-[var(--z-muted)] font-medium">
+            No hay aeropuertos (METAR) cerca de tu ubicación. El "Perfil de Viento" en la parte superior ya te está mostrando las condiciones meteorológicas exactas de tu coordenada satelital.
+          </span>
         </div>
       )}
 
