@@ -32,15 +32,27 @@ export default function LoginPage() {
 
     if (action === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError('Correo o contraseña incorrectos.');
+      if (error) {
+        setError('Correo o contraseña incorrectos.');
+      } else {
+        window.location.href = '/';
+      }
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
-      if (error) setError(error.message);
-      else setError('Revisa tu correo para confirmar tu cuenta.');
+      if (error) {
+        setError(error.message);
+      } else {
+        // If "Confirm email" is disabled, Supabase returns a session instantly.
+        if (data.session) {
+          window.location.href = '/';
+        } else {
+          setError('Revisa tu correo para confirmar tu cuenta.');
+        }
+      }
     }
 
     setLoading(false);
