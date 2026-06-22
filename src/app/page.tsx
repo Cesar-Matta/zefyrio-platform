@@ -291,17 +291,9 @@ export default function Home() {
 
           {/* Main App Header */}
           <header className="flex justify-between items-center shrink-0 mb-2">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center">
               <div className="flex items-center justify-center shrink-0">
-                <img src="/logo.svg" alt="Zefyrio Logo" className="w-10 h-10 object-contain drop-shadow-md" />
-              </div>
-              <div className="flex flex-col leading-tight">
-                <h1 className="text-[24px] font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>
-                  Zefyrio
-                </h1>
-                <span className="text-[13px] font-medium" style={{ color: 'var(--z-text)' }}>
-                  Aero HUD
-                </span>
+                <img src="/logo.svg" alt="Zefyrio Logo" className="h-12 w-auto object-contain" />
               </div>
             </div>
             <UserMenu />
