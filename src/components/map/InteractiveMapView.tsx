@@ -308,7 +308,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
           if (!typeDef || !layers[typeDef.id]) return null;
           return (
             <GeoJSON
-              key={`airspace-${f.properties._id || f.properties.name || idx}`}
+              key={`airspace-${f.properties._id || f.properties.name}-${idx}`}
               data={f}
               style={{
                 color: typeDef.color,
