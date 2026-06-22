@@ -1,4 +1,4 @@
-﻿# 🛩️ Zefyrio — Plan de Trabajo Maestro
+# 🛩️ Cfyro — Plan de Trabajo Maestro
 
 **Última actualización:** 2026-06-21
 **Estado del repo:** GitHub (`Cesar-Matta/zefyrio-platform`). 
@@ -9,9 +9,11 @@
 ## 📊 Auditoría — Estado Actual
 
 ### ✅ Lo que ya está completado y en producción
-- **Build de producción:** Desplegado exitosamente en Vercel (`zefyrio.vercel.app`).
+- **Rebranding Completo:** Transición de Zefyrio a **Cfyro** en UI, manifiestos y dominios.
+- **Build de producción:** Desplegado exitosamente en Vercel (`cfyro.vercel.app` redirecciona desde zefyrio).
+- **Sistema de Autenticación Estable:** Login estricto por Correo/Contraseña y Google OAuth corregido con soporte de redirecciones y creación instantánea de cuentas (Magic Link y modo invitado retirados por simplicidad).
 - **5 tabs operativos:** Telemetry / Weather / Forecast / Map / Log.
-- **Search Universal:** Búsqueda combinada de Aeropuertos (ICAO) y Poblaciones (Geocoding de Open-Meteo) para dar cobertura a operaciones de drones en zonas rurales.
+- **Search Universal:** Búsqueda combinada de Aeropuertos (ICAO) y Poblaciones (Geocoding de Open-Meteo).
 - **UI/UX Pro Max:** 
   - Rediseño con Glassmorphism (paneles translúcidos y desenfoques).
   - Modal bottom-sheet responsivo para previsión de 7 días.
@@ -37,8 +39,9 @@
 - [x] Búsqueda Universal Geocodificada (Ciudades + ICAO).
 
 ### **FASE 2 — Despliegue & DevOps (Completado) 🟢**
-- [x] Deploy a producción en Vercel.
+- [x] Deploy a producción en Vercel (cfyro.vercel.app).
 - [x] PWA configurada y funcional.
+- [x] Refactorización de Auth: Supabase SSR, cookies, y Google OAuth.
 
 ### **FASE 3 — Persistencia de Vuelos (Próximo paso) 🟡**
 - [ ] Crear schema en Supabase (`flight_sessions`).
@@ -62,7 +65,8 @@
 ---
 
 ## 🔑 Decisiones Técnicas Tomadas
-1. **Host:** Vercel (Producción confirmada y estable).
-2. **Backend:** Supabase (Se descarta Firebase definitivamente).
-3. **Coordenadas por defecto:** Si no hay ICAO, se usan coordenadas GPS precisas y el nombre del pueblo más cercano.
-4. **ADS-B:** Desactivado por defecto. Es muy pesado y colapsa rápido los límites gratuitos.
+1. **Marca:** El producto se denomina oficialmente **Cfyro**.
+2. **Host:** Vercel (Producción confirmada y estable con redirecciones de dominio).
+3. **Backend:** Supabase (Se descarta Firebase definitivamente). El flujo de Auth fue estabilizado para evitar loops entre dominios viejos y nuevos.
+4. **Coordenadas por defecto:** Si no hay ICAO, se usan coordenadas GPS precisas y el nombre del pueblo más cercano.
+5. **ADS-B:** Desactivado por defecto. Es muy pesado y colapsa rápido los límites gratuitos.

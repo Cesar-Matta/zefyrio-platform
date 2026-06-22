@@ -1,4 +1,4 @@
-﻿# Zefyrio — Aviation Weather & Drone Safety HUD
+# Cfyro — Aviation Weather & Drone Safety HUD
 
 <div align="center">
 
@@ -12,7 +12,7 @@
 
 **A real-time aviation weather intelligence platform and heads-up display (HUD) for drone pilots, paragliders, skydivers, helicopter operators, and fixed-wing aviators.**
 
-[Live Preview](https://zefyrio.vercel.app) · [Roadmap](./PLAN.md)
+[Live Preview](https://cfyro.vercel.app) · [Roadmap](./PLAN.md)
 
 </div>
 
@@ -20,9 +20,9 @@
 
 ## Project Overview
 
-Zefyrio is a **Progressive Web App** that aggregates live meteorological, geomagnetic, and airspace data into a cockpit-style interface. The platform uses GPS or IP triangulation to deliver hyper-local weather intelligence and AI-driven **GO / CAUTION / NO-GO** flight safety decisions — all in real time.
+Cfyro is a **Progressive Web App** that aggregates live meteorological, geomagnetic, and airspace data into a cockpit-style interface. The platform uses GPS or IP triangulation to deliver hyper-local weather intelligence and AI-driven **GO / CAUTION / NO-GO** flight safety decisions — all in real time.
 
-Designed with an "Aero HUD Protocol" philosophy: data-dense, dark-mode native, and built for mobile-first use in the field with a high-end glassmorphism aesthetic.
+Designed for modern operations: data-dense, dark-mode native, and built for mobile-first use in the field with a high-end glassmorphism aesthetic.
 
 ---
 
@@ -101,7 +101,7 @@ npm run start
 
 ## PWA Installation
 
-On mobile, open Zefyrio in the browser and tap **"Add to Home Screen"**. The app installs as standalone — perfect for pre-flight checks in the field where you don't want browser chrome eating your screen real estate.
+On mobile, open Cfyro in the browser and tap **"Add to Home Screen"**. The app installs as standalone — perfect for pre-flight checks in the field where you don't want browser chrome eating your screen real estate.
 
 ---
 
@@ -112,4 +112,4 @@ Part of the **Nodyt** ecosystem of digital products.
 
 ---
 
-*Zefyrio — Aero HUD Protocol. Fly informed, fly safe.*
+*Cfyro — Meteorología para Drones. Fly informed, fly safe.*
