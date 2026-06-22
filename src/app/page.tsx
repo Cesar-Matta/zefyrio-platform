@@ -293,7 +293,7 @@ export default function Home() {
           <header className="flex justify-between items-center shrink-0 mb-2">
             <div className="flex items-center gap-2.5">
               <div className="flex items-center justify-center shrink-0">
-                <PlaneTakeoff className="w-8 h-8" style={{ color: 'var(--z-cyan)' }} strokeWidth={1.5} />
+                <img src="/logo.svg" alt="Zefyrio Logo" className="w-10 h-10 object-contain drop-shadow-md" />
               </div>
               <div className="flex flex-col leading-tight">
                 <h1 className="text-[24px] font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>
