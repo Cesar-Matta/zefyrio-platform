@@ -150,6 +150,13 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
   return (
     <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10 w-full">
       
+      {/* WIND PROFILE & 7-DAY FORECAST */}
+      {telemetryData && telemetryData.verticalProfile && (
+        <VerticalWindProfile 
+          verticalProfile={telemetryData.verticalProfile} 
+        />
+      )}
+
       {/* Tarjeta del Mapa Táctico */}
       <div className="z-card rounded-[20px] p-4 flex flex-col gap-3 shrink-0">
         {/* Controles del Radar */}
@@ -207,14 +214,6 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
           <AlertTriangle className="w-8 h-8 text-plasma-warn mb-3" />
           <span className="text-sm text-gray-400 font-medium">{t('metar_no_stations')}</span>
         </div>
-      )}
-
-      {/* WIND PROFILE & 7-DAY FORECAST */}
-      {telemetryData && telemetryData.verticalProfile && (
-        <VerticalWindProfile 
-          verticalProfile={telemetryData.verticalProfile} 
-          className="mt-2"
-        />
       )}
 
       {/* METAR DETALLE */}
