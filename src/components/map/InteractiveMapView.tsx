@@ -200,7 +200,8 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
     lastAeroFetch.current = { lat: mapState.lat, lon: mapState.lon };
 
     // Re-fetch aeronautical data when map center changes significantly
-    fetch(`/api/aero?lat=${mapState.lat}&lon=${mapState.lon}`)
+    // Use bbox to get airports for the entire visible screen
+    fetch(`/api/aero?bbox=${mapState.bbox}`)
       .then(r => r.json())
       .then(d => { 
         if (d.metar) setMetars(d.metar); 
@@ -208,7 +209,7 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
         if (d.notams) setNotams(d.notams);
       })
       .catch(() => {});
-  }, [mapState.lat, mapState.lon]);
+  }, [mapState.lat, mapState.lon, mapState.bbox]);
 
   useEffect(() => {
     const parts = mapState.bbox.split(',');
@@ -321,17 +322,31 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
           );
         })}
 
-        {layers.airports && metars
-          .filter((v, i, a) => a.findIndex(t => t.icaoId === v.icaoId) === i)
-          .map((m) => (
-            <SmartAirportMarker 
-              key={m.icaoId} 
-              metar={m} 
-              taf={tafs.find(t => t.icaoId === m.icaoId)}
-              notams={notams.filter(n => n.icaoId === m.icaoId)}
-              airportInfo={coAirports[m.icaoId.toUpperCase()]}
-            />
-          ))}
+        {layers.airports && (
+          <>
+            {metars
+              .filter((v, i, a) => a.findIndex(t => t.icaoId === v.icaoId) === i)
+              .map((m) => (
+                <SmartAirportMarker 
+                  key={m.icaoId} 
+                  metar={m} 
+                  taf={tafs.find(t => t.icaoId === m.icaoId)}
+                  notams={notams.filter(n => n.icaoId === m.icaoId)}
+                  airportInfo={coAirports[m.icaoId.toUpperCase()]}
+                />
+              ))}
+            {/* Render local Colombia airports that don't have METAR data */}
+            {Object.values(coAirports)
+              .filter(ap => ap.icaoCode && !metars.find(m => m.icaoId === ap.icaoCode.toUpperCase()))
+              .map(ap => (
+                <SmartAirportMarker 
+                  key={ap.icaoCode}
+                  metar={{ icaoId: ap.icaoCode, name: ap.name, lat: ap.lat, lon: ap.lon, rawOb: '', fltcat: 'unknown' }}
+                  airportInfo={ap}
+                />
+              ))}
+          </>
+        )}
 
         {layers.adsb && aircrafts.length === 0 && (
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[1000] bg-[var(--z-card)] backdrop-blur-md px-4 py-2 rounded-xl border border-[var(--z-border)]">
