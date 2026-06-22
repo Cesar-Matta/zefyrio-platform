@@ -97,31 +97,37 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
 
       {/* Forecast Modal */}
       {showForecast && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="z-card w-full max-w-md rounded-3xl border shadow-2xl flex flex-col max-h-[80vh] overflow-hidden"
-               style={{ background: 'var(--z-background)', border: '1px solid var(--z-border)' }}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-300"
+             style={{ background: 'var(--z-glass-bg)', backdropFilter: 'var(--z-glass-blur)', WebkitBackdropFilter: 'var(--z-glass-blur)' }}>
+          <div className="w-full max-w-md rounded-[32px] flex flex-col max-h-[85vh] overflow-hidden"
+               style={{ 
+                 background: 'var(--z-card)', 
+                 border: '1px solid var(--z-border)',
+                 boxShadow: '0 24px 48px -12px rgba(0,0,0,0.25)'
+               }}>
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--z-border)' }}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--z-surface)' }}>
+            <div className="flex items-center justify-between p-6 pb-4" style={{ borderBottom: '1px solid var(--z-border)' }}>
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-inner" style={{ background: 'var(--z-surface)', border: '1px solid var(--z-border)' }}>
                   <Wind className="w-5 h-5" style={{ color: 'var(--z-cyan)' }} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold">Pronóstico de Viento</h3>
-                  <p className="text-xs opacity-70">Próximos 7 días (Nudos)</p>
+                  <h3 className="text-base font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>Pronóstico de Viento</h3>
+                  <p className="text-xs font-medium tracking-wide" style={{ color: 'var(--z-cyan)' }}>Próximos 7 días</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowForecast(false)}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                className="p-2.5 rounded-full hover:scale-105 active:scale-95 transition-all"
+                style={{ background: 'var(--z-surface)', color: 'var(--z-text)' }}
               >
-                <X className="w-5 h-5 opacity-70" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Body (Scrollable Days) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar">
               {days.map(day => {
                 const isExpanded = expandedDay === day;
                 const hours = forecastByDay[day];
@@ -131,47 +137,59 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
                 const dayCfg = getStateFromSpeed(maxDaySpeed);
 
                 return (
-                  <div key={day} className="rounded-2xl border overflow-hidden transition-all" style={{ borderColor: 'var(--z-border)', background: 'var(--z-surface)' }}>
+                  <div key={day} className="rounded-2xl overflow-hidden transition-all duration-300" 
+                       style={{ 
+                         border: `1px solid ${isExpanded ? 'var(--z-cyan)' : 'var(--z-border)'}`, 
+                         background: isExpanded ? 'var(--z-bg)' : 'var(--z-surface)'
+                       }}>
                     {/* Day Header */}
                     <button 
                       onClick={() => setExpandedDay(isExpanded ? null : day)}
-                      className="w-full flex items-center justify-between p-4 hover:bg-white/5"
+                      className="w-full flex items-center justify-between p-4.5 hover:opacity-80 transition-opacity"
                     >
-                      <span className="font-semibold text-sm capitalize">{day}</span>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <span className="text-[10px] uppercase opacity-70 block">Máx 400ft</span>
-                          <span className="text-sm font-bold font-data" style={{ color: dayCfg.text }}>
-                            {Math.round(maxDaySpeed)} kt
+                      <span className="font-bold text-[13px] tracking-tight" style={{ color: 'var(--z-text)' }}>{day}</span>
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-end">
+                          <span className="text-[9px] uppercase font-bold tracking-wider" style={{ color: 'var(--z-muted)' }}>Máx 400ft</span>
+                          <span className="text-[15px] font-black font-data" style={{ color: dayCfg.text }}>
+                            {Math.round(maxDaySpeed)} <span className="text-[10px] opacity-70">kt</span>
                           </span>
                         </div>
-                        {isExpanded ? <ChevronUp className="w-4 h-4 opacity-50" /> : <ChevronDown className="w-4 h-4 opacity-50" />}
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300" 
+                             style={{ background: 'var(--z-bg)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                          <ChevronDown className="w-3.5 h-3.5" style={{ color: 'var(--z-muted)' }} />
+                        </div>
                       </div>
                     </button>
 
                     {/* Hourly List */}
                     {isExpanded && (
-                      <div className="bg-black/20 p-3 flex flex-col gap-2 border-t" style={{ borderColor: 'var(--z-border)' }}>
-                        <div className="flex text-[9px] uppercase font-bold opacity-50 px-2">
-                          <span className="w-16">Hora</span>
-                          <span className="flex-1 text-center">Superficie</span>
-                          <span className="flex-1 text-right">400 ft</span>
+                      <div className="p-2 pt-0">
+                        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--z-border)', background: 'var(--z-card)' }}>
+                          <div className="flex items-center px-4 py-2 border-b" style={{ borderColor: 'var(--z-border)', background: 'var(--z-surface)' }}>
+                            <span className="w-16 text-[9px] uppercase font-bold tracking-widest" style={{ color: 'var(--z-muted)' }}>Hora</span>
+                            <span className="flex-1 text-center text-[9px] uppercase font-bold tracking-widest" style={{ color: 'var(--z-muted)' }}>SFC</span>
+                            <span className="flex-1 text-right text-[9px] uppercase font-bold tracking-widest" style={{ color: 'var(--z-cyan)' }}>400 FT</span>
+                          </div>
+                          <div className="flex flex-col">
+                            {hours.map((h, idx) => {
+                              const sfcCfg = getStateFromSpeed(h.speed10m);
+                              const altCfg = getStateFromSpeed(h.speed120m);
+                              return (
+                                <div key={idx} className="flex items-center px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                     style={{ borderBottom: idx < hours.length - 1 ? '1px solid var(--z-border)' : 'none' }}>
+                                  <span className="w-16 text-[11px] font-bold font-data" style={{ color: 'var(--z-text)' }}>{h.hourStr}</span>
+                                  <span className="flex-1 text-center text-[12px] font-black font-data" style={{ color: sfcCfg.text }}>
+                                    {Math.round(h.speed10m)}
+                                  </span>
+                                  <span className="flex-1 text-right text-[13px] font-black font-data" style={{ color: altCfg.text }}>
+                                    {Math.round(h.speed120m)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                        {hours.map((h, idx) => {
-                          const sfcCfg = getStateFromSpeed(h.speed10m);
-                          const altCfg = getStateFromSpeed(h.speed120m);
-                          return (
-                            <div key={idx} className="flex items-center px-2 py-1.5 rounded-lg hover:bg-white/5">
-                              <span className="w-16 text-xs font-data">{h.hourStr}</span>
-                              <span className="flex-1 text-center text-xs font-data font-semibold" style={{ color: sfcCfg.text }}>
-                                {Math.round(h.speed10m)}
-                              </span>
-                              <span className="flex-1 text-right text-xs font-data font-bold" style={{ color: altCfg.text }}>
-                                {Math.round(h.speed120m)}
-                              </span>
-                            </div>
-                          );
-                        })}
                       </div>
                     )}
                   </div>
