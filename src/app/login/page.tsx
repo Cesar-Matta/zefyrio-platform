@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlaneTakeoff, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const GoogleIcon = () => (
@@ -24,6 +24,13 @@ export default function LoginPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const supabase = createClient();
+
+  // Surface any error returned by the OAuth callback (?error=...)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlError = params.get('error');
+    if (urlError) setError(decodeURIComponent(urlError));
+  }, []);
 
   const handlePassword = async (e: React.FormEvent) => {
     e.preventDefault();
