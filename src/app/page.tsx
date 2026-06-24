@@ -26,6 +26,7 @@ import AtmosphereCards from "@/components/telemetry/AtmosphereCards";
 import PushNotificationManager from "@/components/ui/PushNotificationManager";
 import BottomNav from "@/components/navigation/BottomNav";
 import MetarBoard from "@/components/weather/MetarBoard";
+import WindyView from "@/components/weather/WindyView";
 import ForecastBar8Day from "@/components/weather/ForecastBar8Day";
 import ForecastCards from "@/components/weather/ForecastCards";
 
@@ -441,6 +442,13 @@ export default function Home() {
                 <span className="text-[10px] font-medium" style={{ color: 'var(--z-muted)' }}>drone outlook</span>
               </div>
               <ForecastCards lat={effectiveLat as number} lon={effectiveLon as number} />
+            </div>
+          )}
+
+          {/* WIND TAB — Windy embed (full colour wind field + particles) */}
+          {activeTab === 'wind' && hasLocation && (
+            <div className="flex-1 w-full rounded-3xl overflow-hidden border border-white/5 animate-in fade-in zoom-in duration-500">
+              <WindyView lat={effectiveLat as number} lon={effectiveLon as number} />
             </div>
           )}
 

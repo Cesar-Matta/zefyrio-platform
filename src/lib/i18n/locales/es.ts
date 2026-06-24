@@ -62,6 +62,7 @@ const es = {
   // Navigation
   nav_hud: 'PANEL',
   nav_radar: 'RADAR',
+  nav_wind: 'VIENTO',
   nav_forecast: 'PREV',
   nav_map: 'MAPA',
   nav_log: 'BITÁCORA',

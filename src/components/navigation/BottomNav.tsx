@@ -2,7 +2,7 @@
 // BottomNav — Redesign Premium v4.0
 // i18n-ready — now includes LOG tab
 
-import { Activity, CloudLightning, Navigation, BookOpen, BarChart2, type LucideIcon } from "lucide-react";
+import { Activity, CloudLightning, Wind, Navigation, BookOpen, BarChart2, type LucideIcon } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
@@ -15,6 +15,7 @@ interface BottomNavProps {
 const TABS: { id: string; Icon: LucideIcon; labelKey: TranslationKey }[] = [
   { id: 'telemetry',  Icon: Activity,       labelKey: 'nav_hud'      },
   { id: 'weather',    Icon: CloudLightning, labelKey: 'nav_radar'    },
+  { id: 'wind',       Icon: Wind,           labelKey: 'nav_wind'     },
   { id: 'forecast',   Icon: BarChart2,      labelKey: 'nav_forecast' },
   { id: 'map',        Icon: Navigation,     labelKey: 'nav_map'      },
   { id: 'log',        Icon: BookOpen,       labelKey: 'nav_log'      },

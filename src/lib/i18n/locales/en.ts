@@ -62,6 +62,7 @@ const en = {
   // Navigation
   nav_hud: 'HUD',
   nav_radar: 'RADAR',
+  nav_wind: 'WIND',
   nav_forecast: 'FCST',
   nav_map: 'MAP',
   nav_log: 'LOG',
