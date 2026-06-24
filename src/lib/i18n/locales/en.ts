@@ -118,6 +118,7 @@ const en = {
   metar_raw: 'RAW METAR:',
   metar_flight_cat: 'Flight Cat.',
   metar_cloud_ceiling: 'Cloud Ceiling',
+  metar_cloud_layer: 'Cloud Layer At',
   metar_ceiling_clear: 'Clear',
 
   // Offline

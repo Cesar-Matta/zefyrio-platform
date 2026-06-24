@@ -118,6 +118,7 @@ const es = {
   metar_raw: 'METAR ORIGINAL:',
   metar_flight_cat: 'Cat. Vuelo',
   metar_cloud_ceiling: 'Techo Nubes',
+  metar_cloud_layer: 'Capa de nubes a',
   metar_ceiling_clear: 'Despejado',
 
   // Offline

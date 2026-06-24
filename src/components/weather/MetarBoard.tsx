@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Plane, Radio, Wind, AlertTriangle, Radar } from "lucide-react";
+import { Plane, Radio, Wind, AlertTriangle, Radar, Cloud } from "lucide-react";
 import dynamic from 'next/dynamic';
 import type { AircraftState } from './RadarMap';
 import { useTranslation } from "@/lib/i18n/useTranslation";
@@ -255,11 +255,17 @@ export default function MetarBoard({ lat: initialLat, lon: initialLon }: MetarBo
             </div>
             
             <div className="flex items-center gap-2.5 bg-[var(--z-bg)] rounded-xl p-2.5 border border-[var(--z-border)]">
-              <Wind className="w-4 h-4 text-[var(--z-muted)]" />
+              <Cloud className="w-4 h-4 text-[var(--z-muted)]" />
               <div className="flex flex-col">
-                <span className="text-[8px] text-[var(--z-muted)] tracking-tight">{t('metar_cloud_ceiling')}</span>
+                <span className="text-[8px] text-[var(--z-muted)] tracking-tight">{t('metar_cloud_layer')}</span>
                 <span className="font-black text-[var(--z-text)] text-[10px]">
-                  {selectedMetar.clouds?.[0]?.base ? `${selectedMetar.clouds[0].base}00 ft` : t('metar_ceiling_clear')}
+                  {(() => {
+                    // Lowest cloud base reported in the METAR (base is in feet AGL).
+                    const bases = (selectedMetar.clouds ?? [])
+                      .map(c => c.base)
+                      .filter((b): b is number => typeof b === 'number');
+                    return bases.length ? `${Math.min(...bases)} ft` : t('metar_ceiling_clear');
+                  })()}
                 </span>
               </div>
             </div>
