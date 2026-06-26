@@ -1,0 +1,113 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e17]:
+        - img "Zefyrio Logo" [ref=e20]
+        - button "Menú de usuario" [ref=e22] [cursor=pointer]:
+          - img [ref=e24]
+      - generic [ref=e195]:
+        - img [ref=e196]
+        - generic [ref=e198]:
+          - generic [ref=e199]:
+            - generic [ref=e200]: SKBO
+            - generic [ref=e201]: BOGOTA/EL DORADO AIRPORT
+          - generic [ref=e202]: 04°41'58"N 074°08'38"W
+        - button "Volver a mi ubicación" [ref=e203]:
+          - img [ref=e204]
+      - generic [ref=e28]:
+        - img [ref=e29]
+        - textbox "Aeropuerto (SKBO) o Población (Guatapé)" [ref=e32]
+        - button "Buscar" [disabled] [ref=e360]
+      - generic [ref=e487]:
+        - generic [ref=e488] [cursor=pointer]:
+          - generic [ref=e489]:
+            - generic [ref=e490]:
+              - img [ref=e491]
+              - generic [ref=e495]: Perfil de Viento Vertical
+            - generic [ref=e496]: nudos
+          - generic [ref=e497]:
+            - generic [ref=e498]:
+              - generic [ref=e499]: 600ft+
+              - generic [ref=e502]: "14"
+            - generic [ref=e503]:
+              - generic [ref=e504]: 400ft
+              - generic [ref=e507]: "13"
+            - generic [ref=e508]:
+              - generic [ref=e509]: 200ft
+              - generic [ref=e512]: "12"
+            - generic [ref=e513]:
+              - generic [ref=e514]: SFC
+              - generic [ref=e517]: "9"
+          - generic [ref=e519]:
+            - img [ref=e520]
+            - text: Ver Pronóstico 7 Días
+        - generic [ref=e522]:
+          - generic [ref=e523]:
+            - generic [ref=e524]: Radar Táctico
+            - button "ADS-B OFF" [ref=e525]:
+              - img [ref=e526]
+              - text: ADS-B OFF
+          - generic [ref=e533]:
+            - generic [ref=e534]:
+              - generic:
+                - generic:
+                  - button [ref=e544] [cursor=pointer]
+                  - button [ref=e547] [cursor=pointer]
+            - button "MAP" [ref=e535]:
+              - img [ref=e536]
+              - generic [ref=e538]: MAP
+            - generic [ref=e539]:
+              - generic [ref=e585]:
+                - button "Nubes GOES‑19" [ref=e586]:
+                  - img [ref=e587]
+                  - text: Nubes GOES‑19
+                - button "Radar de Lluvia" [ref=e589]:
+                  - img [ref=e590]
+                  - text: Radar de Lluvia
+                - button "Viento" [ref=e592]:
+                  - img [ref=e593]
+                  - text: Viento
+              - button [ref=e540]:
+                - img [ref=e541]
+        - generic [ref=e550]:
+          - generic [ref=e551]:
+            - generic [ref=e552]:
+              - generic [ref=e553]: Estación Base Fix
+              - generic [ref=e554]:
+                - generic [ref=e555]: SKGY
+                - generic [ref=e556]: Guaymaral Arpt, BL, CO
+            - img [ref=e558]
+          - generic [ref=e564]:
+            - generic [ref=e565]: "METAR ORIGINAL:"
+            - text: METAR SKGY 231500Z 08014KT 050V140 9000 SCT030 17/07 Q1029
+          - generic [ref=e566]:
+            - generic [ref=e567]:
+              - img [ref=e568]
+              - generic [ref=e570]:
+                - generic [ref=e571]: Cat. Vuelo
+                - generic [ref=e572]: VFR
+            - generic [ref=e573]:
+              - img [ref=e574]
+              - generic [ref=e578]:
+                - generic [ref=e579]: Techo Nubes
+                - generic [ref=e580]: 300000 ft
+    - navigation [ref=e173]:
+      - generic [ref=e174]:
+        - button "PANEL" [ref=e175] [cursor=pointer]:
+          - img [ref=e176]
+          - generic [ref=e178]: PANEL
+        - button "RADAR" [active] [ref=e179] [cursor=pointer]:
+          - img [ref=e180]
+          - generic [ref=e183]: RADAR
+        - button "PREV" [ref=e184] [cursor=pointer]:
+          - img [ref=e185]
+          - generic [ref=e186]: PREV
+        - button "MAPA" [ref=e187] [cursor=pointer]:
+          - img [ref=e188]
+          - generic [ref=e190]: MAPA
+        - button "BITÁCORA" [ref=e191] [cursor=pointer]:
+          - img [ref=e192]
+          - generic [ref=e194]: BITÁCORA

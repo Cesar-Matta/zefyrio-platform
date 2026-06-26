@@ -1,0 +1,32 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e16]: ⚠️ Modo Demo — Sin señal GPS
+      - generic [ref=e17]:
+        - img "Zefyrio Logo" [ref=e20]
+        - button "Menú de usuario" [ref=e22] [cursor=pointer]:
+          - img [ref=e24]
+      - generic [ref=e28]:
+        - img [ref=e29]
+        - textbox "Aeropuerto (SKBO) o Población (Guatapé)" [ref=e32]
+        - button "Buscar" [disabled] [ref=e33]
+    - navigation [ref=e173]:
+      - generic [ref=e174]:
+        - button "PANEL" [ref=e175] [cursor=pointer]:
+          - img [ref=e176]
+          - generic [ref=e178]: PANEL
+        - button "RADAR" [active] [ref=e179] [cursor=pointer]:
+          - img [ref=e180]
+          - generic [ref=e183]: RADAR
+        - button "PREV" [ref=e184] [cursor=pointer]:
+          - img [ref=e185]
+          - generic [ref=e186]: PREV
+        - button "MAPA" [ref=e187] [cursor=pointer]:
+          - img [ref=e188]
+          - generic [ref=e190]: MAPA
+        - button "BITÁCORA" [ref=e191] [cursor=pointer]:
+          - img [ref=e192]
+          - generic [ref=e194]: BITÁCORA

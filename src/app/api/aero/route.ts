@@ -38,14 +38,13 @@ export async function GET(request: Request) {
     const tafText = await tafReq.text();
     const tafData = tafText ? JSON.parse(tafText) : [];
 
-    const notamsPlaceholder = [
-       { id: "A1234/26", type: "NOTAM", content: "RWY 09L/27R CLSD. ZONA DE RESTRICCIÓN TEMPORAL Drones (TFR) ACTIVADA HASTA NUEVO AVISO." }
-    ];
-
+    // Real NOTAMs are served per-location by /api/notams (FAA). The map's
+    // per-airport NOTAM list isn't wired to a live source yet, so return none
+    // here instead of a fake placeholder.
     return NextResponse.json({
         metar: metarData,
         taf: tafData,
-        notams: notamsPlaceholder
+        notams: []
     });
 
   } catch (err) {

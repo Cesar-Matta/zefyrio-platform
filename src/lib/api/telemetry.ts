@@ -35,10 +35,10 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
         throw new Error('Open-Meteo returned malformed payload');
     }
 
-    // 2. Fetch NOAA Kp Index (US-only origin — can be slow from LATAM mobile)
+    // 2. Fetch NOAA Kp Index through our backend proxy to avoid CORS
     let kp = 1.0;
     try {
-        const noaaReq = await fetchWithTimeout('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json', {}, 5000);
+        const noaaReq = await fetchWithTimeout('/api/telemetry/kp', {}, 5000);
         if (noaaReq.ok) {
           const noaaData = await noaaReq.json();
           const latestKp = noaaData?.[noaaData.length - 1]?.[1];

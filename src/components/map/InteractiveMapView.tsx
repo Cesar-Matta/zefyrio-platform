@@ -65,13 +65,14 @@ const LAYER_DEFS: LayerDef[] = [
   { id: 'adsb',       label: 'Tráfico ADS-B en Vivo', icon: Plane, color: 'var(--color-system-green)', group: 'traffic' },
   { id: 'airports',   label: 'Aeropuertos y METAR', icon: RadioTower, color: 'var(--color-system-blue)', group: 'airports' },
   { id: 'satellite',  label: 'Satélite Visual',  icon: Eye,        color: '#94A3B8', group: 'base' },
+  { id: 'goes',       label: 'Nubes GOES‑19',    icon: Cloud,      color: '#38BDF8', group: 'base' },
 ];
 
 const LAYER_INITIAL: Record<string, boolean> = {
   classE: false, classF: false, classG: false,
   restricted: true, danger: true, prohibited: true, ctr: true, tma: false, special: false,
   military: false, gliding: false, hanggliding: false, obstacles: false, navaids: false, rc: false, parachuting: false,
-  adsb: false, satellite: false, airports: true,
+  adsb: false, satellite: false, goes: false, airports: true,
 };
 
 const GROUP_META: Record<string, { label: string; icon: LucideIcon; accent: string }> = {
@@ -149,6 +150,8 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   const [navaidsData, setNavaidsData] = useState<any>(null);
   const [hangGlidingData, setHangGlidingData] = useState<any>(null);
   const [obstaclesData, setObstaclesData] = useState<any>(null);
+  // GOES-19 GeoColor satellite layer (cloud cover, both hemispheres)
+  const [goesTile, setGoesTile] = useState<{ url: string; iso: string | null } | null>(null);
   // Colombia local airport info (from co_airports.geojson)
   const [coAirports, setCoAirports] = useState<Record<string, any>>({});
   const lastAeroFetch = React.useRef<{lat: number, lon: number}>({ lat: -999, lon: -999 });
@@ -187,6 +190,22 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
   const handleMapMove = useCallback((lat: number, lon: number, zoom: number, bbox: string) => {
     setMapState({ lat, lon, zoom, bbox });
   }, []);
+
+  // Fetch the latest GOES-19 frame (and refresh it) only while the layer is on
+  useEffect(() => {
+    if (!layers.goes) return;
+    let alive = true;
+    const load = async () => {
+      try {
+        const r = await fetch('/api/satellite');
+        const d = await r.json() as { urlTemplate: string; iso: string | null };
+        if (alive && d.urlTemplate) setGoesTile({ url: d.urlTemplate, iso: d.iso });
+      } catch { /* keep previous frame on error */ }
+    };
+    load();
+    const interval = setInterval(load, 5 * 60 * 1000);
+    return () => { alive = false; clearInterval(interval); };
+  }, [layers.goes]);
 
   useEffect(() => {
     if (!layers.adsb) return;
@@ -282,7 +301,20 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
       <MapContainer center={[initialLat, initialLon]} zoom={9} style={{ height: '100%', width: '100%', background: isDark ? '#020617' : '#f0f2f5' }} zoomControl={false} attributionControl={false} maxZoom={18} doubleClickZoom={!onSyncLocation}>
         <MapEventsHandler onMoveEnd={handleMapMove} onDoubleClick={onSyncLocation} />
         <TileLayer url={activeBaseUrl} subdomains={['0','1','2','3']} maxZoom={18} maxNativeZoom={17} />
-        
+
+        {/* GOES-19 GeoColor cloud layer (full-disk: covers N & S hemisphere) */}
+        {layers.goes && goesTile && (
+          <TileLayer
+            key={goesTile.url}
+            url={goesTile.url}
+            opacity={0.72}
+            zIndex={2}
+            maxNativeZoom={8}
+            maxZoom={18}
+            className="goes-tiles"
+          />
+        )}
+
         {/* Navaids Layer */}
         {layers.navaids && navaidsData && (
           <GeoJSON 
@@ -443,6 +475,16 @@ export default function InteractiveMapView({ initialLat, initialLon, onSyncLocat
           <Tooltip permanent direction="bottom">MI UBICACIÓN</Tooltip>
         </Marker>
       </MapContainer>
+
+      {layers.goes && (
+        <div className="absolute bottom-24 left-4 z-[1000] flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border backdrop-blur-md"
+          style={{ background: 'var(--z-card)', borderColor: 'var(--z-border)' }}>
+          <Cloud className="w-3 h-3" style={{ color: '#38BDF8' }} />
+          <span className="text-[9px] font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>
+            GOES‑19{goesTile?.iso ? ` · ${new Date(goesTile.iso).toUTCString().slice(17, 22)}Z` : ''}
+          </span>
+        </div>
+      )}
 
       <ForecastBar8Day lat={mapState.lat} lon={mapState.lon} />
 
