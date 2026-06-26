@@ -17,6 +17,13 @@ export const getMockTelemetry = (_profile: 'dron'): TelemetryData => {
     maxGusts: "18",
     satellites: 18,
     kpIndex: 2.1,
+    kpForecast: [
+      { time: new Date(Date.now() - 3600000).toISOString(), kp: 2.3 },
+      { time: new Date(Date.now() + 3600000 * 2).toISOString(), kp: 3.0 },
+      { time: new Date(Date.now() + 3600000 * 5).toISOString(), kp: 4.1 },
+      { time: new Date(Date.now() + 3600000 * 8).toISOString(), kp: 1.5 },
+      { time: new Date(Date.now() + 3600000 * 11).toISOString(), kp: 2.0 },
+    ],
     visibility: "10.0",      // string — matches TelemetryData.visibility
     temperature: 24,
     feelsLike: 26,

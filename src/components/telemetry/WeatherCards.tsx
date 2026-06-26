@@ -21,65 +21,41 @@ export default function WeatherCards({ temperature, feelsLike, rainChance, cloud
   return (
     <div className="grid grid-cols-2 gap-3 w-full">
       {/* Temperature Card */}
-      <div
-        className={`z-card flex flex-col justify-between p-4 overflow-hidden theme-transition ${className}`}
-        style={{ minHeight: '130px' }}
-      >
-        <div className="flex items-center gap-1.5">
-          <Thermometer className="w-4 h-4" style={{ color: 'var(--color-system-orange)' }} />
-          <span className="text-[11px] font-medium" style={{ color: 'var(--z-muted)' }}>
+      <div className="bg-[#111] border border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+        <div className="flex items-center gap-2 mb-2">
+          <Thermometer className="w-4 h-4 text-orange-500" />
+          <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">
             {t('weather_temp')}
           </span>
         </div>
-
-        <div className="flex items-baseline gap-0.5 mt-2">
-          <span className="text-[40px] font-semibold tracking-tighter leading-none" style={{ color: 'var(--z-text)' }}>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black" style={{ color: 'var(--z-text)' }}>
             {temperature.toFixed(1)}
           </span>
-          <span className="text-[18px] font-medium" style={{ color: 'var(--z-text)' }}>
-            °C
-          </span>
+          <span className="text-xs text-white/40 font-bold">°C</span>
         </div>
-
-        <span className="text-[12px] font-medium mt-1 uppercase tracking-wider" style={{ color: 'var(--z-muted)' }}>
+        <span className="text-[9px] font-bold text-white/40 uppercase mt-1">
           SENS: {feelsLike}°
         </span>
       </div>
 
-      {/* Rain / Clouds Card */}
-      <div
-        className={`z-card flex flex-col justify-between p-4 overflow-hidden theme-transition ${className}`}
-        style={{ minHeight: '130px' }}
-      >
-        <div className="flex items-center gap-1.5 mb-1">
-          <Droplets className="w-3.5 h-3.5" style={{ color: 'var(--z-muted)' }} />
-          <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: 'var(--z-muted)' }}>
-            LLUVIA
+      {/* Rain Card */}
+      <div className="bg-[#111] border border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+        <div className="flex items-center gap-2 mb-2">
+          <Droplets className="w-4 h-4 text-blue-500" />
+          <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">
+            Lluvia
           </span>
         </div>
-
-        <div className="flex items-baseline gap-0.5 mt-1">
-          <span className="text-[44px] font-semibold tracking-tighter leading-none" style={{ color: rainColor }}>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black" style={{ color: rainColor }}>
             {rainChance}
           </span>
-          <span className="text-[22px] font-medium" style={{ color: 'var(--z-muted)' }}>
-            %
-          </span>
+          <span className="text-xs text-white/40 font-bold">%</span>
         </div>
-
-        {/* Cloud bar */}
-        <div className="mt-2">
-          <div className="flex justify-between mb-1">
-            <span className="text-[11px] font-medium" style={{ color: 'var(--z-muted)' }}>{t('weather_clouds')}</span>
-            <span className="text-[11px] font-semibold" style={{ color: 'var(--z-muted)' }}>{clouds}%</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--z-surface)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${clouds}%`, background: 'var(--color-system-blue)' }}
-            />
-          </div>
-        </div>
+        <span className="text-[9px] font-bold text-white/40 uppercase mt-1">
+          Nubes: {clouds}%
+        </span>
       </div>
     </div>
   );

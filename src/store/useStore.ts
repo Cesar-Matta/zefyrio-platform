@@ -37,6 +37,11 @@ export interface WindForecastHour {
   gusts: number;
 }
 
+export interface KpForecastHour {
+  time: string;
+  kp: number;
+}
+
 export interface TelemetryData {
   timestamp: string;
   status: FlightStatus;
@@ -55,6 +60,7 @@ export interface TelemetryData {
   sun: SunData;
   verticalProfile: WindLayer[];
   windForecast?: WindForecastHour[];
+  kpForecast?: KpForecastHour[];
   locationName?: string;
   gps?: GpsCoords;
 }

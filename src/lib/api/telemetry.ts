@@ -35,14 +35,31 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
         throw new Error('Open-Meteo returned malformed payload');
     }
 
-    // 2. Fetch NOAA Kp Index through our backend proxy to avoid CORS
+    // 2. Fetch NOAA Kp Index and Forecast through our backend proxy to avoid CORS
     let kp = 1.0;
+    let kpForecast = [];
     try {
         const noaaReq = await fetchWithTimeout('/api/telemetry/kp', {}, 5000);
         if (noaaReq.ok) {
           const noaaData = await noaaReq.json();
           const latestKp = noaaData?.[noaaData.length - 1]?.Kp;
           if (latestKp !== undefined) kp = parseFloat(String(latestKp));
+        }
+
+        const noaaFcstReq = await fetchWithTimeout('/api/telemetry/kp-forecast', {}, 5000);
+        if (noaaFcstReq.ok) {
+          const noaaFcstData = await noaaFcstReq.json();
+          if (Array.isArray(noaaFcstData)) {
+            // Keep only the next 8 periods (24 hours)
+            const nowUTC = new Date().getTime();
+            kpForecast = noaaFcstData
+              .filter(d => new Date(d.time_tag + "Z").getTime() >= nowUTC - (3 * 3600 * 1000)) // Include current active window
+              .slice(0, 8)
+              .map(d => ({
+                time: new Date(d.time_tag + "Z").toISOString(),
+                kp: parseFloat(String(d.kp))
+              }));
+          }
         }
     } catch {
         console.warn("NOAA API fallback");
@@ -200,6 +217,7 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
         { alt: 'SFC', speed: Math.round(wind10m), state: wind10m > 15 ? 'warn' : 'calm' },
       ],
       windForecast,
+      kpForecast,
       locationName,
     };
 

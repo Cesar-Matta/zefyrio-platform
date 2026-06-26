@@ -16,8 +16,8 @@ import NotamAlert from "@/components/telemetry/NotamAlert";
 // SigmetAlert removed from drone HUD — SIGMETs cover FL100-FL450 (10k-45k ft),
 // not relevant for drone ops (<400 ft). Keep for future fixed-wing fork.
 // import SigmetAlert from "@/components/telemetry/SigmetAlert";
-import GpsSatelliteStatus from "@/components/telemetry/GpsSatelliteStatus";
-import WindCompass from "@/components/telemetry/WindCompass";
+import TacticalTopBar from "@/components/telemetry/TacticalTopBar";
+import KpForecastSlider from "@/components/telemetry/KpForecastSlider";
 import WeatherCards from "@/components/telemetry/WeatherCards";
 import FlightWindow from "@/components/telemetry/FlightWindow";
 import FlightLog from "@/components/telemetry/FlightLog";
@@ -394,18 +394,23 @@ export default function Home() {
                   <NotamAlert lat={effectiveLat as number} lon={effectiveLon as number} />
                 )}
       
-                <section className="grid grid-cols-2 gap-4 shrink-0">
-                  <GpsSatelliteStatus satellites={telemetryData.satellites} kpIndex={telemetryData.kpIndex} />
-                  <WindCompass surfaceWind={telemetryData.surfaceWind} maxGusts={telemetryData.maxGusts} />
-                  <div className="col-span-2">
-                    <WeatherCards temperature={telemetryData.temperature} feelsLike={telemetryData.feelsLike} rainChance={telemetryData.rainChance} clouds={telemetryData.clouds} />
-                  </div>
-                  <div className="col-span-2">
-                    <AtmosphereCards visibility={telemetryData.visibility} cloudBase={telemetryData.cloudBase} />
-                  </div>
-                  <div className="col-span-2">
-                    <FlightWindow sun={telemetryData.sun} />
-                  </div>
+                <section className="flex flex-col gap-4 shrink-0">
+                  <TacticalTopBar 
+                    satellites={telemetryData.satellites} 
+                    kpIndex={telemetryData.kpIndex} 
+                    surfaceWind={telemetryData.surfaceWind} 
+                    maxGusts={telemetryData.maxGusts} 
+                  />
+                  
+                  {telemetryData.kpForecast && (
+                    <KpForecastSlider kpForecast={telemetryData.kpForecast} />
+                  )}
+
+                  <WeatherCards temperature={telemetryData.temperature} feelsLike={telemetryData.feelsLike} rainChance={telemetryData.rainChance} clouds={telemetryData.clouds} />
+                  
+                  <AtmosphereCards visibility={telemetryData.visibility} cloudBase={telemetryData.cloudBase} />
+                  
+                  <FlightWindow sun={telemetryData.sun} />
                 </section>
              </div>
           )}

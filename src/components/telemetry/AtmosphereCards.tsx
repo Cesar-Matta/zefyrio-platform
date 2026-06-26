@@ -20,54 +20,30 @@ export default function AtmosphereCards({ visibility, cloudBase }: AtmosphereCar
 
   return (
     <div className="grid grid-cols-2 gap-3 w-full">
-      {/* Visibility Card */}
-      <div className="z-card flex flex-col justify-between p-4 overflow-hidden theme-transition" style={{ minHeight: '130px' }}>
-        <div className="flex items-center gap-1.5 mb-1">
-          <Eye className="w-4 h-4" style={{ color: 'var(--z-muted)' }} />
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--z-muted)' }}>
-            VISIBILIDAD
-          </span>
+      {/* Visibility */}
+      <div className="bg-[#111] border border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+        <div className="flex items-center gap-2 mb-2">
+          <Eye className="w-4 h-4 text-white/40" />
+          <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">Visibilidad</span>
         </div>
-
-        <div className="flex items-baseline gap-0.5 mt-1">
-          <span className="text-[44px] font-semibold tracking-tighter leading-none" style={{ color: visColor }}>
-            {visNum >= 10 ? '10+' : visibility}
-          </span>
-          <span className="text-[22px] font-medium" style={{ color: 'var(--z-muted)' }}>
-            km
-          </span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black" style={{ color: visColor }}>{visNum >= 10 ? '10+' : visibility}</span>
+          <span className="text-xs text-white/40 font-bold">km</span>
         </div>
-
-        <div className="mt-2">
-          <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: 'var(--z-muted)' }}>
-            {visLabel}
-          </span>
-        </div>
+        <span className="text-[9px] font-bold text-white/40 uppercase mt-1">{visLabel}</span>
       </div>
 
-      {/* Cloud Base Card */}
-      <div className="z-card flex flex-col justify-between p-4 overflow-hidden theme-transition" style={{ minHeight: '130px' }}>
-        <div className="flex items-center gap-1.5 mb-1">
-          <Cloud className="w-4 h-4" style={{ color: 'var(--z-muted)' }} />
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--z-muted)' }}>
-            TECHO NUBES
-          </span>
+      {/* Cloud Base */}
+      <div className="bg-[#111] border border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+        <div className="flex items-center gap-2 mb-2">
+          <Cloud className="w-4 h-4 text-white/40" />
+          <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">Techo</span>
         </div>
-
-        <div className="flex items-baseline gap-0.5 mt-1">
-          <span className="text-[44px] font-semibold tracking-tighter leading-none" style={{ color: cloudColor }}>
-            {cloudBase}
-          </span>
-          <span className="text-[22px] font-medium" style={{ color: 'var(--z-muted)' }}>
-            ft
-          </span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black" style={{ color: cloudColor }}>{cloudBase}</span>
+          <span className="text-xs text-white/40 font-bold">ft</span>
         </div>
-
-        <div className="mt-2">
-          <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: 'var(--z-muted)' }}>
-            {cloudLabel}
-          </span>
-        </div>
+        <span className="text-[9px] font-bold text-white/40 uppercase mt-1">{cloudLabel}</span>
       </div>
     </div>
   );
