@@ -97,7 +97,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
 
       {/* Forecast Modal */}
       {showForecast && (
-        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300"
+        <div className="fixed inset-0 z-10 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300"
              style={{ background: 'var(--z-glass-bg)', backdropFilter: 'var(--z-glass-blur)', WebkitBackdropFilter: 'var(--z-glass-blur)' }}>
           <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl flex flex-col max-h-[75vh] overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300"
                style={{ 
@@ -141,7 +141,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
                 const dayCfg = getStateFromSpeed(maxDaySpeed);
 
                 return (
-                  <div key={day} className="rounded-2xl overflow-hidden transition-all duration-300" 
+                  <div key={day} className="rounded-xl overflow-hidden transition-all duration-300" 
                        style={{ 
                          border: `1px solid ${isExpanded ? 'var(--z-cyan)' : 'var(--z-border)'}`, 
                          background: isExpanded ? 'var(--z-bg)' : 'var(--z-surface)'
@@ -149,19 +149,19 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
                     {/* Day Header */}
                     <button 
                       onClick={() => setExpandedDay(isExpanded ? null : day)}
-                      className="w-full flex items-center justify-between p-4.5 hover:opacity-80 transition-opacity"
+                      className="w-full flex items-center justify-between px-3 py-2.5 hover:opacity-80 transition-opacity"
                     >
-                      <span className="font-bold text-[13px] tracking-tight" style={{ color: 'var(--z-text)' }}>{day}</span>
-                      <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-end">
-                          <span className="text-[9px] uppercase font-bold tracking-wider" style={{ color: 'var(--z-muted)' }}>Máx 400ft</span>
-                          <span className="text-[15px] font-black font-data" style={{ color: dayCfg.text }}>
-                            {Math.round(maxDaySpeed)} <span className="text-[10px] opacity-70">kt</span>
+                      <span className="font-medium text-xs tracking-tight" style={{ color: 'var(--z-text)' }}>{day}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xs font-light tracking-tight" style={{ color: dayCfg.text }}>
+                            {Math.round(maxDaySpeed)}
                           </span>
+                          <span className="text-[9px] font-medium opacity-70" style={{ color: dayCfg.text }}>kt</span>
                         </div>
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-300" 
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center transition-transform duration-300" 
                              style={{ background: 'var(--z-bg)', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                          <ChevronDown className="w-3.5 h-3.5" style={{ color: 'var(--z-muted)' }} />
+                          <ChevronDown className="w-3 h-3" style={{ color: 'var(--z-muted)' }} />
                         </div>
                       </div>
                     </button>
