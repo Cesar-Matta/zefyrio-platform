@@ -41,8 +41,8 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
         const noaaReq = await fetchWithTimeout('/api/telemetry/kp', {}, 5000);
         if (noaaReq.ok) {
           const noaaData = await noaaReq.json();
-          const latestKp = noaaData?.[noaaData.length - 1]?.[1];
-          if (latestKp) kp = parseFloat(latestKp);
+          const latestKp = noaaData?.[noaaData.length - 1]?.Kp;
+          if (latestKp !== undefined) kp = parseFloat(String(latestKp));
         }
     } catch {
         console.warn("NOAA API fallback");
