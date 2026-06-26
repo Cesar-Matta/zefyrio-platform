@@ -99,7 +99,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
       {showForecast && (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300"
              style={{ background: 'var(--z-glass-bg)', backdropFilter: 'var(--z-glass-blur)', WebkitBackdropFilter: 'var(--z-glass-blur)' }}>
-          <div className="w-full max-w-md rounded-t-[32px] sm:rounded-[32px] flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300"
+          <div className="w-full max-w-md rounded-t-[32px] sm:rounded-[32px] flex flex-col max-h-[75vh] overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300"
                style={{ 
                  background: 'var(--z-card)', 
                  borderTop: '1px solid var(--z-border)',
@@ -131,7 +131,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
             </div>
 
             {/* Modal Body (Scrollable Days) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-3.5 custom-scrollbar">
               {days.map(day => {
                 const isExpanded = expandedDay === day;
                 const hours = forecastByDay[day];
