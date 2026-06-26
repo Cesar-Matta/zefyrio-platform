@@ -17,7 +17,7 @@ import NotamAlert from "@/components/telemetry/NotamAlert";
 // not relevant for drone ops (<400 ft). Keep for future fixed-wing fork.
 // import SigmetAlert from "@/components/telemetry/SigmetAlert";
 import TacticalTopBar from "@/components/telemetry/TacticalTopBar";
-import KpForecastSlider from "@/components/telemetry/KpForecastSlider";
+import KpTimelineScrubber from "@/components/weather/KpTimelineScrubber";
 import WeatherCards from "@/components/telemetry/WeatherCards";
 import FlightWindow from "@/components/telemetry/FlightWindow";
 import FlightLog from "@/components/telemetry/FlightLog";
@@ -401,10 +401,6 @@ export default function Home() {
                     surfaceWind={telemetryData.surfaceWind} 
                     maxGusts={telemetryData.maxGusts} 
                   />
-                  
-                  {telemetryData.kpForecast && (
-                    <KpForecastSlider kpForecast={telemetryData.kpForecast} />
-                  )}
 
                   <WeatherCards temperature={telemetryData.temperature} feelsLike={telemetryData.feelsLike} rainChance={telemetryData.rainChance} clouds={telemetryData.clouds} />
                   
@@ -440,6 +436,10 @@ export default function Home() {
                   locationName={viewingAirport ? viewingAirport.name : (telemetryData?.locationName || 'Mi Ubicación')} 
                 />
               </div>
+
+              {telemetryData?.kpForecast && (
+                <KpTimelineScrubber kpForecast={telemetryData.kpForecast} />
+              )}
               {/* Hourly drone outlook — wind, UV, humidity, visibility */}
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-1 h-5 rounded-full" style={{ background: 'var(--color-system-blue)' }} />
