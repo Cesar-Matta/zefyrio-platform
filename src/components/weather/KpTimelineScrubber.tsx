@@ -38,32 +38,15 @@ export default function KpTimelineScrubber({ kpForecast }: KpTimelineScrubberPro
   const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   return (
-    <div className="z-card w-full border border-[var(--z-border)] rounded-2xl p-5 flex flex-col gap-4 shadow-sm theme-transition">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--z-border)] pb-3">
-        <div className="flex items-center gap-2">
-          <Activity size={14} className="text-[var(--z-muted)]" />
-          <h2 className="text-xs font-bold text-[var(--z-text)] tracking-widest uppercase">Pronóstico Kp</h2>
-        </div>
-        <span className="text-[10px] font-bold text-[var(--z-muted)] uppercase bg-[var(--z-surface)] px-2 py-1 rounded-md">
-          {dayStr} {timeStr}
-        </span>
-      </div>
+    <div className="z-card w-full border border-[var(--z-border)] rounded-xl p-3 flex flex-col gap-2 shadow-sm theme-transition">
       
-      {/* Central Data Display */}
-      <div className="flex flex-col items-center justify-center py-2">
-        <div className="flex items-baseline gap-2">
-          <span className={`text-5xl font-black ${textColor} tabular-nums tracking-tighter`}>
-            {kp.toFixed(1)}
-          </span>
+      {/* Top Row: Label, Scrubber, Value */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 shrink-0">
+          <Activity size={12} className="text-[var(--z-muted)]" />
+          <h2 className="text-[10px] font-bold text-[var(--z-text)] tracking-widest uppercase">KP</h2>
         </div>
-        <span className={`text-xs font-black uppercase tracking-widest mt-1 ${textColor}`}>
-          {statusText}
-        </span>
-      </div>
 
-      {/* Scrubber / Slider */}
-      <div className="flex flex-col gap-2 mt-2">
         <input 
           type="range" 
           min="0" 
@@ -71,13 +54,26 @@ export default function KpTimelineScrubber({ kpForecast }: KpTimelineScrubberPro
           step="1" 
           value={selectedIndex}
           onChange={(e) => setSelectedIndex(parseInt(e.target.value))}
-          className="w-full accent-[var(--color-system-blue)] h-2 bg-[var(--z-border)] rounded-lg appearance-none cursor-pointer"
+          className="flex-1 accent-[var(--color-system-blue)] h-1.5 bg-[var(--z-border)] rounded-lg appearance-none cursor-pointer"
         />
-        <div className="flex justify-between items-center text-[9px] font-bold text-[var(--z-muted)] uppercase px-1">
-          <span>Ahora</span>
-          <span>+24h</span>
+
+        <div className="flex flex-col items-end shrink-0 min-w-[35px]">
+          <span className={`text-lg font-black leading-none tabular-nums ${textColor}`}>
+            {kp.toFixed(1)}
+          </span>
         </div>
       </div>
+
+      {/* Bottom Row: Time and Status */}
+      <div className="flex justify-between items-center px-1">
+        <span className="text-[9px] font-bold text-[var(--z-muted)] uppercase">
+          {dayStr} {timeStr}
+        </span>
+        <span className={`text-[9px] font-bold uppercase tracking-wider ${textColor}`}>
+          {statusText}
+        </span>
+      </div>
+
     </div>
   );
 }
