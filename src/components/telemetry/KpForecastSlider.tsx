@@ -11,12 +11,12 @@ export default function KpForecastSlider({ kpForecast }: KpForecastSliderProps) 
   }
 
   return (
-    <div className="w-full bg-[#111] border border-white/10 rounded-2xl p-4 flex flex-col gap-3 shadow-xl">
-      <div className="flex items-center justify-between border-b border-white/5 pb-2">
-        <h2 className="text-[10px] font-bold text-white/50 tracking-widest uppercase">Pronóstico Kp (3 días)</h2>
+    <div className="z-card w-full border border-[var(--z-border)] rounded-2xl p-4 flex flex-col gap-3 shadow-sm theme-transition">
+      <div className="flex items-center justify-between border-b border-[var(--z-border)] pb-2">
+        <h2 className="text-[10px] font-bold text-[var(--z-muted)] tracking-widest uppercase">Pronóstico Kp (3 días)</h2>
       </div>
       
-      <div className="flex overflow-x-auto gap-2 pb-2 snap-x hide-scrollbar">
+      <div className="flex overflow-x-auto gap-2 pb-2 snap-x hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {kpForecast.map((hour, index) => {
           const kp = hour.kp;
           
@@ -40,8 +40,8 @@ export default function KpForecastSlider({ kpForecast }: KpForecastSliderProps) 
               key={index} 
               className={`shrink-0 flex flex-col items-center justify-center p-3 rounded-xl border ${bgColor} snap-center min-w-[70px]`}
             >
-              <span className="text-[9px] font-bold text-white/40 uppercase">{dayStr}</span>
-              <span className="text-xs font-bold text-white/80 mb-1">{timeStr}</span>
+              <span className="text-[9px] font-bold text-[var(--z-muted)] uppercase">{dayStr}</span>
+              <span className="text-xs font-bold text-[var(--z-text)] mb-1">{timeStr}</span>
               <span className={`text-xl font-black ${textColor}`}>{kp.toFixed(1)}</span>
             </div>
           );

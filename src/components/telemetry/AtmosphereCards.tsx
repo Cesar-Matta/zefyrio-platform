@@ -21,29 +21,29 @@ export default function AtmosphereCards({ visibility, cloudBase }: AtmosphereCar
   return (
     <div className="grid grid-cols-2 gap-3 w-full">
       {/* Visibility */}
-      <div className="bg-[#111] border border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+      <div className="z-card border border-[var(--z-border)] rounded-2xl p-3 flex flex-col justify-between theme-transition">
         <div className="flex items-center gap-2 mb-2">
-          <Eye className="w-4 h-4 text-white/40" />
-          <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">Visibilidad</span>
+          <Eye className="w-4 h-4 text-[var(--z-muted)]" />
+          <span className="text-[10px] font-bold text-[var(--z-muted)] tracking-widest uppercase">Visibilidad</span>
         </div>
         <div className="flex items-baseline gap-1">
           <span className="text-2xl font-black" style={{ color: visColor }}>{visNum >= 10 ? '10+' : visibility}</span>
-          <span className="text-xs text-white/40 font-bold">km</span>
+          <span className="text-xs text-[var(--z-muted)] font-bold">km</span>
         </div>
-        <span className="text-[9px] font-bold text-white/40 uppercase mt-1">{visLabel}</span>
+        <span className="text-[9px] font-bold text-[var(--z-muted)] uppercase mt-1">{visLabel}</span>
       </div>
 
       {/* Cloud Base */}
-      <div className="bg-[#111] border border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+      <div className="z-card border border-[var(--z-border)] rounded-2xl p-3 flex flex-col justify-between theme-transition">
         <div className="flex items-center gap-2 mb-2">
-          <Cloud className="w-4 h-4 text-white/40" />
-          <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">Techo</span>
+          <Cloud className="w-4 h-4 text-[var(--z-muted)]" />
+          <span className="text-[10px] font-bold text-[var(--z-muted)] tracking-widest uppercase">Techo</span>
         </div>
         <div className="flex items-baseline gap-1">
           <span className="text-2xl font-black" style={{ color: cloudColor }}>{cloudBase}</span>
-          <span className="text-xs text-white/40 font-bold">ft</span>
+          <span className="text-xs text-[var(--z-muted)] font-bold">ft</span>
         </div>
-        <span className="text-[9px] font-bold text-white/40 uppercase mt-1">{cloudLabel}</span>
+        <span className="text-[9px] font-bold text-[var(--z-muted)] uppercase mt-1">{cloudLabel}</span>
       </div>
     </div>
   );

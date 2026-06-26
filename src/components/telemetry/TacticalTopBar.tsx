@@ -40,9 +40,9 @@ export default function TacticalTopBar({ satellites, kpIndex, surfaceWind, maxGu
   else if (satellites < 12) gpsColor = 'text-yellow-500';
 
   return (
-    <div className="w-full bg-[#111] border border-white/10 rounded-2xl p-4 flex flex-col gap-3 shadow-xl">
-      <div className="flex items-center justify-between border-b border-white/5 pb-2">
-        <h2 className="text-[10px] font-bold text-white/50 tracking-widest uppercase">HUD Táctico</h2>
+    <div className="z-card w-full border border-[var(--z-border)] rounded-2xl p-4 flex flex-col gap-3 shadow-sm theme-transition">
+      <div className="flex items-center justify-between border-b border-[var(--z-border)] pb-2">
+        <h2 className="text-[10px] font-bold text-[var(--z-muted)] tracking-widest uppercase">HUD Táctico</h2>
         <div className="flex gap-2 items-center">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           <span className="text-[10px] text-green-500 font-bold tracking-widest">EN LINEA</span>
@@ -53,47 +53,47 @@ export default function TacticalTopBar({ satellites, kpIndex, surfaceWind, maxGu
         
         {/* WIND */}
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-white/40">
+          <div className="flex items-center gap-1.5 text-[var(--z-muted)]">
             <Wind size={12} />
             <span className="text-[9px] font-bold uppercase tracking-wider">Viento</span>
           </div>
           <div className="flex items-baseline gap-1">
             <span className={`text-2xl font-black ${windColor}`}>{surfaceWind.speedStr}</span>
-            <span className="text-xs text-white/40 font-bold">kt</span>
+            <span className="text-xs text-[var(--z-muted)] font-bold">kt</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-white/50">
-            <Navigation size={10} style={{ transform: `rotate(${surfaceWind.angle}deg)` }} className="text-white/60" />
+          <div className="flex items-center gap-1 text-[10px] text-[var(--z-muted)]">
+            <Navigation size={10} style={{ transform: `rotate(${surfaceWind.angle}deg)` }} className="text-[var(--z-muted)] opacity-80" />
             <span className="font-bold">{surfaceWind.direction}</span>
           </div>
         </div>
 
         {/* GUSTS */}
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-white/40">
+          <div className="flex items-center gap-1.5 text-[var(--z-muted)]">
             <Wind size={12} className="opacity-50" />
             <span className="text-[9px] font-bold uppercase tracking-wider">Ráfagas</span>
           </div>
           <div className="flex items-baseline gap-1">
             <span className={`text-2xl font-black ${gustColor}`}>{maxGusts}</span>
-            <span className="text-xs text-white/40 font-bold">kt</span>
+            <span className="text-xs text-[var(--z-muted)] font-bold">kt</span>
           </div>
         </div>
 
         {/* SATS */}
-        <div className="flex flex-col gap-1 border-t border-white/5 pt-2 md:border-t-0 md:pt-0 md:border-l md:pl-4">
-          <div className="flex items-center gap-1.5 text-white/40">
+        <div className="flex flex-col gap-1 border-t border-[var(--z-border)] pt-2 md:border-t-0 md:pt-0 md:border-l md:pl-4">
+          <div className="flex items-center gap-1.5 text-[var(--z-muted)]">
             <Satellite size={12} />
             <span className="text-[9px] font-bold uppercase tracking-wider">Satelites</span>
           </div>
           <div className="flex items-baseline gap-1">
             <span className={`text-2xl font-black ${gpsColor}`}>{satellites}</span>
-            <span className="text-xs text-white/40 font-bold">sat</span>
+            <span className="text-xs text-[var(--z-muted)] font-bold">sat</span>
           </div>
         </div>
 
         {/* KP INDEX */}
-        <div className="flex flex-col gap-1 border-t border-white/5 pt-2 md:border-t-0 md:pt-0">
-          <div className="flex items-center gap-1.5 text-white/40">
+        <div className="flex flex-col gap-1 border-t border-[var(--z-border)] pt-2 md:border-t-0 md:pt-0">
+          <div className="flex items-center gap-1.5 text-[var(--z-muted)]">
             <KpIcon size={12} className={kpColor} />
             <span className="text-[9px] font-bold uppercase tracking-wider">Índice Kp</span>
           </div>
