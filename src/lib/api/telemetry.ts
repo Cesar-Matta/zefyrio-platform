@@ -1,4 +1,4 @@
-import { PilotProfile, TelemetryData } from "@/store/useStore";
+import { PilotProfile, TelemetryData, KpForecastHour } from "@/store/useStore";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 // Utils
@@ -37,7 +37,7 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
 
     // 2. Fetch NOAA Kp Index and Forecast through our backend proxy to avoid CORS
     let kp = 1.0;
-    let kpForecast = [];
+    let kpForecast: KpForecastHour[] = [];
     try {
         const noaaReq = await fetchWithTimeout('/api/telemetry/kp', {}, 5000);
         if (noaaReq.ok) {
