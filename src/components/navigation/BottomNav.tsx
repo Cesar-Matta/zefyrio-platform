@@ -27,7 +27,7 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
   return (
     <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none px-4">
       <nav 
-        className="pointer-events-auto rounded-[32px] w-[95%] max-w-[420px] transition-all"
+        className="pointer-events-auto rounded-[20px] w-[95%] max-w-[420px] transition-all"
         style={{ 
           background: 'var(--z-glass-bg)', 
           backdropFilter: 'var(--z-glass-blur)',
@@ -36,7 +36,7 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
           boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.04)'
         }}
       >
-        <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center justify-between px-5 py-3">
           {TABS.map(({ id, Icon, labelKey }) => {
             const isActive = activeTab === id;
             return (
@@ -45,19 +45,16 @@ export default function BottomNav({ activeTab, setActiveTab }: BottomNavProps) {
                 onClick={() => setActiveTab(id)}
                 aria-label={t(labelKey)}
                 className="relative flex flex-col items-center justify-center cursor-pointer transition-transform duration-200 active:scale-95"
-                style={{ width: '56px' }}
+                style={{ 
+                    width: '56px',
+                    color: isActive ? 'var(--z-cyan)' : 'var(--z-muted)'
+                }}
               >
-                <Icon
-                  className="w-[24px] h-[24px] mb-1.5"
-                  style={{
-                    color: isActive ? 'var(--z-cyan)' : 'var(--z-muted)',
-                  }}
-                  strokeWidth={isActive ? 2.5 : 1.5}
-                />
-                <span
-                  className="text-[9px] font-bold tracking-widest uppercase"
-                  style={{ color: isActive ? 'var(--z-cyan)' : 'var(--z-muted)' }}
-                >
+                <div className="relative">
+                  <Icon size={20} className="transition-all duration-300" strokeWidth={isActive ? 2.5 : 1.5} />
+                </div>
+                  
+                <span className="text-[9px] font-medium tracking-widest uppercase transition-all duration-300 mt-1">
                   {t(labelKey)}
                 </span>
               </button>

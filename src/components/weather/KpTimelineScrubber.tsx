@@ -44,7 +44,7 @@ export default function KpTimelineScrubber({ kpForecast }: KpTimelineScrubberPro
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1 shrink-0">
           <Activity size={12} className="text-[var(--z-muted)]" />
-          <h2 className="text-[10px] font-bold text-[var(--z-text)] tracking-widest uppercase">KP</h2>
+          <h2 className="text-[10px] font-medium text-[var(--z-text)] tracking-widest uppercase">KP</h2>
         </div>
 
         <input 
@@ -58,7 +58,7 @@ export default function KpTimelineScrubber({ kpForecast }: KpTimelineScrubberPro
         />
 
         <div className="flex flex-col items-end shrink-0 min-w-[35px]">
-          <span className={`text-lg font-black leading-none tabular-nums ${textColor}`}>
+          <span className={`text-xl font-light tracking-tight leading-none tabular-nums ${textColor}`}>
             {kp.toFixed(1)}
           </span>
         </div>
@@ -66,10 +66,10 @@ export default function KpTimelineScrubber({ kpForecast }: KpTimelineScrubberPro
 
       {/* Bottom Row: Time and Status */}
       <div className="flex justify-between items-center px-1">
-        <span className="text-[9px] font-bold text-[var(--z-muted)] uppercase">
+        <span className="text-[9px] font-medium text-[var(--z-muted)] uppercase tracking-wide">
           {dayStr} {timeStr}
         </span>
-        <span className={`text-[9px] font-bold uppercase tracking-wider ${textColor}`}>
+        <span className={`text-[9px] font-medium uppercase tracking-wider ${textColor}`}>
           {statusText}
         </span>
       </div>

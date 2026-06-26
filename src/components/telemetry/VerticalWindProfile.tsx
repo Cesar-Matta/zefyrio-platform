@@ -99,7 +99,7 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
       {showForecast && (
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300"
              style={{ background: 'var(--z-glass-bg)', backdropFilter: 'var(--z-glass-blur)', WebkitBackdropFilter: 'var(--z-glass-blur)' }}>
-          <div className="w-full max-w-md rounded-t-[32px] sm:rounded-[32px] flex flex-col max-h-[75vh] overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300"
+          <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl flex flex-col max-h-[75vh] overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300"
                style={{ 
                  background: 'var(--z-card)', 
                  borderTop: '1px solid var(--z-border)',
@@ -109,14 +109,14 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
                }}>
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 pb-4" style={{ borderBottom: '1px solid var(--z-border)' }}>
-              <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-inner" style={{ background: 'var(--z-surface)', border: '1px solid var(--z-border)' }}>
-                  <Wind className="w-5 h-5" style={{ color: 'var(--z-cyan)' }} />
+            <div className="flex items-center justify-between p-4 pb-3" style={{ borderBottom: '1px solid var(--z-border)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner" style={{ background: 'var(--z-surface)', border: '1px solid var(--z-border)' }}>
+                  <Wind className="w-4 h-4" style={{ color: 'var(--z-cyan)' }} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold tracking-tight" style={{ color: 'var(--z-text)' }}>Pronóstico de Viento</h3>
-                  <p className="text-xs font-medium tracking-wide flex items-center gap-1" style={{ color: 'var(--z-cyan)' }}>
+                  <h3 className="text-base font-medium tracking-tight" style={{ color: 'var(--z-text)' }}>Pronóstico de Viento</h3>
+                  <p className="text-xs font-normal tracking-wide flex items-center gap-1" style={{ color: 'var(--z-cyan)' }}>
                     {telemetryData?.locationName || "Próximos 7 días"}
                   </p>
                 </div>
@@ -183,27 +183,27 @@ export default function VerticalWindProfile({ verticalProfile, className = "" }:
                               const altCfg = getStateFromSpeed(h.speed120m);
                               const gustCfg = getStateFromSpeed(h.gusts || 0);
                               return (
-                                <div key={idx} className="flex items-center px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                <div key={idx} className="flex items-center px-4 py-2 hover:bg-black/5 transition-colors"
                                      style={{ borderBottom: idx < hours.length - 1 ? '1px solid var(--z-border)' : 'none' }}>
-                                  <span className="w-14 text-[11px] font-bold font-data" style={{ color: 'var(--z-text)' }}>{h.hourStr}</span>
+                                  <span className="w-14 text-[11px] font-normal font-data" style={{ color: 'var(--z-text)' }}>{h.hourStr}</span>
                                   
                                   {/* Dirección con flecha rotada */}
                                   <div className="w-8 flex justify-center">
                                     <div style={{ transform: `rotate(${h.direction}deg)` }}>
-                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--z-muted)' }}>
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--z-muted)' }}>
                                         <path d="M12 2v20" />
                                         <path d="m17 7-5-5-5 5" />
                                       </svg>
                                     </div>
                                   </div>
 
-                                  <span className="flex-1 text-center text-[12px] font-black font-data" style={{ color: sfcCfg.text }}>
+                                  <span className="flex-1 text-center text-xs font-light font-data" style={{ color: sfcCfg.text }}>
                                     {Math.round(h.speed10m)}
                                   </span>
-                                  <span className="flex-1 text-center text-[11px] font-bold font-data" style={{ color: gustCfg.text }}>
+                                  <span className="flex-1 text-center text-[11px] font-medium font-data" style={{ color: gustCfg.text }}>
                                     {Math.round(h.gusts || 0)}
                                   </span>
-                                  <span className="flex-1 text-right text-[13px] font-black font-data" style={{ color: altCfg.text }}>
+                                  <span className="flex-1 text-right text-[13px] font-light font-data" style={{ color: altCfg.text }}>
                                     {Math.round(h.speed120m)}
                                   </span>
                                 </div>
