@@ -67,9 +67,9 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
     if(hourIdx === -1) hourIdx = 0; // fallback
 
     const wind10m = num(meteoData.hourly.wind_speed_10m?.[hourIdx]) || num(currentMeteo.wind_speed_10m);
+    const wind50m = wind10m + ((num(meteoData.hourly.wind_speed_80m?.[hourIdx]) || wind10m * 1.5) - wind10m) * 0.6; // Interpolated 150ft
     const wind80m = num(meteoData.hourly.wind_speed_80m?.[hourIdx]) || wind10m * 1.5;
     const wind120m = num(meteoData.hourly.wind_speed_120m?.[hourIdx]) || wind80m * 1.2;
-    const wind180m = num(meteoData.hourly.wind_speed_180m?.[hourIdx]) || wind120m * 1.1;
 
     // Safe scalar reads for current weather — every downstream component
     // assumes finite numbers; any NaN/undefined makes WeatherCards/WindCompass crash.
@@ -194,9 +194,9 @@ export async function fetchLiveTelemetry(profile: PilotProfile, lat: number, lon
         progressPercent: solarProgress,
       },
       verticalProfile: [
-        { alt: '600ft+', speed: Math.round(wind180m), state: wind180m > 30 ? 'critical' : wind180m > 20 ? 'warn' : 'ok' },
         { alt: '400ft', speed: Math.round(wind120m), state: wind120m > 25 ? 'critical' : wind120m > 15 ? 'warn' : 'ok' },
-        { alt: '200ft', speed: Math.round(wind80m), state: wind80m > 20 ? 'warn' : 'ok' },
+        { alt: '250ft', speed: Math.round(wind80m), state: wind80m > 20 ? 'critical' : wind80m > 15 ? 'warn' : 'ok' },
+        { alt: '150ft', speed: Math.round(wind50m), state: wind50m > 15 ? 'warn' : 'ok' },
         { alt: 'SFC', speed: Math.round(wind10m), state: wind10m > 15 ? 'warn' : 'calm' },
       ],
       windForecast,
