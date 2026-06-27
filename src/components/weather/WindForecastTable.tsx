@@ -5,9 +5,9 @@ import { useStore } from "@/store/useStore";
 import { Navigation } from "lucide-react";
 
 const STATE_CONFIG = {
-  critical: { bg: 'var(--color-system-red)', text: '#fff' },
-  warn:     { bg: 'var(--color-system-orange)', text: '#fff' },
-  calm:     { bg: 'var(--color-system-green)', text: '#fff' },
+  critical: { color: 'var(--color-system-red)' },
+  warn:     { color: 'var(--color-system-orange)' },
+  calm:     { color: 'var(--color-system-green)' },
 } as const;
 
 export default function WindForecastTable() {
@@ -41,7 +41,7 @@ export default function WindForecastTable() {
           
           {/* Row: HORA */}
           <div className="flex items-stretch border-b border-[var(--z-border)] bg-[var(--z-surface)]">
-            <div className="sticky left-0 z-10 w-24 shrink-0 bg-[var(--z-surface)] px-3 py-2 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
+            <div className="sticky left-0 z-10 w-20 shrink-0 bg-[var(--z-surface)] px-2.5 py-1.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
               <span className="text-[9px] uppercase font-bold tracking-widest" style={{ color: 'var(--z-muted)' }}>Hora</span>
             </div>
             {forecast.map((h, i) => {
@@ -50,7 +50,7 @@ export default function WindForecastTable() {
               const ampm = hr >= 12 ? 'pm' : 'am';
               const hr12 = hr % 12 || 12;
               return (
-                <div key={i} className="w-12 shrink-0 py-1.5 flex flex-col items-center justify-center">
+                <div key={i} className="w-10 shrink-0 py-1 flex flex-col items-center justify-center">
                   <span className="text-xs font-semibold" style={{ color: 'var(--z-text)' }}>{hr12}</span>
                   <span className="text-[8px] font-bold uppercase" style={{ color: 'var(--z-muted)' }}>{ampm}</span>
                 </div>
@@ -60,13 +60,13 @@ export default function WindForecastTable() {
 
           {/* Row: Dirección */}
           <div className="flex items-stretch border-b border-[var(--z-border)] border-opacity-50">
-            <div className="sticky left-0 z-10 w-24 shrink-0 bg-[var(--z-card)] px-3 py-2.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
-              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--z-muted)' }}>Dirección</span>
+            <div className="sticky left-0 z-10 w-20 shrink-0 bg-[var(--z-card)] px-2.5 py-1.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
+              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--z-muted)' }}>Dir</span>
             </div>
             {forecast.map((h, i) => (
-              <div key={i} className="w-12 shrink-0 flex items-center justify-center">
+              <div key={i} className="w-10 shrink-0 flex items-center justify-center">
                 <div style={{ transform: `rotate(${h.direction}deg)` }}>
-                  <Navigation className="w-3.5 h-3.5" style={{ color: 'var(--z-muted)', opacity: 0.8 }} />
+                  <Navigation className="w-3 h-3" style={{ color: 'var(--z-muted)', opacity: 0.6 }} />
                 </div>
               </div>
             ))}
@@ -74,18 +74,16 @@ export default function WindForecastTable() {
 
           {/* Row: Viento SFC */}
           <div className="flex items-stretch border-b border-[var(--z-border)] border-opacity-50">
-            <div className="sticky left-0 z-10 w-24 shrink-0 bg-[var(--z-card)] px-3 py-2.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
-              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--z-text)' }}>SFC Viento</span>
+            <div className="sticky left-0 z-10 w-20 shrink-0 bg-[var(--z-card)] px-2.5 py-1.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
+              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--z-text)' }}>Viento</span>
             </div>
             {forecast.map((h, i) => {
               const cfg = getStateFromSpeed(h.speed10m);
               return (
-                <div key={i} className="w-12 shrink-0 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: cfg.bg }}>
-                    <span className="text-[10px] font-bold font-data" style={{ color: cfg.text }}>
-                      {Math.round(h.speed10m)}
-                    </span>
-                  </div>
+                <div key={i} className="w-10 shrink-0 flex items-center justify-center">
+                  <span className="text-sm font-semibold font-data" style={{ color: cfg.color }}>
+                    {Math.round(h.speed10m)}
+                  </span>
                 </div>
               );
             })}
@@ -93,18 +91,16 @@ export default function WindForecastTable() {
 
           {/* Row: Ráfagas SFC */}
           <div className="flex items-stretch border-b border-[var(--z-border)] border-opacity-50">
-            <div className="sticky left-0 z-10 w-24 shrink-0 bg-[var(--z-card)] px-3 py-2.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
-              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--z-text)' }}>SFC Ráfagas</span>
+            <div className="sticky left-0 z-10 w-20 shrink-0 bg-[var(--z-card)] px-2.5 py-1.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
+              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--z-text)' }}>Ráfagas</span>
             </div>
             {forecast.map((h, i) => {
               const cfg = getStateFromSpeed(h.gusts || 0);
               return (
-                <div key={i} className="w-12 shrink-0 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: cfg.bg }}>
-                    <span className="text-[10px] font-bold font-data" style={{ color: cfg.text }}>
-                      {Math.round(h.gusts || 0)}
-                    </span>
-                  </div>
+                <div key={i} className="w-10 shrink-0 flex items-center justify-center">
+                  <span className="text-sm font-semibold font-data" style={{ color: cfg.color }}>
+                    {Math.round(h.gusts || 0)}
+                  </span>
                 </div>
               );
             })}
@@ -112,18 +108,16 @@ export default function WindForecastTable() {
 
           {/* Row: Viento 400ft */}
           <div className="flex items-stretch">
-            <div className="sticky left-0 z-10 w-24 shrink-0 bg-[var(--z-card)] px-3 py-2.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
-              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--color-system-blue)' }}>400ft Viento</span>
+            <div className="sticky left-0 z-10 w-20 shrink-0 bg-[var(--z-card)] px-2.5 py-1.5 flex items-center shadow-[4px_0_8px_rgba(0,0,0,0.03)] border-r border-[var(--z-border)]">
+              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--color-system-blue)' }}>400ft</span>
             </div>
             {forecast.map((h, i) => {
               const cfg = getStateFromSpeed(h.speed120m);
               return (
-                <div key={i} className="w-12 shrink-0 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: cfg.bg }}>
-                    <span className="text-[10px] font-bold font-data" style={{ color: cfg.text }}>
-                      {Math.round(h.speed120m)}
-                    </span>
-                  </div>
+                <div key={i} className="w-10 shrink-0 flex items-center justify-center">
+                  <span className="text-sm font-semibold font-data" style={{ color: cfg.color }}>
+                    {Math.round(h.speed120m)}
+                  </span>
                 </div>
               );
             })}
