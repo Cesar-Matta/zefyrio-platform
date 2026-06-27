@@ -22,15 +22,14 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
 
   return (
     <section 
-      className={`z-card rounded-[20px] p-4 col-span-2 overflow-hidden theme-transition ${className}`}
-      style={{
- background: 'var(--z-card)', border: '1px solid var(--z-border)' }}
+      className={`z-card rounded-xl px-4 py-2.5 col-span-2 overflow-hidden theme-transition shadow-sm ${className}`}
+      style={{ background: 'var(--z-card)', border: '1px solid var(--z-border)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5">
           <Sunrise className="w-3 h-3" style={{ color: '#fbbf24' }} />
-          <span className="text-[9px] tracking-[0.16em] font-semibold"
+          <span className="text-[9px] tracking-[0.16em] font-medium uppercase"
             style={{ color: 'var(--z-muted)' }}>
             {t('telem_flight_window')}
           </span>
@@ -51,8 +50,8 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
       <div className="flex items-center gap-3">
         {/* Sunrise */}
         <div className="flex flex-col items-center flex-shrink-0">
-          <Sunrise className="w-4 h-4 mb-1" style={{ color: '#fbbf24' }} />
-          <span className="text-[13px] font-black font-data" style={{ color: 'var(--z-text)' }}>
+          <Sunrise className="w-3.5 h-3.5 mb-0.5" style={{ color: '#fbbf24' }} />
+          <span className="text-xs font-medium font-data" style={{ color: 'var(--z-text)' }}>
             {sun.sunrise}
           </span>
         </div>
@@ -86,8 +85,8 @@ export default function FlightWindow({ sun, className = "" }: FlightWindowProps)
 
         {/* Sunset */}
         <div className="flex flex-col items-center flex-shrink-0">
-          <Sunset className="w-4 h-4 mb-1" style={{ color: '#818cf8' }} />
-          <span className="text-[13px] font-black font-data" style={{ color: 'var(--z-text)' }}>
+          <Sunset className="w-3.5 h-3.5 mb-0.5" style={{ color: '#818cf8' }} />
+          <span className="text-xs font-medium font-data" style={{ color: 'var(--z-text)' }}>
             {sun.sunset}
           </span>
         </div>
