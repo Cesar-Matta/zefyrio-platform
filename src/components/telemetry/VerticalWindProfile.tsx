@@ -20,6 +20,9 @@ const STATE_CONFIG = {
 export default function VerticalWindProfile({ verticalProfile, className = "" }: VerticalWindProfileProps) {
   const { t } = useTranslation();
   const { telemetryData } = useStore();
+
+  const maxSpeed = Math.max(...verticalProfile.map(l => l.speed), 1);
+
   const getStateFromSpeed = (speed: number) => {
     if (speed > 25) return STATE_CONFIG.critical;
     if (speed > 15) return STATE_CONFIG.warn;
