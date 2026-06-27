@@ -28,6 +28,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import MetarBoard from "@/components/weather/MetarBoard";
 import WindyView from "@/components/weather/WindyView";
 import ForecastBar8Day from "@/components/weather/ForecastBar8Day";
+import WindForecastTable from "@/components/weather/WindForecastTable";
 import ForecastCards from "@/components/weather/ForecastCards";
 
 // FIX: Leaflet SSR Error - Import Map component ONLY on client
@@ -436,6 +437,9 @@ export default function Home() {
                   locationName={viewingAirport ? viewingAirport.name : (telemetryData?.locationName || 'Mi Ubicación')} 
                 />
               </div>
+
+              {/* UAV-Style Wind Forecast Table */}
+              <WindForecastTable />
 
               {telemetryData?.kpForecast && (
                 <KpTimelineScrubber kpForecast={telemetryData.kpForecast} />
