@@ -100,10 +100,10 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="flex flex-col items-center justify-center mt-12 mb-10">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyber-cyan/20 to-transparent border border-[var(--z-border)]/30 flex items-center justify-center mb-6 relative shadow-[0_0_30px_rgba(0,240,255,0.15)]">
-              <img src="/logo-dark.png" alt="Cfyro Logo" className="w-12 h-12 relative z-10 object-contain" />
+              <img src="/logo-dark.png" alt="Zefyrio Logo" className="w-12 h-12 relative z-10 object-contain" />
               <div className="absolute inset-0 rounded-full bg-[var(--z-surface)]/10 animate-ping duration-3000" />
             </div>
-            <h1 className="text-4xl font-black text-white tracking-tighter">CFYRO</h1>
+            <h1 className="text-4xl font-black text-white tracking-tighter">ZEFYRIO</h1>
             <p className="text-[10px] font-medium text-gray-400 tracking-tight mt-2 uppercase tracking-widest">Meteorología para Drones</p>
           </div>
 
@@ -184,7 +184,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-gray-600 text-[10px] mt-8 leading-relaxed">
-            Al acceder aceptas los Términos de Servicio de Cfyro.
+            Al acceder aceptas los Términos de Servicio de Zefyrio.
           </p>
         </div>
       </main>

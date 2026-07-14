@@ -293,14 +293,15 @@ export default function Home() {
 
           {/* Main App Header */}
           <header className="flex justify-between items-center shrink-0 mb-2">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2.5">
               <div className="flex items-center justify-center shrink-0">
-                <img 
+                <img
                   src={isDark ? "/logo-dark.png" : "/logo-light.png"}
-                  alt="Zefyrio Logo" 
-                  className="h-6 w-auto scale-[1.5] origin-left object-contain" 
+                  alt="Zefyrio Logo"
+                  className="h-8 w-auto object-contain"
                 />
               </div>
+              <span className="text-xl font-extrabold tracking-tight" style={{ color: 'var(--z-text)' }}>ZEFYRIO</span>
             </div>
             <UserMenu />
           </header>

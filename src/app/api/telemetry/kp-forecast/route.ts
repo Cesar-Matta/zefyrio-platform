@@ -4,7 +4,7 @@ export async function GET() {
   try {
     const res = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json', {
       headers: {
-        'User-Agent': 'CfyroApp/1.0',
+        'User-Agent': 'ZefyrioApp/1.0',
         'Accept': 'application/json'
       },
       next: { revalidate: 3600 } // Cache the response for 1 hour
